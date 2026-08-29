@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { X, Plus, Trash2, Calendar } from "lucide-react";
+import { X, Plus, Trash2, Calendar, AlertCircle } from "lucide-react";
 
 interface TaskDialogProps {
   isOpen: boolean;
@@ -47,6 +47,8 @@ export function TaskCreateDialog({
     { id: string; title: string; completed: boolean }[]
   >([]);
   const [newSubtaskText, setNewSubtaskText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (editingTask) {
@@ -66,6 +68,7 @@ export function TaskCreateDialog({
       setDueDate(new Date().toISOString().split("T")[0]);
       setSubtasks([]);
     }
+    setErrorMsg(null);
   }, [editingTask, isOpen, defaultModule]);
 
   const handleAddSubtask = () => {
@@ -83,35 +86,49 @@ export function TaskCreateDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || isSubmitting) return;
 
-    const payload = {
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    const payload: any = {
       title: title.trim(),
-      description: description.trim() || undefined,
       priority,
       module,
-      goalId: goalId ? (goalId as any) : undefined,
-      dueDate: dueDate || undefined,
       isBigRock: false,
-      subtasks: subtasks.length > 0 ? subtasks : undefined,
     };
 
-    if (editingTask) {
-      await updateTask({
-        id: editingTask._id,
-        ...payload,
-      });
-    } else {
-      await createTask(payload);
-    }
+    if (description.trim()) payload.description = description.trim();
+    if (dueDate) payload.dueDate = dueDate;
+    if (goalId) payload.goalId = goalId as any;
+    if (subtasks.length > 0) payload.subtasks = subtasks;
 
-    onClose();
+    try {
+      if (editingTask) {
+        await updateTask({
+          id: editingTask._id,
+          ...payload,
+        });
+      } else {
+        await createTask(payload);
+      }
+      onClose();
+    } catch (err: any) {
+      console.error("Failed to save task:", err);
+      setErrorMsg(err.message || "Failed to save task. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = async () => {
     if (editingTask) {
-      await removeTask({ id: editingTask._id });
-      onClose();
+      try {
+        await removeTask({ id: editingTask._id });
+        onClose();
+      } catch (err: any) {
+        setErrorMsg(err.message || "Failed to delete task.");
+      }
     }
   };
 
@@ -131,6 +148,13 @@ export function TaskCreateDialog({
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
+
+          {errorMsg && (
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Title Input */}
@@ -324,9 +348,10 @@ export function TaskCreateDialog({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold shadow-xs transition-colors cursor-pointer text-xs"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] disabled:opacity-50 text-white font-semibold shadow-xs transition-colors cursor-pointer text-xs"
                 >
-                  {editingTask ? "Save" : "Create Task"}
+                  {isSubmitting ? "Saving..." : editingTask ? "Save" : "Create Task"}
                 </button>
               </div>
             </div>

@@ -9,10 +9,7 @@ import {
   Plus,
   CheckCircle2,
   Search,
-  Calendar,
-  Layers,
   Trash2,
-  CheckSquare,
 } from "lucide-react";
 
 export function TasksScreen() {
@@ -55,6 +52,7 @@ export function TasksScreen() {
   const [inlineTitle, setInlineTitle] = useState("");
   const [inlinePriority, setInlinePriority] = useState("p2_medium");
   const [inlineModule, setInlineModule] = useState("general");
+  const [isInlineSubmitting, setIsInlineSubmitting] = useState(false);
 
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -74,8 +72,6 @@ export function TasksScreen() {
       if (!t.dueDate || t.dueDate <= todayStr || t.status === "done") return false;
     } else if (activeTab === "completed") {
       if (t.status !== "done") return false;
-    } else if (activeTab === "all") {
-      // In "all", show todo first
     }
 
     if (
@@ -94,17 +90,23 @@ export function TasksScreen() {
 
   const handleInlineAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inlineTitle.trim()) return;
+    if (!inlineTitle.trim() || isInlineSubmitting) return;
 
-    await createTask({
-      title: inlineTitle.trim(),
-      priority: inlinePriority,
-      module: inlineModule,
-      dueDate: todayStr,
-      isBigRock: false,
-    });
-
-    setInlineTitle("");
+    setIsInlineSubmitting(true);
+    try {
+      await createTask({
+        title: inlineTitle.trim(),
+        priority: inlinePriority,
+        module: inlineModule,
+        dueDate: todayStr,
+        isBigRock: false,
+      });
+      setInlineTitle("");
+    } catch (err) {
+      console.error("Failed to create inline task:", err);
+    } finally {
+      setIsInlineSubmitting(false);
+    }
   };
 
   const getGoalTitle = (goalId?: string) => {
@@ -198,10 +200,10 @@ export function TasksScreen() {
 
           <button
             type="submit"
-            disabled={!inlineTitle.trim()}
+            disabled={!inlineTitle.trim() || isInlineSubmitting}
             className="px-3 py-1 rounded-lg bg-[#333E50] hover:bg-[#252E3B] disabled:opacity-40 text-white text-xs font-semibold transition-colors cursor-pointer"
           >
-            Add
+            {isInlineSubmitting ? "Adding..." : "Add"}
           </button>
         </div>
       </form>
