@@ -47,28 +47,35 @@ export const updateFolder = mutation({
   },
 });
 
-// Mutation: Remove Folder (and subfolders)
+// Mutation: Remove Folder (and all subfolders and notes unlinked)
 export const removeFolder = mutation({
   args: { id: v.id("folders") },
   handler: async (ctx, args) => {
-    // 1. Unlink notes in this folder
+    // 1. Unlink or delete notes in this folder
     const notesInFolder = await ctx.db
       .query("notes")
       .withIndex("by_folder", (q) => q.eq("folderId", args.id))
       .collect();
 
     for (const note of notesInFolder) {
-      await ctx.db.patch(note._id, { folderId: undefined });
+      await ctx.db.delete(note._id);
     }
 
-    // 2. Unlink subfolders or remove
+    // 2. Also recursively delete any subfolders and their notes
     const subfolders = await ctx.db
       .query("folders")
       .withIndex("by_parent", (q) => q.eq("parentId", args.id))
       .collect();
 
     for (const sub of subfolders) {
-      await ctx.db.patch(sub._id, { parentId: undefined });
+      const subNotes = await ctx.db
+        .query("notes")
+        .withIndex("by_folder", (q) => q.eq("folderId", sub._id))
+        .collect();
+      for (const sn of subNotes) {
+        await ctx.db.delete(sn._id);
+      }
+      await ctx.db.delete(sub._id);
     }
 
     await ctx.db.delete(args.id);
@@ -176,156 +183,6 @@ export const removeNote = mutation({
   },
 });
 
-// Mutation: Seed defaults matching the Stitch Design exactly
-export const seedDefaults = mutation({
-  args: {},
-  handler: async (ctx) => {
-    // Clear old notes and folders to re-seed clean matching Stitch
-    const oldFolders = await ctx.db.query("folders").collect();
-    for (const f of oldFolders) await ctx.db.delete(f._id);
-    const oldNotes = await ctx.db.query("notes").collect();
-    for (const n of oldNotes) await ctx.db.delete(n._id);
-
-    // 1. Parent: Engineering
-    const engId = await ctx.db.insert("folders", {
-      name: "Engineering",
-      icon: "folder",
-      order: 1,
-      createdAt: new Date().toISOString(),
-    });
-
-    const archId = await ctx.db.insert("folders", {
-      name: "Architecture",
-      icon: "folder",
-      parentId: engId,
-      order: 2,
-      createdAt: new Date().toISOString(),
-    });
-
-    await ctx.db.insert("folders", {
-      name: "Deployment",
-      icon: "folder",
-      parentId: engId,
-      order: 3,
-      createdAt: new Date().toISOString(),
-    });
-
-    await ctx.db.insert("folders", {
-      name: "Code Snippets",
-      icon: "folder",
-      parentId: engId,
-      order: 4,
-      createdAt: new Date().toISOString(),
-    });
-
-    // 2. Parent: Personal
-    const personalId = await ctx.db.insert("folders", {
-      name: "Personal",
-      icon: "folder",
-      order: 5,
-      createdAt: new Date().toISOString(),
-    });
-
-    await ctx.db.insert("folders", {
-      name: "Reflections",
-      icon: "folder",
-      parentId: personalId,
-      order: 6,
-      createdAt: new Date().toISOString(),
-    });
-
-    await ctx.db.insert("folders", {
-      name: "Military Log",
-      icon: "folder",
-      parentId: personalId,
-      order: 7,
-      createdAt: new Date().toISOString(),
-    });
-
-    // 3. Ideas
-    await ctx.db.insert("folders", {
-      name: "Ideas",
-      icon: "folder",
-      order: 8,
-      createdAt: new Date().toISOString(),
-    });
-
-    // 4. Resources
-    await ctx.db.insert("folders", {
-      name: "Resources",
-      icon: "folder",
-      order: 9,
-      createdAt: new Date().toISOString(),
-    });
-
-    // Insert Stitch Screen 3 default cards
-    const now = new Date().toISOString();
-
-    await ctx.db.insert("notes", {
-      title: "System Design: Microservices Transition Plan",
-      content: `
-        <h1>System Design: Microservices Transition Plan</h1>
-        <p>Draft outlining the phased approach to migrating the monolithic architecture to microservices.</p>
-        <h2>Phase 1 Objectives</h2>
-        <ul>
-          <li>Decouple the user authentication service and establish the API gateway.</li>
-          <li>Establish distributed tracing using OpenTelemetry.</li>
-          <li>Implement database per service pattern with event-driven sync.</li>
-        </ul>
-        <blockquote><p>💡 <strong>Tip:</strong> Review dependencies carefully before extracting database boundaries.</p></blockquote>
-      `,
-      plainText: "Draft outlining the phased approach to migrating the monolithic architecture to microservices. Phase 1 focuses on decoupling the user authentication service and establishing the API gateway. Review dependencies carefully.",
-      folderId: archId,
-      isPinned: true,
-      isFavorite: false,
-      tags: ["architecture", "draft"],
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    await ctx.db.insert("notes", {
-      title: "Database Schema Revisions V2",
-      content: `
-        <h1>Database Schema Revisions V2</h1>
-        <p>Updated ERD notes following yesterday's review.</p>
-        <ul>
-          <li>Add index to <code>user_id</code> on transaction table to improve query latency.</li>
-          <li>Consider partitioning large historical log tables by month.</li>
-          <li>Implement connection pooling with PgBouncer.</li>
-        </ul>
-      `,
-      plainText: "Updated ERD notes following yesterday's review. Need to add index to user_id on transaction table to improve query latency. Consider partitioning large historical log tables by month.",
-      folderId: archId,
-      isPinned: false,
-      isFavorite: false,
-      tags: ["database", "performance"],
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    await ctx.db.insert("notes", {
-      title: "API Rate Limiting Strategy",
-      content: `
-        <h1>API Rate Limiting Strategy</h1>
-        <p>Implementing token bucket algorithm using Redis cluster.</p>
-        <ul>
-          <li>Current threshold: 100 req/min for free tier, 1000 req/min for premium.</li>
-          <li>Handle edge cases where Redis cluster fails over gracefully.</li>
-        </ul>
-      `,
-      plainText: "Implementing token bucket algorithm using Redis. Current threshold set to 100 req/min for free tier, 1000 req/min for premium. Need to handle edge cases where Redis cluster fails over.",
-      folderId: archId,
-      isPinned: false,
-      isFavorite: true,
-      tags: ["api", "security"],
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    return { seeded: true };
-  },
-});
-
 // Mutation: Clear all notes
 export const clearAllNotes = mutation({
   args: {},
@@ -333,6 +190,18 @@ export const clearAllNotes = mutation({
     const all = await ctx.db.query("notes").collect();
     for (const n of all) {
       await ctx.db.delete(n._id);
+    }
+    return { deleted: all.length };
+  },
+});
+
+// Mutation: Clear all folders
+export const clearAllFolders = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("folders").collect();
+    for (const f of all) {
+      await ctx.db.delete(f._id);
     }
     return { deleted: all.length };
   },

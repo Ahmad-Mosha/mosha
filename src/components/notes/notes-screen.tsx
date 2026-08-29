@@ -17,6 +17,7 @@ import {
   Trash2,
   FolderPlus,
   Edit2,
+  FileText,
   BookOpen,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -35,14 +36,12 @@ export function NotesScreen() {
 
   // Warm instant hydration cache
   const [cachedNotes, setCachedNotes] = useState<any[]>([]);
-  const [isLoadedFromCache, setIsLoadedFromCache] = useState(false);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("mosha_cached_notes");
       if (saved) setCachedNotes(JSON.parse(saved));
     } catch {}
-    setIsLoadedFromCache(true);
   }, []);
 
   useEffect(() => {
@@ -56,68 +55,55 @@ export function NotesScreen() {
 
   const notes = convexNotes !== undefined ? convexNotes : cachedNotes;
 
-  // View States
+  // View & Selection States
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [tagInput, setTagInput] = useState("");
 
+  // Dedicated Note Title Local State to ensure smooth typing
+  const [localTitle, setLocalTitle] = useState("");
+
   // Folder Dialog
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
   const [editingFolder, setEditingFolder] = useState<any | null>(null);
 
-  // Auto-expand folders on mount
+  // Set default active note when folder or notes change
   useEffect(() => {
-    if (folders.length > 0) {
-      const expanded: Record<string, boolean> = {};
-      folders.forEach((f: any) => {
-        if (!f.parentId) expanded[f._id] = true;
-      });
-      setExpandedFolders((prev) => ({ ...expanded, ...prev }));
-
-      if (!selectedFolderId) {
-        setSelectedFolderId(folders[0]._id);
-      }
-    }
-  }, [folders, selectedFolderId]);
-
-  // Set default active note when folder changes
-  useEffect(() => {
-    if (notes.length > 0) {
-      const inFolder = notes.filter((n: any) =>
-        selectedFolderId ? n.folderId === selectedFolderId : true
-      );
-      if (inFolder.length > 0) {
-        if (!activeNoteId || !inFolder.some((n: any) => n._id === activeNoteId)) {
-          setActiveNoteId(inFolder[0]._id);
-        }
-      } else {
-        setActiveNoteId(null);
+    const inFolder = notes.filter((n: any) =>
+      selectedFolderId ? n.folderId === selectedFolderId : true
+    );
+    if (inFolder.length > 0) {
+      if (!activeNoteId || !inFolder.some((n: any) => n._id === activeNoteId)) {
+        setActiveNoteId(inFolder[0]._id);
       }
     } else {
       setActiveNoteId(null);
     }
   }, [selectedFolderId, notes, activeNoteId]);
 
+  const activeNote = notes.find((n: any) => n._id === activeNoteId) || null;
+
+  // Sync localTitle whenever activeNote changes ID
+  useEffect(() => {
+    if (activeNote) {
+      setLocalTitle(activeNote.title || "");
+    } else {
+      setLocalTitle("");
+    }
+  }, [activeNote?._id]);
+
   const toggleFolderExpand = (folderId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setExpandedFolders((prev) => ({ ...prev, [folderId]: !prev[folderId] }));
   };
 
-  const activeNote = notes.find((n: any) => n._id === activeNoteId) || null;
-
-  // Debounced auto-save timer
+  // Debounced auto-save timer for Content
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleEditorChange = (html: string, plainText: string) => {
     if (!activeNote) return;
-
-    // Optimistically update local cache
-    const updatedNotes = notes.map((n: any) =>
-      n._id === activeNote._id ? { ...n, content: html, plainText, updatedAt: new Date().toISOString() } : n
-    );
-    setCachedNotes(updatedNotes);
 
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     autoSaveTimerRef.current = setTimeout(async () => {
@@ -128,56 +114,73 @@ export function NotesScreen() {
           plainText,
         });
       } catch (err) {
-        console.error("Auto-save failed:", err);
+        console.error("Auto-save content failed:", err);
       }
-    }, 600);
-  };
-
-  const handleTitleChange = async (newTitle: string) => {
-    if (!activeNote) return;
-    const updatedNotes = notes.map((n: any) =>
-      n._id === activeNote._id ? { ...n, title: newTitle, updatedAt: new Date().toISOString() } : n
-    );
-    setCachedNotes(updatedNotes);
-
-    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-    autoSaveTimerRef.current = setTimeout(async () => {
-      await updateNote({
-        id: activeNote._id,
-        title: newTitle,
-      });
     }, 500);
   };
 
-  const handleCreateNewNote = async () => {
-    const newId = await createNote({
-      title: "Untitled Note",
-      content: "<p></p>",
-      plainText: "",
-      folderId: (selectedFolderId as any) || undefined,
-      tags: [],
-    });
+  // Debounced auto-save timer for Title
+  const titleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    if (newId) {
-      setActiveNoteId(newId);
+  const handleTitleChange = (newTitle: string) => {
+    setLocalTitle(newTitle);
+    if (!activeNote) return;
+
+    if (titleTimerRef.current) clearTimeout(titleTimerRef.current);
+    titleTimerRef.current = setTimeout(async () => {
+      try {
+        await updateNote({
+          id: activeNote._id,
+          title: newTitle,
+        });
+      } catch (err) {
+        console.error("Auto-save title failed:", err);
+      }
+    }, 400);
+  };
+
+  const handleCreateNewNote = async () => {
+    try {
+      const newId = await createNote({
+        title: "Untitled Note",
+        content: "<p></p>",
+        plainText: "",
+        folderId: (selectedFolderId as any) || undefined,
+        tags: [],
+      });
+
+      if (newId) {
+        setActiveNoteId(newId);
+        setLocalTitle("Untitled Note");
+      }
+    } catch (err) {
+      console.error("Failed to create note:", err);
     }
   };
 
   const handleDeleteNote = async (id: any, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    await removeNote({ id });
-    if (activeNoteId === id) {
-      const remaining = notes.filter((n: any) => n._id !== id);
-      setActiveNoteId(remaining.length > 0 ? remaining[0]._id : null);
+    try {
+      await removeNote({ id });
+      if (activeNoteId === id) {
+        const remaining = notes.filter((n: any) => n._id !== id);
+        setActiveNoteId(remaining.length > 0 ? remaining[0]._id : null);
+      }
+    } catch (err) {
+      console.error("Failed to delete note:", err);
     }
   };
 
   const handleDeleteFolder = async (folderId: any, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    await removeFolder({ id: folderId });
-    if (selectedFolderId === folderId) {
-      const remaining = folders.filter((f: any) => f._id !== folderId);
-      setSelectedFolderId(remaining.length > 0 ? remaining[0]._id : null);
+    try {
+      await removeFolder({ id: folderId });
+      if (selectedFolderId === folderId) {
+        const remaining = folders.filter((f: any) => f._id !== folderId);
+        setSelectedFolderId(remaining.length > 0 ? remaining[0]._id : null);
+      }
+    } catch (err) {
+      console.error("Failed to delete folder:", err);
     }
   };
 
@@ -260,142 +263,177 @@ export function NotesScreen() {
 
         {/* Tree Structure */}
         <div className="px-2 py-2.5 flex-1 overflow-y-auto space-y-1 text-xs">
-          {parentFolders.map((parent: any) => {
-            const subfolders = getSubfolders(parent._id);
-            const isExpanded = Boolean(expandedFolders[parent._id]);
-            const isSelected = selectedFolderId === parent._id;
-            const parentNoteCount = notes.filter((n: any) => n.folderId === parent._id).length;
+          {/* All Notes Root Option */}
+          <div
+            onClick={() => setSelectedFolderId(null)}
+            className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-colors ${
+              selectedFolderId === null
+                ? "bg-[#ECEFF3] text-[#1A202C] font-semibold border-l-2 border-[#333E50]"
+                : "text-[#2D3748] hover:bg-white"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[#4A5568]" />
+              <span className="font-medium">All Notes</span>
+            </div>
+            <span className="text-[10px] font-mono text-[#A0AEC0]">
+              {notes.length}
+            </span>
+          </div>
 
-            return (
-              <div key={parent._id} className="space-y-0.5">
-                {/* Parent Folder Row */}
-                <div
-                  onClick={() => setSelectedFolderId(parent._id)}
-                  className={`flex items-center gap-1.5 px-2 py-2 rounded-lg cursor-pointer transition-colors group ${
-                    isSelected
-                      ? "bg-[#ECEFF3] text-[#1A202C] font-semibold border-l-2 border-[#333E50]"
-                      : "text-[#2D3748] hover:bg-white"
-                  }`}
-                >
-                  {subfolders.length > 0 ? (
-                    <button
-                      onClick={(e) => toggleFolderExpand(parent._id, e)}
-                      className="text-[#718096] hover:text-[#1A202C] p-0.5 cursor-pointer"
-                    >
-                      {isExpanded ? (
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      ) : (
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  ) : (
-                    <div className="w-3.5" />
-                  )}
+          {/* User Folders List */}
+          {parentFolders.length === 0 ? (
+            <div className="py-8 text-center px-3 space-y-2">
+              <p className="text-[11px] text-[#A0AEC0]">No folders created yet.</p>
+              <button
+                onClick={() => {
+                  setEditingFolder(null);
+                  setIsFolderDialogOpen(true);
+                }}
+                className="text-xs text-[#333E50] hover:underline font-semibold flex items-center gap-1 mx-auto"
+              >
+                <Plus className="w-3 h-3" />
+                <span>New Folder</span>
+              </button>
+            </div>
+          ) : (
+            parentFolders.map((parent: any) => {
+              const subfolders = getSubfolders(parent._id);
+              const isExpanded = Boolean(expandedFolders[parent._id]);
+              const isSelected = selectedFolderId === parent._id;
+              const parentNoteCount = notes.filter((n: any) => n.folderId === parent._id).length;
 
-                  <Folder className="w-4 h-4 text-[#4A5568] group-hover:text-[#333E50] shrink-0" />
-                  <span className="flex-1 truncate font-medium">{parent.name}</span>
-                  <span className="text-[10px] font-mono text-[#A0AEC0] opacity-80 mr-1">
-                    {parentNoteCount}
-                  </span>
-
-                  {/* Folder Options Dropdown (Rename / Delete) */}
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger asChild onClick={(e) => e.stopPropagation()}>
-                      <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/5 rounded text-[#718096] hover:text-[#1A202C] transition-opacity cursor-pointer">
-                        <MoreVertical className="w-3.5 h-3.5" />
-                      </button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.Content
-                        className="z-50 bg-white border border-[#E2E8F0] rounded-xl shadow-lg p-1 text-xs min-w-[130px]"
-                        onClick={(e) => e.stopPropagation()}
+              return (
+                <div key={parent._id} className="space-y-0.5">
+                  {/* Parent Folder Row */}
+                  <div
+                    onClick={() => setSelectedFolderId(parent._id)}
+                    className={`flex items-center gap-1.5 px-2 py-2 rounded-lg cursor-pointer transition-colors group ${
+                      isSelected
+                        ? "bg-[#ECEFF3] text-[#1A202C] font-semibold border-l-2 border-[#333E50]"
+                        : "text-[#2D3748] hover:bg-white"
+                    }`}
+                  >
+                    {subfolders.length > 0 ? (
+                      <button
+                        onClick={(e) => toggleFolderExpand(parent._id, e)}
+                        className="text-[#718096] hover:text-[#1A202C] p-0.5 cursor-pointer"
                       >
-                        <DropdownMenu.Item
-                          onClick={() => {
-                            setEditingFolder(parent);
-                            setIsFolderDialogOpen(true);
-                          }}
-                          className="px-3 py-1.5 rounded-lg hover:bg-[#F8F9FA] cursor-pointer flex items-center gap-2"
-                        >
-                          <Edit2 className="w-3.5 h-3.5 text-[#718096]" />
-                          <span>Rename</span>
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item
-                          onClick={(e) => handleDeleteFolder(parent._id, e as any)}
-                          className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Delete Folder</span>
-                        </DropdownMenu.Item>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Root>
-                </div>
+                        {isExpanded ? (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    ) : (
+                      <div className="w-3.5" />
+                    )}
 
-                {/* Subfolders List */}
-                {isExpanded && subfolders.length > 0 && (
-                  <div className="pl-4 space-y-0.5 mt-0.5">
-                    {subfolders.map((sub: any) => {
-                      const isSubSelected = selectedFolderId === sub._id;
-                      const subCount = notes.filter((n: any) => n.folderId === sub._id).length;
+                    <Folder className="w-4 h-4 text-[#4A5568] group-hover:text-[#333E50] shrink-0" />
+                    <span className="flex-1 truncate font-medium">{parent.name}</span>
+                    <span className="text-[10px] font-mono text-[#A0AEC0] opacity-80 mr-1">
+                      {parentNoteCount}
+                    </span>
 
-                      return (
-                        <div
-                          key={sub._id}
-                          onClick={() => setSelectedFolderId(sub._id)}
-                          className={`flex items-center justify-between px-2 py-1.5 rounded-r-lg cursor-pointer transition-colors group/sub ${
-                            isSubSelected
-                              ? "bg-[#ECEFF3] text-[#1A202C] font-semibold border-l-2 border-[#333E50]"
-                              : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
-                          }`}
+                    {/* Folder Options Dropdown (Rename / Delete) */}
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger asChild onClick={(e) => e.stopPropagation()}>
+                        <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/5 rounded text-[#718096] hover:text-[#1A202C] transition-opacity cursor-pointer">
+                          <MoreVertical className="w-3.5 h-3.5" />
+                        </button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Portal>
+                        <DropdownMenu.Content
+                          className="z-50 bg-white border border-[#E2E8F0] rounded-xl shadow-lg p-1 text-xs min-w-[130px]"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="flex items-center gap-2 truncate flex-1">
-                            <Folder className="w-3.5 h-3.5 text-[#718096] shrink-0" />
-                            <span className="truncate">{sub.name}</span>
-                          </div>
-                          <span className="text-[10px] font-mono text-[#A0AEC0] mr-1">
-                            {subCount}
-                          </span>
-
-                          <DropdownMenu.Root>
-                            <DropdownMenu.Trigger asChild onClick={(e) => e.stopPropagation()}>
-                              <button className="opacity-0 group-hover/sub:opacity-100 p-0.5 hover:bg-black/5 rounded text-[#718096] hover:text-[#1A202C] transition-opacity cursor-pointer">
-                                <MoreVertical className="w-3 h-3" />
-                              </button>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Portal>
-                              <DropdownMenu.Content
-                                className="z-50 bg-white border border-[#E2E8F0] rounded-xl shadow-lg p-1 text-xs min-w-[130px]"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <DropdownMenu.Item
-                                  onClick={() => {
-                                    setEditingFolder(sub);
-                                    setIsFolderDialogOpen(true);
-                                  }}
-                                  className="px-3 py-1.5 rounded-lg hover:bg-[#F8F9FA] cursor-pointer flex items-center gap-2"
-                                >
-                                  <Edit2 className="w-3.5 h-3.5 text-[#718096]" />
-                                  <span>Rename</span>
-                                </DropdownMenu.Item>
-                                <DropdownMenu.Item
-                                  onClick={(e) => handleDeleteFolder(sub._id, e as any)}
-                                  className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  <span>Delete Subfolder</span>
-                                </DropdownMenu.Item>
-                              </DropdownMenu.Content>
-                            </DropdownMenu.Portal>
-                          </DropdownMenu.Root>
-                        </div>
-                      );
-                    })}
+                          <DropdownMenu.Item
+                            onClick={() => {
+                              setEditingFolder(parent);
+                              setIsFolderDialogOpen(true);
+                            }}
+                            className="px-3 py-1.5 rounded-lg hover:bg-[#F8F9FA] cursor-pointer flex items-center gap-2"
+                          >
+                            <Edit2 className="w-3.5 h-3.5 text-[#718096]" />
+                            <span>Rename</span>
+                          </DropdownMenu.Item>
+                          <DropdownMenu.Item
+                            onClick={(e) => handleDeleteFolder(parent._id, e as any)}
+                            className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete Folder</span>
+                          </DropdownMenu.Item>
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Portal>
+                    </DropdownMenu.Root>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  {/* Subfolders List */}
+                  {isExpanded && subfolders.length > 0 && (
+                    <div className="pl-4 space-y-0.5 mt-0.5">
+                      {subfolders.map((sub: any) => {
+                        const isSubSelected = selectedFolderId === sub._id;
+                        const subCount = notes.filter((n: any) => n.folderId === sub._id).length;
+
+                        return (
+                          <div
+                            key={sub._id}
+                            onClick={() => setSelectedFolderId(sub._id)}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-r-lg cursor-pointer transition-colors group/sub ${
+                              isSubSelected
+                                ? "bg-[#ECEFF3] text-[#1A202C] font-semibold border-l-2 border-[#333E50]"
+                                : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 truncate flex-1">
+                              <Folder className="w-3.5 h-3.5 text-[#718096] shrink-0" />
+                              <span className="truncate">{sub.name}</span>
+                            </div>
+                            <span className="text-[10px] font-mono text-[#A0AEC0] mr-1">
+                              {subCount}
+                            </span>
+
+                            <DropdownMenu.Root>
+                              <DropdownMenu.Trigger asChild onClick={(e) => e.stopPropagation()}>
+                                <button className="opacity-0 group-hover/sub:opacity-100 p-0.5 hover:bg-black/5 rounded text-[#718096] hover:text-[#1A202C] transition-opacity cursor-pointer">
+                                  <MoreVertical className="w-3 h-3" />
+                                </button>
+                              </DropdownMenu.Trigger>
+                              <DropdownMenu.Portal>
+                                <DropdownMenu.Content
+                                  className="z-50 bg-white border border-[#E2E8F0] rounded-xl shadow-lg p-1 text-xs min-w-[130px]"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <DropdownMenu.Item
+                                    onClick={() => {
+                                      setEditingFolder(sub);
+                                      setIsFolderDialogOpen(true);
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg hover:bg-[#F8F9FA] cursor-pointer flex items-center gap-2"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5 text-[#718096]" />
+                                    <span>Rename</span>
+                                  </DropdownMenu.Item>
+                                  <DropdownMenu.Item
+                                    onClick={(e) => handleDeleteFolder(sub._id, e as any)}
+                                    className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>Delete Subfolder</span>
+                                  </DropdownMenu.Item>
+                                </DropdownMenu.Content>
+                              </DropdownMenu.Portal>
+                            </DropdownMenu.Root>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </aside>
 
@@ -409,7 +447,7 @@ export function NotesScreen() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search in folder..."
+              placeholder="Search notes..."
               className="w-full bg-[#F8F9FA] border border-[#E2E8F0] rounded-lg pl-8 pr-2.5 py-1 text-xs text-[#1A202C] focus:outline-none focus:border-[#333E50]"
             />
           </div>
@@ -428,7 +466,7 @@ export function NotesScreen() {
         <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
           {filteredNotes.length === 0 ? (
             <div className="py-16 text-center px-4 space-y-2">
-              <p className="text-xs text-[#A0AEC0] font-mono">No notes in this folder</p>
+              <p className="text-xs text-[#A0AEC0] font-mono">No notes found</p>
               <button
                 onClick={handleCreateNewNote}
                 className="px-3 py-1.5 rounded-lg bg-[#333E50] text-white text-xs font-semibold shadow-xs hover:bg-[#252E3B] transition-colors cursor-pointer inline-block"
@@ -606,7 +644,7 @@ export function NotesScreen() {
             <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 max-w-5xl w-full mx-auto">
               <input
                 type="text"
-                value={activeNote.title}
+                value={localTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Note Title..."
                 className="font-serif text-3xl md:text-4xl font-bold text-[#1A202C] focus:outline-none w-full bg-transparent placeholder:text-[#CBD5E1]"
