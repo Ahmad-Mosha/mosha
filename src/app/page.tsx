@@ -1,0 +1,69 @@
+"use client";
+
+import React from "react";
+import { useMoshaStore } from "@/lib/store";
+import { SideNav } from "@/components/shell/side-nav";
+import { TopHeader } from "@/components/shell/top-header";
+import { CommandMenu } from "@/components/shell/command-menu";
+import { MajorGoalsBento } from "@/components/goals/major-goals-bento";
+import { GoalDialog } from "@/components/goals/goal-dialog";
+import { TodaySanctuaryView } from "@/components/modules/today-sanctuary-view";
+import { ProblemSolvingView } from "@/components/modules/problem-solving-view";
+import { GymFitnessView } from "@/components/modules/gym-fitness-view";
+import { FinanceView } from "@/components/modules/finance-view";
+import { LearningCsView } from "@/components/modules/learning-cs-view";
+import { EngineeringJournalView } from "@/components/modules/engineering-journal-view";
+import { GenericModuleView } from "@/components/modules/generic-module-view";
+
+export default function Home() {
+  const { sidebarVariant, activeModule } = useMoshaStore();
+
+  const isMini = sidebarVariant === "mini";
+
+  const renderModuleContent = () => {
+    switch (activeModule) {
+      case "goals":
+        return <MajorGoalsBento />;
+      case "today":
+        return <TodaySanctuaryView />;
+      case "problems":
+        return <ProblemSolvingView />;
+      case "gym":
+        return <GymFitnessView />;
+      case "finance":
+        return <FinanceView />;
+      case "learning":
+        return <LearningCsView />;
+      case "journal":
+        return <EngineeringJournalView />;
+      default:
+        return <GenericModuleView moduleId={activeModule} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F9F9F9] flex flex-row antialiased text-[#1A202C]">
+      {/* Collapsible Sidebar with Mini Variant */}
+      <SideNav />
+
+      {/* Main Workspace Area (Dynamically offsets based on mini vs full sidebar) */}
+      <div
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
+          isMini ? "md:ml-16" : "md:ml-64"
+        }`}
+      >
+        {/* Top Header Bar */}
+        <TopHeader />
+
+        {/* Main Content View with Senior UX Spacing (No awkward gaps!) */}
+        <main className="flex-1 px-6 py-6 max-w-7xl w-full mx-auto animate-in fade-in duration-150">
+          {renderModuleContent()}
+        </main>
+      </div>
+
+      {/* Global Modals */}
+      <GoalDialog />
+      <CommandMenu />
+    </div>
+  );
+}
