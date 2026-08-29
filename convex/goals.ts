@@ -19,9 +19,21 @@ export const SEED_GOALS = [
     progress: 50,
     milestones: [
       { id: "m1", title: "Basic Training Phase Completed", completed: true },
-      { id: "m2", title: "Establish Daily Workout & Reading Routine", completed: true },
-      { id: "m3", title: "Maintain Consistent Problem Solving Habit", completed: false },
-      { id: "m4", title: "Complete Active Duty Term with Distinction", completed: false },
+      {
+        id: "m2",
+        title: "Establish Daily Workout & Reading Routine",
+        completed: true,
+      },
+      {
+        id: "m3",
+        title: "Maintain Consistent Problem Solving Habit",
+        completed: false,
+      },
+      {
+        id: "m4",
+        title: "Complete Active Duty Term with Distinction",
+        completed: false,
+      },
     ],
     order: 1,
     createdAt: new Date().toISOString(),
@@ -35,11 +47,31 @@ export const SEED_GOALS = [
     targetDate: "2026-03-31",
     progress: 40,
     milestones: [
-      { id: "j1", title: "Master Top 150 LeetCode Patterns (100% Mastery)", completed: true },
-      { id: "j2", title: "Build 2 Production-Grade Backend Projects in Go & Node.js", completed: true },
-      { id: "j3", title: "Complete System Design & Behavioral STAR Matrix", completed: false },
-      { id: "j4", title: "Submit 30 Targeted High-Quality Applications", completed: false },
-      { id: "j5", title: "Ace Technical Rounds & Sign First Offer", completed: false },
+      {
+        id: "j1",
+        title: "Master Top 150 LeetCode Patterns (100% Mastery)",
+        completed: true,
+      },
+      {
+        id: "j2",
+        title: "Build 2 Production-Grade Backend Projects in Go & Node.js",
+        completed: true,
+      },
+      {
+        id: "j3",
+        title: "Complete System Design & Behavioral STAR Matrix",
+        completed: false,
+      },
+      {
+        id: "j4",
+        title: "Submit 30 Targeted High-Quality Applications",
+        completed: false,
+      },
+      {
+        id: "j5",
+        title: "Ace Technical Rounds & Sign First Offer",
+        completed: false,
+      },
     ],
     order: 2,
     createdAt: new Date().toISOString(),
@@ -53,10 +85,26 @@ export const SEED_GOALS = [
     targetDate: "2027-06-30",
     progress: 25,
     milestones: [
-      { id: "w1", title: "Personal Character & Spiritual Maturity", completed: true },
-      { id: "w2", title: "Establish Dedicated Marriage & Housing Fund", completed: false },
-      { id: "w3", title: "Achieve Stable Career & Sustainable Income", completed: false },
-      { id: "w4", title: "Take Official Steps & Complete Marriage (Nikah)", completed: false },
+      {
+        id: "w1",
+        title: "Personal Character & Spiritual Maturity",
+        completed: true,
+      },
+      {
+        id: "w2",
+        title: "Establish Dedicated Marriage & Housing Fund",
+        completed: false,
+      },
+      {
+        id: "w3",
+        title: "Achieve Stable Career & Sustainable Income",
+        completed: false,
+      },
+      {
+        id: "w4",
+        title: "Take Official Steps & Complete Marriage (Nikah)",
+        completed: false,
+      },
     ],
     order: 3,
     createdAt: new Date().toISOString(),
@@ -120,7 +168,7 @@ export const create = mutation({
         title: v.string(),
         completed: v.boolean(),
         completedAt: v.optional(v.string()),
-      })
+      }),
     ),
     order: v.number(),
     phase: v.optional(v.string()),
@@ -153,12 +201,11 @@ export const update = mutation({
           title: v.string(),
           completed: v.boolean(),
           completedAt: v.optional(v.string()),
-        })
-      )
+        }),
+      ),
     ),
     order: v.optional(v.number()),
     phase: v.optional(v.string()),
-    meaning: v.optional(v.string()),
     notes: v.optional(v.string()),
     completedAt: v.optional(v.string()),
   },
@@ -179,7 +226,8 @@ export const toggleMilestone = mutation({
     const goal = await ctx.db.get(args.goalId);
     if (!goal) throw new Error("Goal not found");
 
-    const milestonesList: MilestoneType[] = (goal.milestones as MilestoneType[]) || [];
+    const milestonesList: MilestoneType[] =
+      (goal.milestones as MilestoneType[]) || [];
     const updatedMilestones = milestonesList.map((m: MilestoneType) => {
       if (m.id === args.milestoneId) {
         const nextCompleted = !m.completed;
@@ -192,13 +240,17 @@ export const toggleMilestone = mutation({
       return m;
     });
 
-    const completedCount = updatedMilestones.filter((m: MilestoneType) => m.completed).length;
+    const completedCount = updatedMilestones.filter(
+      (m: MilestoneType) => m.completed,
+    ).length;
     const progress =
       updatedMilestones.length > 0
         ? Math.round((completedCount / updatedMilestones.length) * 100)
         : goal.progress;
 
-    const allCompleted = completedCount === updatedMilestones.length && updatedMilestones.length > 0;
+    const allCompleted =
+      completedCount === updatedMilestones.length &&
+      updatedMilestones.length > 0;
     const status = allCompleted ? "completed" : "in_progress";
 
     await ctx.db.patch(args.goalId, {
