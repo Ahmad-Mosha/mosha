@@ -78,28 +78,25 @@ export function GoalDialog() {
         ? Math.round((completedCount / milestones.length) * 100)
         : existingGoal?.progress || 0;
 
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      status,
+      targetDate: targetDate || undefined,
+      icon: icon || "🎯",
+      milestones,
+      progress: computedProgress,
+      phase: "Active", // Safe default for compatibility with cloud validator
+      order: editingGoalId && existingGoal ? existingGoal.order : goals.length + 1,
+    };
+
     if (editingGoalId && existingGoal) {
       await updateGoal({
         id: editingGoalId as any,
-        title: title.trim(),
-        description: description.trim(),
-        status,
-        targetDate: targetDate || undefined,
-        icon,
-        milestones,
-        progress: computedProgress,
+        ...payload,
       });
     } else {
-      await createGoal({
-        title: title.trim(),
-        description: description.trim(),
-        status,
-        targetDate: targetDate || undefined,
-        icon,
-        milestones,
-        progress: computedProgress,
-        order: goals.length + 1,
-      });
+      await createGoal(payload);
     }
 
     setGoalDialogOpen(false);
