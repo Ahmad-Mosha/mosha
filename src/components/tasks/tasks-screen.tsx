@@ -5,11 +5,15 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { TaskCreateDialog } from "./task-create-dialog";
 import { TaskItemRow } from "./task-item-row";
+import { TasksKanbanBoard } from "./tasks-kanban-board";
 import {
   Plus,
   CheckCircle2,
   Search,
   Trash2,
+  LayoutList,
+  Kanban,
+  RotateCcw,
 } from "lucide-react";
 
 export function TasksScreen() {
@@ -42,7 +46,8 @@ export function TasksScreen() {
   const tasks = convexTasks !== undefined ? convexTasks : cachedTasks;
   const isLoading = convexTasks === undefined && cachedTasks.length === 0 && !isLoadedFromCache;
 
-  // Filters & State
+  // View & Filters State
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -52,6 +57,7 @@ export function TasksScreen() {
   const [inlineTitle, setInlineTitle] = useState("");
   const [inlinePriority, setInlinePriority] = useState("p2_medium");
   const [inlineModule, setInlineModule] = useState("general");
+  const [inlineIsDaily, setInlineIsDaily] = useState(false);
   const [isInlineSubmitting, setIsInlineSubmitting] = useState(false);
 
   // Dialog state
@@ -62,14 +68,22 @@ export function TasksScreen() {
 
   // Calculations
   const completedCount = tasks.filter((t: any) => t.status === "done").length;
-  const todayTasks = tasks.filter((t: any) => t.dueDate === todayStr);
+  const dailyTasks = tasks.filter((t: any) => t.isDaily);
+  const todayTasks = tasks.filter(
+    (t: any) => t.isDaily || t.dueDate === todayStr || (!t.dueDate && t.status !== "done")
+  );
 
   const filteredTasks = tasks.filter((t: any) => {
     if (activeTab === "today") {
-      if (t.dueDate !== todayStr && t.status === "done") return false;
-      if (t.dueDate && t.dueDate !== todayStr) return false;
+      const isDailyTask = t.isDaily;
+      const isDueToday = t.dueDate === todayStr;
+      const isUndatedTodo = !t.dueDate && t.status !== "done";
+      if (!isDailyTask && !isDueToday && !isUndatedTodo && t.status === "done") return false;
+      if (t.dueDate && t.dueDate !== todayStr && !isDailyTask) return false;
+    } else if (activeTab === "daily") {
+      if (!t.isDaily) return false;
     } else if (activeTab === "upcoming") {
-      if (!t.dueDate || t.dueDate <= todayStr || t.status === "done") return false;
+      if (!t.dueDate || t.dueDate <= todayStr || t.status === "done" || t.isDaily) return false;
     } else if (activeTab === "completed") {
       if (t.status !== "done") return false;
     }
@@ -98,10 +112,12 @@ export function TasksScreen() {
         title: inlineTitle.trim(),
         priority: inlinePriority,
         module: inlineModule,
-        dueDate: todayStr,
+        dueDate: inlineIsDaily ? undefined : todayStr,
+        isDaily: inlineIsDaily,
         isBigRock: false,
       });
       setInlineTitle("");
+      setInlineIsDaily(false);
     } catch (err) {
       console.error("Failed to create inline task:", err);
     } finally {
@@ -129,11 +145,37 @@ export function TasksScreen() {
             </span>
           </div>
           <p className="text-xs text-[#718096] mt-0.5">
-            Daily execution, priority tracking, and actionable roadmap.
+            Daily execution, recurring habits, and actionable roadmap.
           </p>
         </div>
 
         <div className="flex items-center space-x-2">
+          {/* View Mode Toggle: List vs Kanban */}
+          <div className="flex items-center rounded-lg border border-[#E2E8F0] bg-white p-0.5">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-[#333E50] text-white shadow-2xs"
+                  : "text-[#718096] hover:text-[#1A202C]"
+              }`}
+              title="List View"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
+                viewMode === "kanban"
+                  ? "bg-[#333E50] text-white shadow-2xs"
+                  : "text-[#718096] hover:text-[#1A202C]"
+              }`}
+              title="Sprint / Kanban Board"
+            >
+              <Kanban className="w-4 h-4" />
+            </button>
+          </div>
+
           {completedCount > 0 && (
             <button
               onClick={() => clearCompleted()}
@@ -161,29 +203,49 @@ export function TasksScreen() {
       {/* 2. Fast Inline Quick Add Row */}
       <form
         onSubmit={handleInlineAdd}
-        className="flex items-center gap-2 p-2 rounded-xl bg-white border border-[#E2E8F0] shadow-2xs hover:border-[#CBD5E1] transition-all"
+        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 rounded-xl bg-white border border-[#E2E8F0] shadow-2xs hover:border-[#CBD5E1] transition-all"
       >
-        <Plus className="w-4 h-4 text-[#A0AEC0] ml-2 shrink-0" />
-        <input
-          type="text"
-          value={inlineTitle}
-          onChange={(e) => setInlineTitle(e.target.value)}
-          placeholder="Add a task... (Press Enter to save)"
-          className="flex-1 bg-transparent px-2 py-1 text-xs text-[#1A202C] focus:outline-none placeholder:text-[#A0AEC0]"
-        />
+        <div className="flex items-center flex-1">
+          <Plus className="w-4 h-4 text-[#A0AEC0] ml-2 shrink-0" />
+          <input
+            type="text"
+            value={inlineTitle}
+            onChange={(e) => setInlineTitle(e.target.value)}
+            placeholder="Add a task or daily habit... (Press Enter to save)"
+            className="w-full bg-transparent px-2 py-1 text-xs text-[#1A202C] focus:outline-none placeholder:text-[#A0AEC0]"
+          />
+        </div>
 
-        <div className="flex items-center space-x-1.5 shrink-0">
+        <div className="flex items-center space-x-1.5 shrink-0 justify-end">
+          {/* Daily toggle button */}
+          <label
+            className={`px-2 py-1 rounded-md text-[11px] font-mono flex items-center gap-1 cursor-pointer select-none transition-colors border ${
+              inlineIsDaily
+                ? "bg-blue-100 text-blue-800 border-blue-300 font-semibold"
+                : "bg-[#F8F9FA] text-[#718096] border-[#E2E8F0] hover:text-[#1A202C]"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={inlineIsDaily}
+              onChange={(e) => setInlineIsDaily(e.target.checked)}
+              className="hidden"
+            />
+            <RotateCcw className="w-3 h-3" />
+            <span>Daily</span>
+          </label>
+
           <select
             value={inlineModule}
             onChange={(e) => setInlineModule(e.target.value)}
             className="text-[11px] font-mono px-2 py-1 rounded bg-[#F8F9FA] border border-[#E2E8F0] text-[#4A5568] focus:outline-none cursor-pointer"
           >
             <option value="general">📋 General</option>
-            <option value="goals">🎯 Goals</option>
             <option value="problems">🧩 LeetCode</option>
             <option value="learning">📚 Learning</option>
             <option value="gym">🏋️ Gym</option>
             <option value="career">💼 Career</option>
+            <option value="goals">🎯 Goals</option>
             <option value="finance">💰 Finance</option>
             <option value="personal">🌱 Personal</option>
           </select>
@@ -215,6 +277,7 @@ export function TasksScreen() {
           {[
             { id: "all", label: `All (${tasks.length})` },
             { id: "today", label: `Today (${todayTasks.length})` },
+            { id: "daily", label: `🔁 Daily Habits (${dailyTasks.length})` },
             { id: "upcoming", label: "Upcoming" },
             { id: "completed", label: `Completed (${completedCount})` },
           ].map((tab) => (
@@ -251,18 +314,19 @@ export function TasksScreen() {
             className="px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-xs text-[#4A5568] focus:outline-none cursor-pointer"
           >
             <option value="all">All Domains</option>
-            <option value="goals">🎯 Goals</option>
             <option value="problems">🧩 LeetCode</option>
             <option value="learning">📚 CS Learning</option>
             <option value="gym">🏋️ Gym</option>
             <option value="career">💼 Career</option>
+            <option value="goals">🎯 Goals</option>
             <option value="finance">💰 Finance</option>
             <option value="personal">🌱 Personal</option>
+            <option value="general">📋 General</option>
           </select>
         </div>
       </div>
 
-      {/* 4. Task List */}
+      {/* 4. Task Content (List View vs Kanban Board View) */}
       {isLoading ? (
         <div className="space-y-2.5 animate-pulse">
           {[1, 2, 3].map((i) => (
@@ -272,6 +336,18 @@ export function TasksScreen() {
             />
           ))}
         </div>
+      ) : viewMode === "kanban" ? (
+        <TasksKanbanBoard
+          tasks={filteredTasks}
+          onEdit={(t) => {
+            setEditingTask(t);
+            setIsDialogOpen(true);
+          }}
+          onAddTaskInStatus={(status) => {
+            setEditingTask(null);
+            setIsDialogOpen(true);
+          }}
+        />
       ) : filteredTasks.length === 0 ? (
         <div className="bento-card rounded-2xl p-12 text-center space-y-3">
           <CheckCircle2 className="w-10 h-10 text-[#CBD5E1] mx-auto" />
@@ -279,7 +355,7 @@ export function TasksScreen() {
             No tasks found
           </h3>
           <p className="text-xs text-[#718096] max-w-sm mx-auto">
-            All clear in this view. Use the quick add input above to capture your next task.
+            All clear in this view. Use the quick add input above to capture your next task or daily habit.
           </p>
         </div>
       ) : (
@@ -307,6 +383,7 @@ export function TasksScreen() {
         }}
         editingTask={editingTask}
         defaultModule={moduleFilter !== "all" ? moduleFilter : "general"}
+        defaultIsDaily={activeTab === "daily"}
       />
     </div>
   );

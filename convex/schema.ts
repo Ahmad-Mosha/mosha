@@ -28,7 +28,7 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_status", ["status"]),
 
-  // 2. Clean Minimal Tasks Table
+  // 2. Tasks & Daily Recurring Habits
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
@@ -37,6 +37,8 @@ export default defineSchema({
     module: v.string(), // "general" | "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
     dueDate: v.optional(v.string()), // YYYY-MM-DD
     dueTime: v.optional(v.string()),
+    isDaily: v.optional(v.boolean()), // Daily recurring habit
+    lastCompletedDate: v.optional(v.string()), // YYYY-MM-DD for daily habits
     subtasks: v.optional(
       v.array(
         v.object({
@@ -58,7 +60,8 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_due_date", ["dueDate"])
     .index("by_priority", ["priority"])
-    .index("by_module", ["module"]),
+    .index("by_module", ["module"])
+    .index("by_daily", ["isDaily"]),
 
   // 3. Problem Solving & Algorithmic Mastery Hub
   problems: defineTable({

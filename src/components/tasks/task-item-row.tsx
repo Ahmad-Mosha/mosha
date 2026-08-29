@@ -9,6 +9,7 @@ import {
   Edit2,
   Trash2,
   Target,
+  RotateCcw,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -90,6 +91,8 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
       className={`group rounded-xl border p-3.5 transition-all cursor-pointer select-none ${
         isDone
           ? "bg-[#F8F9FA]/80 border-[#E2E8F0] opacity-60"
+          : task.isDaily
+          ? "bg-gradient-to-r from-blue-50/20 via-white to-white border-blue-200 hover:border-blue-300 shadow-2xs"
           : "bg-white border-[#E2E8F0] hover:border-[#333E50]/40 shadow-2xs hover:shadow-xs"
       }`}
     >
@@ -101,6 +104,8 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
             isDone
               ? "bg-[#333E50] border-[#333E50] text-white"
+              : task.isDaily
+              ? "border-blue-400 hover:border-blue-600 bg-white"
               : "border-[#CBD5E1] hover:border-[#718096] bg-white"
           }`}
         >
@@ -119,6 +124,11 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
             </h4>
 
             <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+              {task.isDaily && (
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
+                  <RotateCcw className="w-2.5 h-2.5" /> Daily
+                </span>
+              )}
               {getPriorityBadge(task.priority)}
               {getModuleBadge(task.module)}
               {goalTitle && (
@@ -184,8 +194,8 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
             </div>
           )}
 
-          {/* Due Date */}
-          {task.dueDate && (
+          {/* Due Date (only if not Daily) */}
+          {task.dueDate && !task.isDaily && (
             <div className="flex items-center gap-1 text-[11px] font-mono text-[#718096] pt-0.5">
               <Calendar className="w-3 h-3" />
               <span>{task.dueDate}</span>

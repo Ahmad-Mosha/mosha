@@ -13,7 +13,7 @@ export const list = query({
   },
 });
 
-// Mutation: Create task (clean & backward-compatible)
+// Mutation: Create task (clean, robust & backward-compatible)
 export const create = mutation({
   args: {
     title: v.string(),
@@ -22,6 +22,7 @@ export const create = mutation({
     module: v.string(), // "general" | "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
     dueDate: v.optional(v.string()),
     dueTime: v.optional(v.string()),
+    isDaily: v.optional(v.boolean()),
     status: v.optional(v.string()),
     subtasks: v.optional(
       v.array(
@@ -42,6 +43,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("tasks", {
       ...args,
+      isDaily: args.isDaily || false,
       status: args.status || "todo",
       createdAt: new Date().toISOString(),
     });
@@ -60,6 +62,8 @@ export const update = mutation({
     module: v.optional(v.string()),
     dueDate: v.optional(v.string()),
     dueTime: v.optional(v.string()),
+    isDaily: v.optional(v.boolean()),
+    lastCompletedDate: v.optional(v.string()),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -90,25 +94,30 @@ export const toggle = mutation({
   handler: async (ctx, args) => {
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
+    const today = new Date().toISOString().split("T")[0];
+
     const nextStatus = task.status === "done" ? "todo" : "done";
     await ctx.db.patch(args.id, {
       status: nextStatus,
       completedAt: nextStatus === "done" ? new Date().toISOString() : undefined,
+      lastCompletedDate: nextStatus === "done" ? today : undefined,
     });
     return { status: nextStatus };
   },
 });
 
-// Mutation: Update status
+// Mutation: Update status (for Kanban drag / select)
 export const updateStatus = mutation({
   args: {
     id: v.id("tasks"),
     status: v.string(),
   },
   handler: async (ctx, args) => {
+    const today = new Date().toISOString().split("T")[0];
     await ctx.db.patch(args.id, {
       status: args.status,
       completedAt: args.status === "done" ? new Date().toISOString() : undefined,
+      lastCompletedDate: args.status === "done" ? today : undefined,
     });
   },
 });
