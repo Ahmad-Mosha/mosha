@@ -1,5 +1,8 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import {
+  isDoneForPeriod, nextOccurrence, nextStreak, recurrenceOf, today,
+} from "./recurrence";
 
 // Query: List all tasks
 export const list = query({
@@ -23,6 +26,7 @@ export const create = mutation({
     dueDate: v.optional(v.string()),
     dueTime: v.optional(v.string()),
     isDaily: v.optional(v.boolean()),
+    recurrence: v.optional(v.string()),
     status: v.optional(v.string()),
     goalId: v.optional(v.id("major_life_goals")),
     projectId: v.optional(v.id("projects")),
@@ -38,17 +42,23 @@ export const create = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const isDaily = Boolean(args.isDaily);
+    const rule = recurrenceOf({
+      recurrence: args.recurrence,
+      isDaily: args.isDaily,
+    });
+    const recurring = rule !== "none";
     const id = await ctx.db.insert("tasks", {
       title: args.title,
       description: args.description,
       priority: args.priority,
       module: args.module,
-      dueDate: isDaily ? undefined : args.dueDate,
+      // A recurring task still needs a first due date to count periods from.
+      dueDate: args.dueDate || (recurring ? today() : undefined),
       dueTime: args.dueTime,
-      isDaily,
+      isDaily: recurring,
+      recurrence: rule,
       status: args.status || "todo",
-      streakCount: isDaily ? 0 : undefined,
+      streakCount: recurring ? 0 : undefined,
       goalId: args.goalId,
       projectId: args.projectId,
       subtasks: args.subtasks,
@@ -73,6 +83,7 @@ export const update = mutation({
     goalId: v.optional(v.id("major_life_goals")),
     projectId: v.optional(v.id("projects")),
     isDaily: v.optional(v.boolean()),
+    recurrence: v.optional(v.string()),
     streakCount: v.optional(v.number()),
     lastCompletedDate: v.optional(v.string()),
     subtasks: v.optional(
@@ -89,6 +100,12 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...fields } = args;
+    // `isDaily` backs the by_daily index, so it must never drift from the rule.
+    if (fields.recurrence !== undefined) {
+      const rule = recurrenceOf({ recurrence: fields.recurrence });
+      fields.isDaily = rule !== "none";
+      if (rule === "none") fields.streakCount = 0;
+    }
     await ctx.db.patch(id, fields);
   },
 });
@@ -100,33 +117,39 @@ export const toggle = mutation({
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
 
-    if (task.isDaily) {
-      const today = new Date().toISOString().split("T")[0];
-      const isAlreadyCompletedToday = task.lastCompletedDate === today;
+    const rule = recurrenceOf(task);
 
-      if (isAlreadyCompletedToday) {
-        // Toggle back
-        await ctx.db.patch(args.id, {
-          status: "todo",
-          lastCompletedDate: undefined,
-          streakCount: Math.max(0, (task.streakCount || 1) - 1),
-        });
-      } else {
-        // Increment streak
-        await ctx.db.patch(args.id, {
-          status: "done",
-          lastCompletedDate: today,
-          streakCount: (task.streakCount || 0) + 1,
-          completedAt: new Date().toISOString(),
-        });
-      }
-    } else {
+    if (rule === "none") {
       const nextStatus = task.status === "done" ? "todo" : "done";
       await ctx.db.patch(args.id, {
         status: nextStatus,
         completedAt: nextStatus === "done" ? new Date().toISOString() : undefined,
       });
+      return;
     }
+
+    // Recurring: completing rolls the due date to the next occurrence rather
+    // than closing the task, so the habit stays live instead of disappearing.
+    const now = today();
+
+    if (isDoneForPeriod(task)) {
+      await ctx.db.patch(args.id, {
+        status: "todo",
+        lastCompletedDate: undefined,
+        streakCount: Math.max(0, (task.streakCount || 1) - 1),
+        dueDate: now,
+        completedAt: undefined,
+      });
+      return;
+    }
+
+    await ctx.db.patch(args.id, {
+      status: "done",
+      lastCompletedDate: now,
+      streakCount: nextStreak(rule, task.lastCompletedDate, task.streakCount || 0, now),
+      dueDate: nextOccurrence(rule, now),
+      completedAt: new Date().toISOString(),
+    });
   },
 });
 
@@ -186,6 +209,58 @@ export const clearCompleted = mutation({
     const completed = tasks.filter((t) => t.status === "done" && !t.isDaily);
     for (const t of completed) {
       await ctx.db.delete(t._id);
+    }
+  },
+});
+
+/**
+ * Drop a task into a column at a position. Status and order move together, so
+ * a drag is one round trip and cannot leave the two out of sync.
+ */
+export const move = mutation({
+  args: {
+    id: v.id("tasks"),
+    status: v.string(),
+    /** Ids of every task in the destination column, in their new order. */
+    orderedIds: v.array(v.id("tasks")),
+  },
+  handler: async (ctx, args) => {
+    const task = await ctx.db.get(args.id);
+    if (!task) throw new Error("Task not found");
+
+    // Ticking a recurring task by dragging it to Done must follow the same
+    // rules as the checkbox, or the streak and next due date silently diverge.
+    if (args.status === "done" && recurrenceOf(task) !== "none") {
+      if (!isDoneForPeriod(task)) {
+        const now = today();
+        const rule = recurrenceOf(task);
+        await ctx.db.patch(args.id, {
+          status: "done",
+          lastCompletedDate: now,
+          streakCount: nextStreak(rule, task.lastCompletedDate, task.streakCount || 0, now),
+          dueDate: nextOccurrence(rule, now),
+          completedAt: new Date().toISOString(),
+        });
+      }
+    } else {
+      await ctx.db.patch(args.id, {
+        status: args.status,
+        completedAt: args.status === "done" ? new Date().toISOString() : undefined,
+      });
+    }
+
+    for (let i = 0; i < args.orderedIds.length; i++) {
+      await ctx.db.patch(args.orderedIds[i], { order: i });
+    }
+  },
+});
+
+/** Persist a manual sort after a drag within the list view. */
+export const reorder = mutation({
+  args: { orderedIds: v.array(v.id("tasks")) },
+  handler: async (ctx, args) => {
+    for (let i = 0; i < args.orderedIds.length; i++) {
+      await ctx.db.patch(args.orderedIds[i], { order: i });
     }
   },
 });

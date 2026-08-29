@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { X, Plus, Trash2, Calendar, AlertCircle, RotateCcw } from "lucide-react";
 import { Select, NONE } from "@/components/ui/select";
+import { RECURRENCE_OPTIONS, recurrenceOf } from "../../../convex/recurrence";
 
 interface TaskDialogProps {
   isOpen: boolean;
@@ -13,6 +14,8 @@ interface TaskDialogProps {
   editingTask?: any | null;
   defaultModule?: string;
   defaultIsDaily?: boolean;
+  /** Column a Kanban 'add here' click came from. */
+  defaultStatus?: string;
 }
 
 const MODULE_OPTIONS = [
@@ -32,6 +35,7 @@ export function TaskCreateDialog({
   editingTask,
   defaultModule = "general",
   defaultIsDaily = false,
+  defaultStatus,
 }: TaskDialogProps) {
   const createTask = useMutation(api.tasks.create);
   const updateTask = useMutation(api.tasks.update);
@@ -43,7 +47,7 @@ export function TaskCreateDialog({
   const [priority, setPriority] = useState("p2_medium");
   const [module, setModule] = useState(defaultModule);
   const [goalId, setGoalId] = useState<string>("");
-  const [isDaily, setIsDaily] = useState(defaultIsDaily);
+  const [recurrence, setRecurrence] = useState<string>(defaultIsDaily ? "daily" : "none");
   const [dueDate, setDueDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -61,7 +65,7 @@ export function TaskCreateDialog({
       setPriority(editingTask.priority || "p2_medium");
       setModule(editingTask.module || "general");
       setGoalId(editingTask.goalId || "");
-      setIsDaily(Boolean(editingTask.isDaily));
+      setRecurrence(recurrenceOf(editingTask));
       setDueDate(editingTask.dueDate || new Date().toISOString().split("T")[0]);
       setSubtasks(editingTask.subtasks || []);
     } else {
@@ -70,7 +74,7 @@ export function TaskCreateDialog({
       setPriority("p2_medium");
       setModule(defaultModule);
       setGoalId("");
-      setIsDaily(defaultIsDaily);
+      setRecurrence(defaultIsDaily ? "daily" : "none");
       setDueDate(new Date().toISOString().split("T")[0]);
       setSubtasks([]);
     }
@@ -101,11 +105,14 @@ export function TaskCreateDialog({
       title: title.trim(),
       priority,
       module,
-      isDaily,
+      recurrence,
     };
 
+    // Honour the column the task was added from.
+    if (!editingTask && defaultStatus) payload.status = defaultStatus;
+
     if (description.trim()) payload.description = description.trim();
-    if (dueDate && !isDaily) payload.dueDate = dueDate;
+    if (dueDate) payload.dueDate = dueDate;
     if (goalId) payload.goalId = goalId as any;
     if (subtasks.length > 0) payload.subtasks = subtasks;
 
@@ -179,41 +186,24 @@ export function TaskCreateDialog({
               />
             </div>
 
-            {/* Daily Recurring Toggle */}
-            <div
-              onClick={() => setIsDaily(!isDaily)}
-              className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                isDaily
-                  ? "bg-info-tint/80 border-info/35 shadow-2xs"
-                  : "bg-subtle border-line hover:border-line-2"
-              }`}
-            >
-              <div className="flex items-center space-x-2.5">
-                <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                    isDaily
-                      ? "bg-info text-white"
-                      : "bg-line text-faint"
-                  }`}
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <div className="font-serif font-bold text-label text-ink">
-                    Daily Recurring Task
-                  </div>
-                  <div className="text-meta text-faint">
-                    Repeats every single day (e.g. daily problem solving, workout, reading).
-                  </div>
-                </div>
-              </div>
-
-              <input
-                type="checkbox"
-                checked={isDaily}
-                onChange={(e) => setIsDaily(e.target.checked)}
-                className="rounded border-line-2 text-info focus:ring-0 cursor-pointer w-4 h-4"
+            {/* Repeat rule */}
+            <div className="space-y-1">
+              <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold flex items-center gap-1.5">
+                <RotateCcw className="w-3 h-3" />
+                Repeats
+              </label>
+              <Select
+                value={recurrence}
+                onValueChange={setRecurrence}
+                className="w-full"
+                options={RECURRENCE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
               />
+              {recurrence !== "none" && (
+                <p className="text-meta text-faint pt-0.5">
+                  Completing it moves the due date to the next occurrence and keeps
+                  the streak going.
+                </p>
+              )}
             </div>
 
             {/* Category / Domain & Priority */}
@@ -252,7 +242,7 @@ export function TaskCreateDialog({
 
             {/* Due Date (hidden if Daily) & Link to Major Goal */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {!isDaily && (
+              {true && (
                 <div className="space-y-1">
                   <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-faint" /> Due Date
@@ -266,7 +256,7 @@ export function TaskCreateDialog({
                 </div>
               )}
 
-              <div className={`space-y-1 ${isDaily ? "sm:col-span-2" : ""}`}>
+              <div className={`space-y-1 `}>
                 <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Linked Life Goal (Optional)
                 </label>
