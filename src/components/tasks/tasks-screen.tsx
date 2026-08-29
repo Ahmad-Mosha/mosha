@@ -6,6 +6,7 @@ import { api } from "../../../convex/_generated/api";
 import { TaskCreateDialog } from "./task-create-dialog";
 import { TaskItemRow } from "./task-item-row";
 import { TasksKanbanBoard } from "./tasks-kanban-board";
+import { Select } from "@/components/ui/select";
 import {
   Plus,
   CheckCircle2,
@@ -234,30 +235,34 @@ export function TasksScreen() {
             <span>Daily</span>
           </label>
 
-          <select
+          <Select
             value={inlineModule}
-            onChange={(e) => setInlineModule(e.target.value)}
-            className="text-[11px] font-mono px-2 py-1 rounded bg-subtle border border-line text-muted focus:outline-none cursor-pointer"
-          >
-            <option value="general">📋 General</option>
-            <option value="problems">🧩 LeetCode</option>
-            <option value="learning">📚 Learning</option>
-            <option value="gym">🏋️ Gym</option>
-            <option value="career">💼 Career</option>
-            <option value="goals">🎯 Goals</option>
-            <option value="finance">💰 Finance</option>
-            <option value="personal">🌱 Personal</option>
-          </select>
+            onValueChange={setInlineModule}
+            size="sm"
+            mono
+            options={[
+              { value: "general", label: "📋 General" },
+              { value: "problems", label: "🧩 LeetCode" },
+              { value: "learning", label: "📚 Learning" },
+              { value: "gym", label: "🏋️ Gym" },
+              { value: "career", label: "💼 Career" },
+              { value: "goals", label: "🎯 Goals" },
+              { value: "finance", label: "💰 Finance" },
+              { value: "personal", label: "🌱 Personal" }
+            ]}
+          />
 
-          <select
+          <Select
             value={inlinePriority}
-            onChange={(e) => setInlinePriority(e.target.value)}
-            className="text-[11px] font-mono px-2 py-1 rounded bg-subtle border border-line text-muted focus:outline-none cursor-pointer"
-          >
-            <option value="p1_urgent">🔥 High</option>
-            <option value="p2_medium">⚡ Medium</option>
-            <option value="p3_low">🌱 Low</option>
-          </select>
+            onValueChange={setInlinePriority}
+            size="sm"
+            mono
+            options={[
+              { value: "p1_urgent", label: "🔥 High" },
+              { value: "p2_medium", label: "⚡ Medium" },
+              { value: "p3_low", label: "🌱 Low" }
+            ]}
+          />
 
           <button
             type="submit"
@@ -307,21 +312,21 @@ export function TasksScreen() {
             />
           </div>
 
-          <select
+          <Select
             value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-line bg-surface-2 text-xs text-muted focus:outline-none cursor-pointer"
-          >
-            <option value="all">All Domains</option>
-            <option value="problems">🧩 LeetCode</option>
-            <option value="learning">📚 CS Learning</option>
-            <option value="gym">🏋️ Gym</option>
-            <option value="career">💼 Career</option>
-            <option value="goals">🎯 Goals</option>
-            <option value="finance">💰 Finance</option>
-            <option value="personal">🌱 Personal</option>
-            <option value="general">📋 General</option>
-          </select>
+            onValueChange={setModuleFilter}
+            options={[
+              { value: "all", label: "All Domains" },
+              { value: "problems", label: "🧩 LeetCode" },
+              { value: "learning", label: "📚 CS Learning" },
+              { value: "gym", label: "🏋️ Gym" },
+              { value: "career", label: "💼 Career" },
+              { value: "goals", label: "🎯 Goals" },
+              { value: "finance", label: "💰 Finance" },
+              { value: "personal", label: "🌱 Personal" },
+              { value: "general", label: "📋 General" }
+            ]}
+          />
         </div>
       </div>
 

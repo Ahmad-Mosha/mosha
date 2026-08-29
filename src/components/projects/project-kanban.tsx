@@ -15,6 +15,7 @@ import {
   Tag,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Select } from "@/components/ui/select";
 
 interface ProjectKanbanProps {
   projectId: any;
@@ -145,15 +146,17 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                     />
 
                     <div className="flex items-center justify-between pt-1 border-t border-line">
-                      <select
+                      <Select
                         value={newTaskPriority}
-                        onChange={(e) => setNewTaskPriority(e.target.value)}
-                        className="bg-subtle px-2 py-0.5 rounded text-[10px] font-mono border border-line text-muted"
-                      >
-                        <option value="p1_urgent">🔴 Urgent</option>
-                        <option value="p2_medium">🟡 Medium</option>
-                        <option value="p3_low">⚪ Low</option>
-                      </select>
+                        onValueChange={setNewTaskPriority}
+                        size="sm"
+                        mono
+                        options={[
+                          { value: "p1_urgent", label: "🔴 Urgent" },
+                          { value: "p2_medium", label: "🟡 Medium" },
+                          { value: "p3_low", label: "⚪ Low" }
+                        ]}
+                      />
 
                       <div className="flex gap-1.5">
                         <button

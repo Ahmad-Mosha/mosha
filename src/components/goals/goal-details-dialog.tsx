@@ -8,6 +8,7 @@ import { useMoshaStore } from "@/lib/store";
 import { X, Check, Edit2, Calendar, Trash2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { formatGoalIcon, getStatusBadge } from "./goal-card";
+import { Select } from "@/components/ui/select";
 
 interface GoalDetailsProps {
   goal: any | null;
@@ -207,17 +208,18 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
             <span className="font-mono text-[11px] font-semibold text-faint uppercase">
               Change Status
             </span>
-            <select
+            <Select
               value={goal.status}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              className="px-2.5 py-1 rounded-lg border border-line bg-surface-2 font-mono text-xs text-ink focus:outline-none cursor-pointer"
-            >
-              <option value="in_progress">In Progress ⚡</option>
-              <option value="planning">Planning 🧭</option>
-              <option value="vision">Vision 🔭</option>
-              <option value="on_hold">On Hold ⏸️</option>
-              <option value="completed">Completed 🏆</option>
-            </select>
+              onValueChange={handleStatusChange}
+              mono
+              options={[
+                { value: "in_progress", label: "In Progress ⚡" },
+                { value: "planning", label: "Planning 🧭" },
+                { value: "vision", label: "Vision 🔭" },
+                { value: "on_hold", label: "On Hold ⏸️" },
+                { value: "completed", label: "Completed 🏆" }
+              ]}
+            />
           </div>
 
           {/* Footer Actions */}

@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { ProjectDialog } from "./project-dialog";
 import { ProjectDetailView } from "./project-detail-view";
+import { Select } from "@/components/ui/select";
 import {
   Plus,
   Search,
@@ -96,18 +97,18 @@ export function ProjectsScreen() {
           </div>
 
           {/* Status Filter */}
-          <select
+          <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-surface-2 px-2.5 py-1.5 rounded-xl border border-line text-xs text-ink focus:outline-none cursor-pointer"
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="in_progress">In Progress</option>
-            <option value="in_review">In Review</option>
-            <option value="planning">Planning</option>
-            <option value="completed">Completed</option>
-          </select>
+            onValueChange={setStatusFilter}
+            options={[
+              { value: "all", label: "All Statuses" },
+              { value: "active", label: "Active" },
+              { value: "in_progress", label: "In Progress" },
+              { value: "in_review", label: "In Review" },
+              { value: "planning", label: "Planning" },
+              { value: "completed", label: "Completed" }
+            ]}
+          />
 
           <button
             onClick={() => {

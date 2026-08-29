@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { BookMarked, Plus, Calendar } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 export function EngineeringJournalView() {
   const entries = useQuery(api.journal.list) || [];
@@ -113,15 +114,16 @@ export function EngineeringJournalView() {
             </div>
             <div className="space-y-1">
               <label className="font-mono text-[11px] uppercase text-faint">Category</label>
-              <select
+              <Select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 cursor-pointer"
-              >
-                <option value="architectural_decision">Architectural Decision</option>
-                <option value="mistake_postmortem">Mistake Post-Mortem</option>
-                <option value="reflection">Daily Reflection</option>
-              </select>
+                onValueChange={setCategory}
+                className="w-full"
+                options={[
+                  { value: "architectural_decision", label: "Architectural Decision" },
+                  { value: "mistake_postmortem", label: "Mistake Post-Mortem" },
+                  { value: "reflection", label: "Daily Reflection" }
+                ]}
+              />
             </div>
           </div>
 

@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useMoshaStore } from "@/lib/store";
 import { X, Plus, Trash2, Calendar } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 const EMOJI_OPTIONS = [
   "🎖️", "💼", "❤️", "🎯", "🚀", "💡", "🏋️", "📚",
@@ -202,17 +203,18 @@ export function GoalDialog() {
                 <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Status
                 </label>
-                <select
+                <Select
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink bg-surface-2 cursor-pointer"
-                >
-                  <option value="in_progress">In Progress ⚡</option>
-                  <option value="planning">Planning 🧭</option>
-                  <option value="vision">Vision 🔭</option>
-                  <option value="on_hold">On Hold ⏸️</option>
-                  <option value="completed">Completed 🏆</option>
-                </select>
+                  onValueChange={setStatus}
+                  className="w-full"
+                  options={[
+                    { value: "in_progress", label: "In Progress ⚡" },
+                    { value: "planning", label: "Planning 🧭" },
+                    { value: "vision", label: "Vision 🔭" },
+                    { value: "on_hold", label: "On Hold ⏸️" },
+                    { value: "completed", label: "Completed 🏆" }
+                  ]}
+                />
               </div>
             </div>
 

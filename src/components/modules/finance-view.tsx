@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Wallet, Plus, ArrowUpRight, ArrowDownRight, Heart } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 export function FinanceView() {
   const records = useQuery(api.finance.list) || [];
@@ -143,14 +144,15 @@ export function FinanceView() {
             </div>
             <div className="space-y-1">
               <label className="font-mono text-[11px] uppercase text-faint">Type</label>
-              <select
+              <Select
                 value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 cursor-pointer"
-              >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
+                onValueChange={setType}
+                className="w-full"
+                options={[
+                  { value: "income", label: "Income" },
+                  { value: "expense", label: "Expense" }
+                ]}
+              />
             </div>
           </div>
 
