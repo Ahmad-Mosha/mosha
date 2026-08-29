@@ -1,3 +1,4 @@
+import { Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Highlight from "@tiptap/extension-highlight";
@@ -9,17 +10,34 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import { TableKit } from "@tiptap/extension-table";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { createLowlight, common } from "lowlight";
+import { lowlight } from "./lowlight";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { CodeBlockView } from "./code-block";
+import {
+  backspaceIndent, dedentOnClose, shiftIndent, smartNewline,
+} from "./code-indent";
+
 
 /**
- * `common` covers the 37 languages worth highlighting (js/ts/py/go/rust/sql/
- * bash/json/yaml...). The full set is 192 and five times the bundle for
- * languages this notebook will never see.
+ * Tab nests the current list item instead of moving focus out of the editor.
+ * Lower priority than the code block's own Tab handler, so inside a code block
+ * indentation still wins; outside a list it returns false and Tab moves focus
+ * as normal, which keyboard users rely on to leave the editor.
  */
-export const lowlight = createLowlight(common);
-
+const ListIndentKeymap = Extension.create({
+  name: "listIndentKeymap",
+  priority: 50,
+  addKeyboardShortcuts() {
+    return {
+      Tab: () =>
+        this.editor.commands.sinkListItem("listItem") ||
+        this.editor.commands.sinkListItem("taskItem"),
+      "Shift-Tab": () =>
+        this.editor.commands.liftListItem("listItem") ||
+        this.editor.commands.liftListItem("taskItem"),
+    };
+  },
+});
 
 interface BuildOptions {
   placeholder: string;
@@ -39,13 +57,17 @@ export function buildExtensions({ placeholder, extra = [] }: BuildOptions) {
     CodeBlockLowlight.extend({
       addNodeView: () => ReactNodeViewRenderer(CodeBlockView),
       addKeyboardShortcuts() {
+        const inCode = () => this.editor.isActive("codeBlock");
         return {
           // Tab must indent inside a code block, not move focus out of it.
-          Tab: () => {
-            if (!this.editor.isActive("codeBlock")) return false;
-            this.editor.commands.insertContent("  ");
-            return true;
-          },
+          Tab: () => inCode() && shiftIndent(this.editor, false),
+          "Shift-Tab": () => inCode() && shiftIndent(this.editor, true),
+          Enter: () => inCode() && smartNewline(this.editor),
+          Backspace: () => inCode() && backspaceIndent(this.editor),
+          // Closing brackets pull their own line back one level.
+          "}": () => inCode() && dedentOnClose(this.editor, "}"),
+          "]": () => inCode() && dedentOnClose(this.editor, "]"),
+          ")": () => inCode() && dedentOnClose(this.editor, ")"),
         };
       },
     }).configure({
@@ -90,6 +112,8 @@ export function buildExtensions({ placeholder, extra = [] }: BuildOptions) {
     TableKit.configure({
       table: { resizable: true, HTMLAttributes: { class: "mosha-table" } },
     }),
+
+    ListIndentKeymap,
 
     ...extra,
   ];
