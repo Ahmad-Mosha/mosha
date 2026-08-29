@@ -245,7 +245,7 @@ export function NotesScreen() {
         <aside className="w-full md:w-72 lg:w-80 bg-subtle border-r border-line flex flex-col h-full shrink-0 animate-in slide-in-from-left duration-200">
           {/* Header Bar */}
           <div className="px-4 py-3 border-b border-line bg-surface-2 flex justify-between items-center">
-            <h2 className="font-mono text-xs text-accent font-bold tracking-wider uppercase">
+            <h2 className="font-mono text-label text-accent font-bold tracking-wider uppercase">
               Knowledge Base
             </h2>
 
@@ -288,13 +288,13 @@ export function NotesScreen() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notes..."
-                className="w-full bg-subtle border border-line rounded-lg pl-7 pr-2.5 py-1 text-xs text-ink focus:outline-none focus:border-accent"
+                className="w-full bg-subtle border border-line rounded-lg pl-7 pr-2.5 py-1 text-label text-ink focus:outline-none focus:border-accent"
               />
             </div>
           </div>
 
           {/* Tree: Folders & Notes */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-2 text-xs">
+          <div className="flex-1 overflow-y-auto p-2 space-y-2 text-label">
             {/* 1. Folders with their Notes */}
             {folders.map((folder: any) => {
               const isExpanded = Boolean(expandedFolders[folder._id]);
@@ -323,7 +323,7 @@ export function NotesScreen() {
                     </div>
 
                     <div className="flex items-center space-x-1">
-                      <span className="text-[10px] font-mono text-ghost">
+                      <span className="text-meta font-mono text-ghost">
                         {folderNotes.length}
                       </span>
 
@@ -351,7 +351,7 @@ export function NotesScreen() {
                         </DropdownMenu.Trigger>
                         <DropdownMenu.Portal>
                           <DropdownMenu.Content
-                            className="z-50 bg-surface-2 border border-line rounded-xl shadow-lg p-1 text-xs min-w-[130px]"
+                            className="z-50 bg-surface-2 border border-line rounded-xl shadow-lg p-1 text-label min-w-[130px]"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <DropdownMenu.Item
@@ -368,7 +368,7 @@ export function NotesScreen() {
                               onClick={(e) =>
                                 handleDeleteFolder(folder._id, e as any)
                               }
-                              className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
+                              className="px-3 py-1.5 rounded-lg hover:bg-danger-tint text-danger cursor-pointer flex items-center gap-2"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               <span>Delete Folder</span>
@@ -385,7 +385,7 @@ export function NotesScreen() {
                       {folderNotes.length === 0 ? (
                         <div
                           onClick={() => handleCreateNewNote(folder._id)}
-                          className="px-2 py-1 text-[11px] text-ghost hover:text-accent cursor-pointer flex items-center gap-1"
+                          className="px-2 py-1 text-meta text-ghost hover:text-accent cursor-pointer flex items-center gap-1"
                         >
                           <Plus className="w-3 h-3" />
                           <span>Add note...</span>
@@ -419,8 +419,8 @@ export function NotesScreen() {
                                   <Pin
                                     className={`w-3 h-3 ${
                                       isSelected
-                                        ? "text-amber-300 fill-amber-300"
-                                        : "text-amber-500 fill-amber-500"
+                                        ? "text-warn fill-warn"
+                                        : "text-warn fill-warn"
                                     }`}
                                   />
                                 )}
@@ -431,7 +431,7 @@ export function NotesScreen() {
                                   className={`opacity-0 group-hover/note:opacity-100 p-0.5 rounded transition-opacity cursor-pointer ${
                                     isSelected
                                       ? "hover:bg-accent-fg/20 text-accent-fg"
-                                      : "hover:bg-rose-50 text-rose-500"
+                                      : "hover:bg-danger-tint text-danger"
                                   }`}
                                   title="Delete Note"
                                 >
@@ -450,7 +450,7 @@ export function NotesScreen() {
 
             {/* 2. Uncategorized / General Notes */}
             <div className="pt-2">
-              <div className="px-2 py-1 text-[11px] font-mono text-faint uppercase font-semibold">
+              <div className="px-2 py-1 text-meta font-mono text-faint uppercase font-semibold">
                 General Notes ({uncategorizedNotes.length})
               </div>
 
@@ -483,8 +483,8 @@ export function NotesScreen() {
                           <Pin
                             className={`w-3 h-3 ${
                               isSelected
-                                ? "text-amber-300 fill-amber-300"
-                                : "text-amber-500 fill-amber-500"
+                                ? "text-warn fill-warn"
+                                : "text-warn fill-warn"
                             }`}
                           />
                         )}
@@ -493,7 +493,7 @@ export function NotesScreen() {
                           className={`opacity-0 group-hover/note:opacity-100 p-0.5 rounded transition-opacity cursor-pointer ${
                             isSelected
                               ? "hover:bg-accent-fg/20 text-accent-fg"
-                              : "hover:bg-rose-50 text-rose-500"
+                              : "hover:bg-danger-tint text-danger"
                           }`}
                           title="Delete Note"
                         >
@@ -509,10 +509,10 @@ export function NotesScreen() {
             {/* Empty State */}
             {folders.length === 0 && uncategorizedNotes.length === 0 && (
               <div className="py-12 text-center px-4 space-y-2">
-                <p className="text-xs text-ghost">No notes created yet.</p>
+                <p className="text-label text-ghost">No notes created yet.</p>
                 <button
                   onClick={() => handleCreateNewNote()}
-                  className="px-3 py-1.5 rounded-lg bg-accent text-accent-fg text-xs font-semibold hover:bg-accent-hover shadow-xs cursor-pointer inline-block"
+                  className="px-3 py-1.5 rounded-lg bg-accent text-accent-fg text-label font-semibold hover:bg-accent-hover shadow-xs cursor-pointer inline-block"
                 >
                   + Create First Note
                 </button>
@@ -529,7 +529,7 @@ export function NotesScreen() {
         {activeNote ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Top Toolbar Bar */}
-            <div className="px-6 py-3 border-b border-line flex flex-wrap items-center justify-between gap-3 bg-surface shrink-0 text-xs">
+            <div className="px-6 py-3 border-b border-line flex flex-wrap items-center justify-between gap-3 bg-surface shrink-0 text-label">
               {/* Left Controls: Open Sidebar Toggle & Folder Breadcrumb */}
               <div className="flex items-center space-x-2">
                 {!isSidebarOpen && (
@@ -543,7 +543,7 @@ export function NotesScreen() {
                   </button>
                 )}
 
-                <div className="flex items-center gap-1.5 text-xs text-faint">
+                <div className="flex items-center gap-1.5 text-label text-faint">
                   <Folder className="w-3.5 h-3.5 text-ghost" />
                   <span className="font-medium text-ink">
                     {activeNoteFolder ? activeNoteFolder.name : "General Notes"}
@@ -556,12 +556,12 @@ export function NotesScreen() {
                 {(activeNote.tags || []).map((tag: string) => (
                   <span
                     key={tag}
-                    className="bg-subtle-2 text-muted px-2 py-0.5 rounded text-[11px] font-mono font-medium flex items-center gap-1"
+                    className="bg-subtle-2 text-muted px-2 py-0.5 rounded text-meta font-mono font-medium flex items-center gap-1"
                   >
                     <span>#{tag}</span>
                     <button
                       onClick={() => handleRemoveTag(tag)}
-                      className="text-ghost hover:text-rose-600 cursor-pointer ml-0.5"
+                      className="text-ghost hover:text-danger cursor-pointer ml-0.5"
                     >
                       ×
                     </button>
@@ -574,7 +574,7 @@ export function NotesScreen() {
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleAddTag}
                   placeholder="+ tag..."
-                  className="text-xs font-mono text-muted bg-transparent focus:outline-none px-1 py-0.5 placeholder:text-ghost w-16"
+                  className="text-label font-mono text-muted bg-transparent focus:outline-none px-1 py-0.5 placeholder:text-ghost w-16"
                 />
               </div>
 
@@ -621,7 +621,7 @@ export function NotesScreen() {
                   onClick={() => togglePinned({ id: activeNote._id })}
                   className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                     activeNote.isPinned
-                      ? "bg-amber-50 border-amber-300 text-amber-700"
+                      ? "bg-warn-tint border-warn/35 text-warn"
                       : "border-line text-faint hover:bg-subtle"
                   }`}
                   title="Pin note"
@@ -633,7 +633,7 @@ export function NotesScreen() {
                   onClick={() => toggleFavorite({ id: activeNote._id })}
                   className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                     activeNote.isFavorite
-                      ? "bg-amber-50 border-amber-300 text-amber-500 fill-amber-500"
+                      ? "bg-warn-tint border-warn/35 text-warn fill-warn"
                       : "border-line text-faint hover:bg-subtle"
                   }`}
                   title="Favorite note"
@@ -643,7 +643,7 @@ export function NotesScreen() {
 
                 <button
                   onClick={() => handleDeleteNote(activeNote._id)}
-                  className="p-1.5 rounded-lg border border-line text-faint hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg border border-line text-faint hover:bg-danger-tint hover:text-danger transition-colors cursor-pointer"
                   title="Delete note"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -658,7 +658,7 @@ export function NotesScreen() {
                 value={localTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Note Title..."
-                className="font-serif text-3xl md:text-5xl font-bold text-ink focus:outline-none w-full bg-transparent placeholder:text-line-2 border-b border-transparent focus:border-line pb-2 transition-colors"
+                className="font-serif text-display md:text-display font-bold text-ink focus:outline-none w-full bg-transparent placeholder:text-line-2 border-b border-transparent focus:border-line pb-2 transition-colors"
               />
 
               {/* TipTap Rich Text Editor */}
@@ -673,16 +673,16 @@ export function NotesScreen() {
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
             <BookOpen className="w-12 h-12 text-line-2" />
             <div className="space-y-1">
-              <h3 className="font-serif text-2xl font-bold text-ink">
+              <h3 className="font-serif text-title font-bold text-ink">
                 Knowledge Base Workspace
               </h3>
-              <p className="text-xs text-faint max-w-sm">
+              <p className="text-label text-faint max-w-sm">
                 Select a note from the sidebar or click below to create a new note.
               </p>
             </div>
             <button
               onClick={() => handleCreateNewNote()}
-              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-xs transition-colors cursor-pointer"
             >
               + Create Note
             </button>

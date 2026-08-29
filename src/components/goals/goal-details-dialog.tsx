@@ -101,14 +101,14 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           {/* Header */}
           <div className="flex items-start justify-between border-b border-line pb-4">
             <div className="flex items-center space-x-3.5 min-w-0 flex-1 pr-4">
-              <div className="w-12 h-12 rounded-xl bg-subtle border border-line flex items-center justify-center text-2xl shadow-2xs shrink-0 select-none">
+              <div className="w-12 h-12 rounded-xl bg-subtle border border-line flex items-center justify-center text-title shadow-2xs shrink-0 select-none">
                 {displayedIcon}
               </div>
               <div className="min-w-0 flex-1">
-                <Dialog.Title className="font-serif text-2xl font-bold text-ink truncate">
+                <Dialog.Title className="font-serif text-title font-bold text-ink truncate">
                   {goal.title}
                 </Dialog.Title>
-                <div className="flex items-center space-x-3 text-xs text-faint mt-1 font-mono">
+                <div className="flex items-center space-x-3 text-label text-faint mt-1 font-mono">
                   {goal.targetDate && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
@@ -128,29 +128,29 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
 
           {/* Description */}
           {goal.description && (
-            <div className="p-3.5 bg-subtle border border-line rounded-xl text-xs sm:text-sm text-muted leading-relaxed">
+            <div className="p-3.5 bg-subtle border border-line rounded-xl text-label sm:text-body text-muted leading-relaxed">
               {goal.description}
             </div>
           )}
 
           {/* Progress Bar & Readiness */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono">
+            <div className="flex items-center justify-between text-label font-mono">
               <span className="text-faint uppercase tracking-wider font-semibold">
                 Overall Progress
               </span>
-              <strong className="text-ink text-sm">{computedProgress}%</strong>
+              <strong className="text-ink text-body">{computedProgress}%</strong>
             </div>
 
             <div className="w-full bg-line h-2.5 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-300 ease-out ${
                   computedProgress === 100
-                    ? "bg-emerald-600"
+                    ? "bg-success"
                     : computedProgress >= 70
-                    ? "bg-blue-600"
+                    ? "bg-info"
                     : computedProgress >= 40
-                    ? "bg-amber-600"
+                    ? "bg-warn"
                     : "bg-accent"
                 }`}
                 style={{ width: `${computedProgress}%` }}
@@ -160,11 +160,11 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
 
           {/* Milestones Checklist */}
           <div className="space-y-2.5 pt-2 border-t border-line">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-faint">
+            <div className="flex items-center justify-between text-label">
+              <span className="font-mono text-meta font-bold uppercase tracking-wider text-faint">
                 Interactive Milestones ({completedCount}/{totalMilestones})
               </span>
-              <span className="text-[10px] text-ghost font-mono">
+              <span className="text-meta text-ghost font-mono">
                 Click checkbox to toggle immediately
               </span>
             </div>
@@ -190,7 +190,7 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
                     {m.completed && <Check className="w-3 h-3 stroke-[3]" />}
                   </div>
                   <span
-                    className={`flex-1 text-xs ${
+                    className={`flex-1 text-label ${
                       m.completed
                         ? "line-through text-ghost"
                         : "text-ink font-medium"
@@ -204,8 +204,8 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           </div>
 
           {/* Status Quick Switcher */}
-          <div className="p-3 bg-subtle border border-line rounded-xl flex items-center justify-between text-xs">
-            <span className="font-mono text-[11px] font-semibold text-faint uppercase">
+          <div className="p-3 bg-subtle border border-line rounded-xl flex items-center justify-between text-label">
+            <span className="font-mono text-meta font-semibold text-faint uppercase">
               Change Status
             </span>
             <Select
@@ -223,10 +223,10 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-line text-xs">
+          <div className="flex items-center justify-between pt-3 border-t border-line text-label">
             <button
               onClick={handleDelete}
-              className="text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-danger hover:bg-danger-tint px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" /> Delete
             </button>

@@ -68,7 +68,7 @@ export function TipTapEditor({
         codeBlock: {
           HTMLAttributes: {
             class:
-              "bg-[#1E293B] text-[#F8FAFC] font-mono text-xs p-4 rounded-xl my-4 overflow-x-auto border border-[#334155]",
+              "bg-[#1E293B] text-[#F8FAFC] font-mono text-label p-4 rounded-xl my-4 overflow-x-auto border border-[#334155]",
           },
         },
       }),
@@ -101,7 +101,7 @@ export function TipTapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-slate max-w-none focus:outline-none min-h-[500px] text-sm text-ink leading-relaxed p-6",
+          "prose prose-slate max-w-none focus:outline-none min-h-[500px] text-body text-ink leading-relaxed p-6",
       },
     },
   });
@@ -142,7 +142,7 @@ export function TipTapEditor({
   return (
     <div className="flex flex-col h-full bg-surface-2 rounded-2xl border border-line shadow-xs overflow-hidden">
       {/* 1. Ultra-Fast Rich Text Formatting Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-1 px-4 py-2.5 bg-surface border-b border-line text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-1 px-4 py-2.5 bg-surface border-b border-line text-label">
         <div className="flex flex-wrap items-center gap-0.5">
           {/* Headings */}
           <button
@@ -286,7 +286,7 @@ export function TipTapEditor({
               }}
               className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors flex items-center gap-0.5 ${
                 editor.isActive("highlight")
-                  ? "bg-amber-100 text-amber-900"
+                  ? "bg-warn-tint text-warn"
                   : "text-muted"
               }`}
               title="Highlight Text"
@@ -321,7 +321,7 @@ export function TipTapEditor({
                     editor.chain().focus().unsetHighlight().run();
                     setShowHighlights(false);
                   }}
-                  className="text-[10px] text-faint hover:text-black px-1 cursor-pointer"
+                  className="text-meta text-faint hover:text-black px-1 cursor-pointer"
                 >
                   Clear
                 </button>
@@ -431,8 +431,8 @@ export function TipTapEditor({
         {/* Right Tools: Quick Callouts, Symbols & Copy */}
         <div className="flex items-center space-x-1.5">
           {/* Quick Insert Callout */}
-          <div className="flex items-center space-x-1 border border-line bg-surface-2 rounded-lg px-2 py-0.5 text-[11px]">
-            <span className="text-faint text-[10px] uppercase font-mono">
+          <div className="flex items-center space-x-1 border border-line bg-surface-2 rounded-lg px-2 py-0.5 text-meta">
+            <span className="text-faint text-meta uppercase font-mono">
               Callout:
             </span>
             <button
@@ -471,7 +471,7 @@ export function TipTapEditor({
           </div>
 
           {/* Quick Arrow Symbols */}
-          <div className="hidden sm:flex items-center space-x-1 border border-line bg-surface-2 rounded-lg px-2 py-0.5 text-[11px] font-mono">
+          <div className="hidden sm:flex items-center space-x-1 border border-line bg-surface-2 rounded-lg px-2 py-0.5 text-meta font-mono">
             <button
               type="button"
               onMouseDown={(e) => {
@@ -511,11 +511,11 @@ export function TipTapEditor({
           <button
             type="button"
             onClick={handleCopy}
-            className="p-1.5 rounded-lg hover:bg-subtle-2 text-muted hover:text-ink cursor-pointer transition-colors flex items-center gap-1 text-[11px]"
+            className="p-1.5 rounded-lg hover:bg-subtle-2 text-muted hover:text-ink cursor-pointer transition-colors flex items-center gap-1 text-meta"
             title="Copy Text"
           >
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-600" />
+              <Check className="w-3.5 h-3.5 text-success" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
@@ -529,14 +529,14 @@ export function TipTapEditor({
       </div>
 
       {/* 3. Editor Status Bar */}
-      <div className="px-5 py-2.5 border-t border-line bg-surface flex items-center justify-between text-[11px] font-mono text-faint">
+      <div className="px-5 py-2.5 border-t border-line bg-surface flex items-center justify-between text-meta font-mono text-faint">
         <span>
           {editor.getText().trim()
             ? editor.getText().trim().split(/\s+/).length
             : 0}{" "}
           words • {editor.getText().length} characters
         </span>
-        <span className="text-[10px] text-ghost">
+        <span className="text-meta text-ghost">
           Auto-saves in real-time
         </span>
       </div>

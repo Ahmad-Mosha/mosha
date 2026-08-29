@@ -21,23 +21,23 @@ export function LearningCsView() {
       {/* Header */}
       <div className="bento-card rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs">
-            <BookOpen className="w-4 h-4 text-emerald-700" />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+          <div className="flex items-center space-x-2 text-label">
+            <BookOpen className="w-4 h-4 text-success" />
+            <span className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
               The Polymath Engine
             </span>
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink mt-1">
+          <h1 className="font-serif text-display font-bold tracking-tight text-ink mt-1">
             Learning & Computer Science Roadmaps
           </h1>
-          <p className="text-xs sm:text-sm text-muted max-w-xl leading-relaxed mt-1">
+          <p className="text-label sm:text-body text-muted max-w-xl leading-relaxed mt-1">
             Deep systems understanding across OS, Database internals, Networks, Go, Node.js, and Bun.
           </p>
         </div>
       </div>
 
       {/* Subject Filter Pills */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+      <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none text-label">
         {subjects.map((sub) => (
           <button
             key={sub}
@@ -55,7 +55,7 @@ export function LearningCsView() {
 
       {/* Topics Grid */}
       {filteredTopics.length === 0 ? (
-        <div className="bento-card rounded-xl p-10 text-center text-xs text-ghost">
+        <div className="bento-card rounded-xl p-10 text-center text-label text-ghost">
           No roadmaps or topics added yet for {activeSubject}.
         </div>
       ) : (
@@ -67,31 +67,31 @@ export function LearningCsView() {
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-subtle-2 text-accent">
+                  <span className="px-2 py-0.5 rounded text-meta font-mono font-semibold bg-subtle-2 text-accent">
                     {topic.subject}
                   </span>
                   <span
-                    className={`text-[10px] font-mono font-bold ${
+                    className={`text-meta font-mono font-bold ${
                       topic.status === "mastered"
-                        ? "text-emerald-700"
-                        : "text-amber-700"
+                        ? "text-success"
+                        : "text-warn"
                     }`}
                   >
                     {topic.status === "mastered" ? "Mastered" : `${topic.progress}%`}
                   </span>
                 </div>
 
-                <h2 className="font-serif text-lg font-bold text-ink">
+                <h2 className="font-serif text-heading font-bold text-ink">
                   {topic.title}
                 </h2>
-                <p className="text-xs text-muted leading-relaxed">
+                <p className="text-label text-muted leading-relaxed">
                   {topic.description}
                 </p>
               </div>
 
               <div className="space-y-3 pt-3 border-t border-line">
                 {topic.notes && (
-                  <p className="text-[11px] text-faint italic bg-subtle p-2 rounded">
+                  <p className="text-meta text-faint italic bg-subtle p-2 rounded">
                     {topic.notes}
                   </p>
                 )}
@@ -100,7 +100,7 @@ export function LearningCsView() {
                 <div className="w-full bg-line h-1.5 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${
-                      topic.status === "mastered" ? "bg-emerald-600" : "bg-accent"
+                      topic.status === "mastered" ? "bg-success" : "bg-accent"
                     }`}
                     style={{ width: `${topic.progress}%` }}
                   />
@@ -113,7 +113,7 @@ export function LearningCsView() {
                     href={res.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between text-xs text-accent hover:underline font-semibold"
+                    className="flex items-center justify-between text-label text-accent hover:underline font-semibold"
                   >
                     <span className="truncate">{res.title}</span>
                     <ExternalLink className="w-3 h-3 shrink-0 ml-1 text-faint" />

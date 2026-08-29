@@ -59,15 +59,15 @@ export function SideNav() {
           onClick={() => setActiveModule("tasks")}
           className="flex items-center space-x-3 cursor-pointer overflow-hidden select-none"
         >
-          <div className="w-8 h-8 rounded-lg bg-accent text-accent-fg flex items-center justify-center font-serif font-bold text-base shadow-sm shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-accent text-accent-fg flex items-center justify-center font-serif font-bold text-heading shadow-sm shrink-0">
             M
           </div>
           {!isMini && (
             <div className="leading-tight transition-opacity duration-200">
-              <span className="font-serif font-bold text-base tracking-tight text-ink">
+              <span className="font-serif font-bold text-heading tracking-tight text-ink">
                 MOSHA
               </span>
-              <span className="block text-[10px] font-mono uppercase tracking-wider text-faint">
+              <span className="block text-meta font-mono uppercase tracking-wider text-faint">
                 Precision Workspace
               </span>
             </div>
@@ -98,7 +98,7 @@ export function SideNav() {
             <button
               key={item.id}
               onClick={() => setActiveModule(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group relative cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-label font-medium transition-all group relative cursor-pointer ${
                 isActive
                   ? "bg-accent text-accent-fg shadow-xs font-semibold"
                   : "text-muted hover:bg-subtle-2 hover:text-ink"
@@ -118,7 +118,7 @@ export function SideNav() {
 
               {!isMini && item.badge && (
                 <span
-                  className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                  className={`text-meta font-mono px-1.5 py-0.5 rounded uppercase tracking-wider ${
                     isActive
                       ? "bg-accent-fg/20 text-accent-fg"
                       : "bg-subtle-2 text-muted"
@@ -143,7 +143,7 @@ export function SideNav() {
                   <Tooltip.Content
                     side="right"
                     sideOffset={10}
-                    className="z-50 px-2.5 py-1 text-xs font-medium bg-ink text-accent-fg rounded-md shadow-lg"
+                    className="z-50 px-2.5 py-1 text-label font-medium bg-ink text-accent-fg rounded-md shadow-lg"
                   >
                     {item.label}
                     <Tooltip.Arrow className="fill-ink" />
@@ -165,17 +165,17 @@ export function SideNav() {
           }`}
         >
           <div className="relative shrink-0">
-            <div className="w-7 h-7 rounded-full bg-accent text-accent-fg flex items-center justify-center text-xs font-bold font-mono">
+            <div className="w-7 h-7 rounded-full bg-accent text-accent-fg flex items-center justify-center text-label font-bold font-mono">
               AG
             </div>
-            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-surface-2" />
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-success ring-2 ring-surface-2" />
           </div>
           {!isMini && (
             <div className="overflow-hidden leading-tight flex-1">
-              <span className="block text-xs font-semibold text-ink truncate">
+              <span className="block text-label font-semibold text-ink truncate">
                 Ahmed (Mosha)
               </span>
-              <span className="block text-[10px] font-mono text-faint truncate">
+              <span className="block text-meta font-mono text-faint truncate">
                 Precision Focus
               </span>
             </div>

@@ -68,7 +68,7 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs animate-in fade-in" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-2 p-5 shadow-2xl border border-line animate-in zoom-in-95 space-y-4">
           <div className="flex items-center justify-between border-b border-line pb-3">
-            <Dialog.Title className="font-serif text-lg font-bold text-ink">
+            <Dialog.Title className="font-serif text-heading font-bold text-ink">
               {editingFolder ? "Rename Folder" : "Create Folder"}
             </Dialog.Title>
             <Dialog.Close className="p-1 rounded-md text-faint hover:text-ink hover:bg-subtle-2 cursor-pointer">
@@ -76,10 +76,10 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-3.5 text-label">
             {/* Folder Emoji Picker */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+              <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                 Select Icon
               </label>
               <div className="grid grid-cols-6 gap-1.5 p-2 bg-subtle rounded-xl border border-line">
@@ -88,7 +88,7 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
                     key={emoji}
                     type="button"
                     onClick={() => setIcon(emoji)}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-base hover:bg-surface-2 cursor-pointer transition-colors ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-heading hover:bg-surface-2 cursor-pointer transition-colors ${
                       icon === emoji ? "bg-surface-2 border border-accent shadow-xs" : ""
                     }`}
                   >
@@ -100,7 +100,7 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
 
             {/* Folder Name */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+              <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                 Folder Name *
               </label>
               <input
@@ -110,7 +110,7 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Distributed Systems, LeetCode..."
-                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-label text-ink"
               />
             </div>
 

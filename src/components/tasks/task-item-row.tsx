@@ -43,19 +43,19 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
     switch (p) {
       case "p1_urgent":
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200">
+          <span className="px-2 py-0.5 rounded text-meta font-mono font-bold bg-danger-tint text-danger border border-danger/35">
             🔥 High
           </span>
         );
       case "p3_low":
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-subtle-2 text-faint">
+          <span className="px-2 py-0.5 rounded text-meta font-mono font-medium bg-subtle-2 text-faint">
             Low
           </span>
         );
       default:
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+          <span className="px-2 py-0.5 rounded text-meta font-mono font-semibold bg-warn-tint text-warn border border-warn/35">
             Medium
           </span>
         );
@@ -75,7 +75,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
     };
     const item = map[mod] || { label: "General", icon: "📋" };
     return (
-      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-subtle-2 text-muted flex items-center gap-1">
+      <span className="px-2 py-0.5 rounded text-meta font-mono bg-subtle-2 text-muted flex items-center gap-1">
         <span>{item.icon}</span>
         <span>{item.label}</span>
       </span>
@@ -92,7 +92,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
         isDone
           ? "bg-subtle/80 border-line opacity-60"
           : task.isDaily
-          ? "bg-gradient-to-r from-blue-50/20 via-white to-white border-blue-200 hover:border-blue-300 shadow-2xs"
+          ? "bg-gradient-to-r from-info-tint/20 via-surface-2 to-surface-2 border-info/35 hover:border-info/35 shadow-2xs"
           : "bg-surface-2 border-line hover:border-accent/40 shadow-2xs hover:shadow-xs"
       }`}
     >
@@ -105,7 +105,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
             isDone
               ? "bg-accent border-accent text-accent-fg"
               : task.isDaily
-              ? "border-blue-400 hover:border-blue-600 bg-surface-2"
+              ? "border-info/35 hover:border-info/35 bg-surface-2"
               : "border-line-2 hover:border-faint bg-surface-2"
           }`}
         >
@@ -116,7 +116,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
         <div className="flex-1 min-w-0 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <h4
-              className={`text-sm font-semibold leading-snug truncate ${
+              className={`text-body font-semibold leading-snug truncate ${
                 isDone ? "line-through text-ghost" : "text-ink"
               }`}
             >
@@ -125,10 +125,10 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
 
             <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
               {task.isDaily && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded text-meta font-mono font-bold bg-info-tint text-info border border-info/35 flex items-center gap-1">
                   <RotateCcw className="w-2.5 h-2.5" /> Daily
                   {(task.streakCount || 0) > 0 && (
-                    <span className="text-amber-700 font-bold ml-0.5">
+                    <span className="text-warn font-bold ml-0.5">
                       🔥 {task.streakCount}d
                     </span>
                   )}
@@ -137,7 +137,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
               {getPriorityBadge(task.priority)}
               {getModuleBadge(task.module)}
               {goalTitle && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-50 text-purple-800 border border-purple-200 flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded text-meta font-mono bg-shipped-tint text-shipped border border-shipped/35 flex items-center gap-1">
                   <Target className="w-3 h-3" />
                   {goalTitle}
                 </span>
@@ -146,7 +146,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           </div>
 
           {task.description && (
-            <p className="text-xs text-faint line-clamp-2 leading-relaxed">
+            <p className="text-label text-faint line-clamp-2 leading-relaxed">
               {task.description}
             </p>
           )}
@@ -154,7 +154,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           {/* Subtasks inline checklist */}
           {subtasks.length > 0 && (
             <div className="space-y-1 pt-1">
-              <div className="text-[10px] font-mono text-faint flex items-center gap-2">
+              <div className="text-meta font-mono text-faint flex items-center gap-2">
                 <span>
                   Checklist: {completedSubtasks}/{subtasks.length}
                 </span>
@@ -177,14 +177,14 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
                       e.stopPropagation();
                       toggleSubtask({ taskId: task._id, subtaskId: st.id });
                     }}
-                    className={`text-[11px] flex items-center gap-1.5 px-2 py-0.5 rounded border transition-colors cursor-pointer ${
+                    className={`text-meta flex items-center gap-1.5 px-2 py-0.5 rounded border transition-colors cursor-pointer ${
                       st.completed
                         ? "bg-subtle-2 text-ghost line-through border-transparent"
                         : "bg-surface-2 text-muted border-line hover:border-line-2"
                     }`}
                   >
                     <span
-                      className={`w-3 h-3 rounded-xs border flex items-center justify-center text-[9px] ${
+                      className={`w-3 h-3 rounded-xs border flex items-center justify-center text-meta ${
                         st.completed
                           ? "bg-accent border-accent text-accent-fg"
                           : "border-line-2"
@@ -201,7 +201,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
 
           {/* Due Date (only if not Daily) */}
           {task.dueDate && !task.isDaily && (
-            <div className="flex items-center gap-1 text-[11px] font-mono text-faint pt-0.5">
+            <div className="flex items-center gap-1 text-meta font-mono text-faint pt-0.5">
               <Calendar className="w-3 h-3" />
               <span>{task.dueDate}</span>
             </div>
@@ -229,7 +229,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
               removeTask({ id: task._id });
             }}
             title="Delete task"
-            className="p-1.5 rounded-lg hover:bg-rose-50 text-faint hover:text-rose-600 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-danger-tint text-faint hover:text-danger transition-colors cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>

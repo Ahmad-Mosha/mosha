@@ -80,7 +80,7 @@ export function MajorGoalsBento() {
       {/* 2. Control Bar (+ Add Major Goal & Filter Pills) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-b border-line pb-3">
         {/* Left: Dynamic Status Filter Pills */}
-        <div className="flex items-center space-x-1.5 text-xs overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="flex items-center space-x-1.5 text-label overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {filters.map((f) => (
             <button
               key={f.id}
@@ -102,7 +102,7 @@ export function MajorGoalsBento() {
             setEditingGoalId(null);
             setGoalDialogOpen(true);
           }}
-          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto shrink-0"
+          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Major Goal</span>
@@ -132,10 +132,10 @@ export function MajorGoalsBento() {
       ) : displayedGoals.length === 0 ? (
         <div className="bento-card rounded-xl p-10 text-center space-y-3">
           <Target className="w-8 h-8 text-line-2 mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-ink">
+          <h3 className="font-serif text-heading font-bold text-ink">
             No goals found in this view
           </h3>
-          <p className="text-xs text-faint max-w-sm mx-auto">
+          <p className="text-label text-faint max-w-sm mx-auto">
             Click &ldquo;Add Major Goal&rdquo; above to create a new milestone.
           </p>
         </div>

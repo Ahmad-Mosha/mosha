@@ -80,7 +80,7 @@ export function TopHeader() {
     <header className="sticky top-0 z-40 h-13 bg-surface/90 backdrop-blur-md border-b border-line px-6 flex items-center justify-between transition-all">
       {/* Left: Section Context & Global Search */}
       <div className="flex items-center space-x-6">
-        <div className="flex items-center space-x-2 text-xs">
+        <div className="flex items-center space-x-2 text-label">
           <span className="font-serif font-semibold text-ink">
             MOSHA
           </span>
@@ -93,11 +93,11 @@ export function TopHeader() {
         {/* Global Search Bar (Triggers ⌘K) */}
         <button
           onClick={() => setCommandMenuOpen(true)}
-          className="hidden sm:flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-subtle hover:bg-subtle-2 border border-line text-xs text-faint transition-colors shadow-2xs group cursor-pointer"
+          className="hidden sm:flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-subtle hover:bg-subtle-2 border border-line text-label text-faint transition-colors shadow-2xs group cursor-pointer"
         >
           <Search className="w-3.5 h-3.5 text-ghost group-hover:text-muted" />
-          <span className="text-xs">Search notes, tasks, goals...</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-surface-2 text-[10px] text-faint border border-line font-mono shadow-2xs">
+          <span className="text-label">Search notes, tasks, goals...</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-2 text-meta text-faint border border-line font-mono shadow-2xs">
             ⌘K
           </kbd>
         </button>
@@ -106,10 +106,10 @@ export function TopHeader() {
       {/* Right: Deep Work Focus Timer & Quick Actions */}
       <div className="flex items-center space-x-3">
         {/* Deep Work Flow Timer Pill */}
-        <div className="flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-subtle border border-line text-xs font-mono">
+        <div className="flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-subtle border border-line text-label font-mono">
           <Flame
             className={`w-3.5 h-3.5 ${
-              focusRunning ? "text-amber-500 animate-pulse" : "text-ghost"
+              focusRunning ? "text-warn animate-pulse" : "text-ghost"
             }`}
           />
           <span className="font-semibold text-ink">
@@ -138,7 +138,7 @@ export function TopHeader() {
         {/* Dynamic Contextual Quick Add Button */}
         <button
           onClick={handleQuickAdd}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-2xs transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{activeModule === "goals" ? "New Goal" : "New Task"}</span>

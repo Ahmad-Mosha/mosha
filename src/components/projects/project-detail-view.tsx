@@ -41,7 +41,7 @@ export function ProjectDetailView({
 
   if (!project) {
     return (
-      <div className="flex-1 flex items-center justify-center p-12 text-xs text-ghost animate-pulse">
+      <div className="flex-1 flex items-center justify-center p-12 text-label text-ghost animate-pulse">
         Loading project workspace...
       </div>
     );
@@ -76,36 +76,36 @@ export function ProjectDetailView({
     switch (status) {
       case "active":
         return (
-          <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[10px] font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="px-2.5 py-1 rounded-full bg-success-tint text-success border border-success/35 font-mono text-meta font-semibold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             <span>Active</span>
           </span>
         );
       case "in_progress":
         return (
-          <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-mono text-[10px] font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span className="px-2.5 py-1 rounded-full bg-warn-tint text-warn border border-warn/35 font-mono text-meta font-semibold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-warn" />
             <span>In Progress</span>
           </span>
         );
       case "in_review":
         return (
-          <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-mono text-[10px] font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span className="px-2.5 py-1 rounded-full bg-info-tint text-info border border-info/35 font-mono text-meta font-semibold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-info" />
             <span>In Review</span>
           </span>
         );
       case "completed":
         return (
-          <span className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-mono text-[10px] font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+          <span className="px-2.5 py-1 rounded-full bg-shipped-tint text-shipped border border-shipped/35 font-mono text-meta font-semibold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-shipped" />
             <span>Shipped</span>
           </span>
         );
       default:
         return (
-          <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-mono text-[10px] font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span className="px-2.5 py-1 rounded-full bg-subtle text-muted border border-line font-mono text-meta font-semibold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-ghost" />
             <span>Planning</span>
           </span>
         );
@@ -119,19 +119,19 @@ export function ProjectDetailView({
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-1.5 rounded-lg border border-line hover:bg-surface-2 text-muted hover:text-ink transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+            className="p-1.5 rounded-lg border border-line hover:bg-surface-2 text-muted hover:text-ink transition-colors cursor-pointer flex items-center gap-1 text-label font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Projects</span>
           </button>
 
           <div className="flex items-center gap-2">
-            <h1 className="font-serif text-xl md:text-2xl font-bold text-ink">
+            <h1 className="font-serif text-title md:text-title font-bold text-ink">
               {project.name}
             </h1>
             {getStatusBadge(project.status)}
             {project.version && (
-              <span className="px-2 py-0.5 rounded bg-subtle-2 font-mono text-[10px] text-muted font-semibold">
+              <span className="px-2 py-0.5 rounded bg-subtle-2 font-mono text-meta text-muted font-semibold">
                 {project.version}
               </span>
             )}
@@ -139,9 +139,9 @@ export function ProjectDetailView({
         </div>
 
         {/* Action Controls & External Links */}
-        <div className="flex items-center space-x-2 text-xs">
+        <div className="flex items-center space-x-2 text-label">
           {project.branch && (
-            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-2 border border-line font-mono text-[11px] text-muted">
+            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-2 border border-line font-mono text-meta text-muted">
               <GitBranch className="w-3.5 h-3.5 text-faint" />
               <span>{project.branch}</span>
             </div>
@@ -181,7 +181,7 @@ export function ProjectDetailView({
 
           <button
             onClick={handleDelete}
-            className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-rose-50 text-faint hover:text-rose-600 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-danger-tint text-faint hover:text-danger transition-colors cursor-pointer"
             title="Delete Project"
           >
             <Trash2 className="w-4 h-4" />
@@ -193,7 +193,7 @@ export function ProjectDetailView({
       <div className="px-6 pt-3 border-b border-line bg-surface-2 flex flex-wrap justify-between items-end gap-3 shrink-0">
         <div className="space-y-2 pb-3 max-w-2xl">
           {project.description && (
-            <p className="text-xs text-muted leading-relaxed font-normal">
+            <p className="text-label text-muted leading-relaxed font-normal">
               {project.description}
             </p>
           )}
@@ -203,7 +203,7 @@ export function ProjectDetailView({
             {(project.techStack || []).map((t: string) => (
               <span
                 key={t}
-                className="px-2 py-0.5 rounded bg-subtle border border-line font-mono text-[10px] text-accent font-medium shadow-2xs"
+                className="px-2 py-0.5 rounded bg-subtle border border-line font-mono text-meta text-accent font-medium shadow-2xs"
               >
                 {t}
               </span>
@@ -215,7 +215,7 @@ export function ProjectDetailView({
         <div className="flex items-center space-x-1">
           <button
             onClick={() => setActiveTab("kanban")}
-            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-4 py-2 text-label font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "kanban"
                 ? "border-accent text-ink"
                 : "border-transparent text-faint hover:text-ink"
@@ -223,14 +223,14 @@ export function ProjectDetailView({
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Sprint Kanban</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-subtle-2 text-[10px] font-mono">
+            <span className="px-1.5 py-0.2 rounded-full bg-subtle-2 text-meta font-mono">
               {tasks.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("notes")}
-            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-4 py-2 text-label font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "notes"
                 ? "border-accent text-ink"
                 : "border-transparent text-faint hover:text-ink"
@@ -242,7 +242,7 @@ export function ProjectDetailView({
 
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-4 py-2 text-label font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "overview"
                 ? "border-accent text-ink"
                 : "border-transparent text-faint hover:text-ink"
@@ -264,14 +264,14 @@ export function ProjectDetailView({
           <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-5xl w-full mx-auto space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-line">
               <div>
-                <h3 className="font-serif text-lg font-bold text-ink">
+                <h3 className="font-serif text-heading font-bold text-ink">
                   Technical Specs & Architecture RFC
                 </h3>
-                <p className="text-xs text-faint">
+                <p className="text-label text-faint">
                   Document system boundaries, data contracts, and deployment runbooks.
                 </p>
               </div>
-              <span className="text-[10px] font-mono text-ghost">
+              <span className="text-meta font-mono text-ghost">
                 Auto-saves in real-time
               </span>
             </div>
@@ -290,10 +290,10 @@ export function ProjectDetailView({
             {/* Progress Card */}
             <div className="p-6 bg-surface-2 border border-line rounded-2xl shadow-xs space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="font-serif text-base font-bold text-ink">
+                <h3 className="font-serif text-heading font-bold text-ink">
                   Sprint Completion Rate
                 </h3>
-                <span className="font-mono text-base font-bold text-accent">
+                <span className="font-mono text-heading font-bold text-accent">
                   {progress}% Complete
                 </span>
               </div>
@@ -306,31 +306,31 @@ export function ProjectDetailView({
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4 pt-2 text-center text-xs">
+              <div className="grid grid-cols-3 gap-4 pt-2 text-center text-label">
                 <div className="p-3 bg-subtle rounded-xl border border-line">
-                  <span className="font-mono text-lg font-bold text-ink">
+                  <span className="font-mono text-heading font-bold text-ink">
                     {tasks.length}
                   </span>
-                  <p className="text-faint text-[11px] mt-0.5">Total Tasks</p>
+                  <p className="text-faint text-meta mt-0.5">Total Tasks</p>
                 </div>
                 <div className="p-3 bg-subtle rounded-xl border border-line">
-                  <span className="font-mono text-lg font-bold text-emerald-600">
+                  <span className="font-mono text-heading font-bold text-success">
                     {doneTasks}
                   </span>
-                  <p className="text-faint text-[11px] mt-0.5">Done Tasks</p>
+                  <p className="text-faint text-meta mt-0.5">Done Tasks</p>
                 </div>
                 <div className="p-3 bg-subtle rounded-xl border border-line">
-                  <span className="font-mono text-lg font-bold text-amber-600">
+                  <span className="font-mono text-heading font-bold text-warn">
                     {tasks.length - doneTasks}
                   </span>
-                  <p className="text-faint text-[11px] mt-0.5">Pending Issues</p>
+                  <p className="text-faint text-meta mt-0.5">Pending Issues</p>
                 </div>
               </div>
             </div>
 
             {/* Quick Repository Overview */}
-            <div className="p-6 bg-surface-2 border border-line rounded-2xl shadow-xs space-y-3 text-xs">
-              <h4 className="font-mono uppercase tracking-wider text-[11px] font-bold text-muted">
+            <div className="p-6 bg-surface-2 border border-line rounded-2xl shadow-xs space-y-3 text-label">
+              <h4 className="font-mono uppercase tracking-wider text-meta font-bold text-muted">
                 Repository Metadata
               </h4>
               <div className="space-y-2 text-muted">
