@@ -5,7 +5,9 @@ import { fetchRandomQuranVerse, QuranVerse, INITIAL_VERSES } from "@/lib/quran";
 import { Sparkles, RotateCw, Quote } from "lucide-react";
 
 export function QuoteRotator() {
-  const [currentVerse, setCurrentVerse] = useState<QuranVerse>(INITIAL_VERSES[0]);
+  const [currentVerse, setCurrentVerse] = useState<QuranVerse>(
+    INITIAL_VERSES[0],
+  );
   const [isFading, setIsFading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,7 +50,8 @@ export function QuoteRotator() {
           </span>
           <span className="text-[#CBD5E1]">•</span>
           <span className="font-mono text-[11px] text-[#4A5568]">
-            {currentVerse.surahNameEnglish} ({currentVerse.surahNumber}:{currentVerse.ayahNumber})
+            {currentVerse.surahNameEnglish} ({currentVerse.surahNumber}:
+            {currentVerse.ayahNumber})
           </span>
         </div>
 
@@ -89,7 +92,7 @@ export function QuoteRotator() {
       {/* Footer Reference */}
       <div className="text-center z-10">
         <span className="text-[10px] font-mono uppercase tracking-widest text-[#A0AEC0]">
-          سورة {currentVerse.surahNameArabic} • {currentVerse.ayahNumber}
+          {currentVerse.surahNameArabic} • {currentVerse.ayahNumber}
         </span>
       </div>
     </div>
