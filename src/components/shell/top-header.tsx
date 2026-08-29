@@ -11,6 +11,7 @@ import {
   Command,
   Flame,
 } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 export function TopHeader() {
   const {
@@ -142,6 +143,8 @@ export function TopHeader() {
           <Plus className="w-3.5 h-3.5" />
           <span>{activeModule === "goals" ? "New Goal" : "New Task"}</span>
         </button>
+
+        <ThemeToggle />
 
         {/* Command Palette (⌘K) */}
         <button
