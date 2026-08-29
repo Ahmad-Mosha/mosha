@@ -244,7 +244,13 @@ body [data-state],
 
 .tiptap ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
 .tiptap ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
-.tiptap li { margin-bottom: 0.25rem; line-height: 1.6; }
+.tiptap li { margin-bottom: 0.15rem; line-height: 1.6; }
+
+/* Tiptap wraps each list item's text in its own <p>, which was picking up the
+   0.75rem paragraph margin and pushing list rows far apart. */
+.tiptap li > p { margin-bottom: 0; }
+.tiptap li > ul,
+.tiptap li > ol { margin-top: 0.15rem; margin-bottom: 0; }
 
 .tiptap ul[data-type="taskList"] {
   list-style: none;
