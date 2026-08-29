@@ -1,30 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
+import React, { useState } from "react";
+import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { GoalCard } from "./goal-card";
 import { GoalDetailsDialog } from "./goal-details-dialog";
 import { QuoteRotator } from "./quote-rotator";
 import { useMoshaStore } from "@/lib/store";
-import { Plus, Target, RotateCcw } from "lucide-react";
+import { Plus, Target } from "lucide-react";
 
 export function MajorGoalsBento() {
   const { setGoalDialogOpen, setEditingGoalId } = useMoshaStore();
 
   const goals = useQuery(api.goals.list);
-  const seedIfEmpty = useMutation(api.goals.seedIfEmpty);
-  const resetToCleanGoals = useMutation(api.goals.resetToCleanGoals);
 
   const [activeFilter, setActiveFilter] = useState<"all" | "in_progress" | "completed">("all");
   const [selectedGoal, setSelectedGoal] = useState<any | null>(null);
-
-  // Auto-seed initial goals if database is empty
-  useEffect(() => {
-    if (goals && goals.length === 0) {
-      seedIfEmpty();
-    }
-  }, [goals, seedIfEmpty]);
 
   const allGoals = goals || [];
   const inProgressGoals = allGoals.filter((g: any) => g.status !== "completed");
@@ -81,27 +72,16 @@ export function MajorGoalsBento() {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => resetToCleanGoals()}
-            title="Reset to fresh clean default goals"
-            className="flex items-center space-x-1 px-2.5 py-2 rounded-lg bg-white border border-[#E2E8F0] hover:bg-[#F8F9FA] text-[#718096] hover:text-[#1A202C] text-xs font-medium transition-all cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Reset Defaults</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setEditingGoalId(null);
-              setGoalDialogOpen(true);
-            }}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Major Goal</span>
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setEditingGoalId(null);
+            setGoalDialogOpen(true);
+          }}
+          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add Major Goal</span>
+        </button>
       </div>
 
       {/* 3. Goals Bento Grid */}
