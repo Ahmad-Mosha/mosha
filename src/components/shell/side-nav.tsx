@@ -4,6 +4,7 @@ import React from "react";
 import { useMoshaStore, ModuleId } from "@/lib/store";
 import {
   CheckSquare,
+  CalendarDays,
   Target,
   FileText,
   Code2,
@@ -31,6 +32,7 @@ interface NavItem {
  */
 const NAV_ITEMS: NavItem[] = [
   { id: "tasks", label: "Tasks & Focus", icon: CheckSquare, badge: "Home" },
+  { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "goals", label: "Major Life Goals", icon: Target, badge: "Pillars" },
   { id: "notes", label: "Notes & Knowledge", icon: FileText, badge: "Docs" },
   { id: "problems", label: "Problem Solving", icon: Code2 },

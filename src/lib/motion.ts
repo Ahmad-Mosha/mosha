@@ -11,13 +11,6 @@ import type { Variants, Transition } from "framer-motion";
 
 export const ease: Transition["ease"] = [0.22, 1, 0.36, 1];
 
-/** Screen-to-screen change. Short enough that it never delays the work. */
-export const screenTransition: Variants = {
-  initial: { opacity: 0, y: 6 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease } },
-  exit: { opacity: 0, y: -4, transition: { duration: 0.12, ease } },
-};
-
 /** Parent of a list; children arrive in sequence rather than all at once. */
 export const listContainer: Variants = {
   animate: { transition: { staggerChildren: 0.028, delayChildren: 0.02 } },
