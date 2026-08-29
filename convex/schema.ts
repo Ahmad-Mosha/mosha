@@ -53,7 +53,8 @@ export default defineSchema({
     module: v.string(), // "general" | "problems" | "learning" | "gym" | "career" | "goals" | "finance" | "personal" | "projects"
     dueDate: v.optional(v.string()), // YYYY-MM-DD
     dueTime: v.optional(v.string()),
-    isDaily: v.boolean(), // Daily recurring habit
+    isDaily: v.boolean(), // Kept in sync with `recurrence` for the by_daily index
+    recurrence: v.optional(v.string()), // "none" | "daily" | "weekdays" | "weekly" | "monthly"
     streakCount: v.optional(v.number()), // Streak for daily habits (e.g. 5 days)
     lastCompletedDate: v.optional(v.string()), // YYYY-MM-DD
     goalId: v.optional(v.id("major_life_goals")), // Link to Major Life Goal
