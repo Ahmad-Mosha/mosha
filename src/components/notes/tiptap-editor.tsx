@@ -10,8 +10,6 @@ import TaskItem from "@tiptap/extension-task-item";
 import Underline from "@tiptap/extension-underline";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { all, createLowlight } from "lowlight";
 import {
   Bold,
   Italic,
@@ -31,8 +29,6 @@ import {
   Copy,
   Check,
 } from "lucide-react";
-
-const lowlight = createLowlight(all);
 
 interface TipTapEditorProps {
   content: string;
@@ -60,13 +56,14 @@ export function TipTapEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        codeBlock: false, // Disabled in favor of syntax highlighted CodeBlockLowlight
         heading: {
           levels: [1, 2, 3],
         },
-      }),
-      CodeBlockLowlight.configure({
-        lowlight,
+        codeBlock: {
+          HTMLAttributes: {
+            class: "bg-[#1E293B] text-[#F8FAFC] font-mono text-xs p-4 rounded-xl my-3 overflow-x-auto",
+          },
+        },
       }),
       Placeholder.configure({
         placeholder,
@@ -91,7 +88,7 @@ export function TipTapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose max-w-none focus:outline-none min-h-[380px] text-sm text-[#1A202C] leading-relaxed p-4",
+          "prose max-w-none focus:outline-none min-h-[400px] text-sm text-[#1A202C] leading-relaxed p-4",
       },
     },
   });
@@ -314,14 +311,14 @@ export function TipTapEditor({
             <Quote className="w-4 h-4" />
           </button>
 
-          {/* Colorized Code Block */}
+          {/* Clean Robust Code Block (Zero input jumping / zero lag) */}
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={`p-1.5 rounded hover:bg-[#EDF2F7] cursor-pointer transition-colors flex items-center gap-1 ${
+            className={`p-1.5 rounded hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
               editor.isActive("codeBlock") ? "bg-[#333E50] text-white" : "text-[#4A5568]"
             }`}
-            title="Colorized Code Block (with syntax highlighting)"
+            title="Code Block (Monospace)"
           >
             <Code2 className="w-4 h-4" />
           </button>

@@ -325,3 +325,15 @@ export const seedDefaults = mutation({
     return { seeded: true };
   },
 });
+
+// Mutation: Clear all notes
+export const clearAllNotes = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("notes").collect();
+    for (const n of all) {
+      await ctx.db.delete(n._id);
+    }
+    return { deleted: all.length };
+  },
+});
