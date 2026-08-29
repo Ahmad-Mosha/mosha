@@ -13,37 +13,12 @@ export function MajorGoalsBento() {
   const { setGoalDialogOpen, setEditingGoalId } = useMoshaStore();
 
   const convexGoals = useQuery(api.goals.list);
-  const [cachedGoals, setCachedGoals] = useState<any[]>([]);
-  const [isLoadedFromCache, setIsLoadedFromCache] = useState(false);
-
-  // Warm instant hydration from local storage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("mosha_cached_goals");
-      if (saved) {
-        setCachedGoals(JSON.parse(saved));
-      }
-    } catch {
-      // ignore
-    }
-    setIsLoadedFromCache(true);
-  }, []);
-
-  // Update cache whenever Convex sends fresh data
-  useEffect(() => {
-    if (convexGoals !== undefined) {
-      setCachedGoals(convexGoals);
-      try {
-        localStorage.setItem("mosha_cached_goals", JSON.stringify(convexGoals));
-      } catch {
-        // ignore
-      }
-    }
-  }, [convexGoals]);
+  // Read straight from Convex; see the note in notes-screen.tsx on why the
+  // localStorage mirror was removed.
 
   // Use Convex data if loaded, otherwise fallback to warm cache
-  const goals = convexGoals !== undefined ? convexGoals : cachedGoals;
-  const isLoading = convexGoals === undefined && cachedGoals.length === 0 && !isLoadedFromCache;
+  const goals = convexGoals ?? [];
+  const isLoading = convexGoals === undefined;
 
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);

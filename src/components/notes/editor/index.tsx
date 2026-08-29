@@ -36,17 +36,26 @@ export function NoteEditor({
   const [saveState, setSaveState] = useState<"idle" | "pending" | "saved">("idle");
   const [counts, setCounts] = useState({ words: 0, chars: 0 });
 
+  /**
+   * Nothing is written back until the user actually edits. Without this, any
+   * path that flushes on mount or blur can persist an editor that was seeded
+   * with the wrong content, silently replacing a real note with an empty one.
+   */
+  const dirty = useRef(false);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: buildExtensions({ placeholder, extra: [SlashMenu] }),
     content: initialContent || "",
     editorProps: {
       attributes: {
-        class:
-          "tiptap focus:outline-none text-body text-ink-2 px-14 md:px-20 py-8 min-h-[60vh]",
+        // No horizontal padding here — the column wrapper below owns the left
+        // edge, so the title and the body land on exactly the same rail.
+        class: "tiptap focus:outline-none text-body text-ink-2 py-8 min-h-[60vh]",
       },
     },
     onUpdate: ({ editor }) => {
+      dirty.current = true;
       setSaveState("pending");
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => {
@@ -68,7 +77,7 @@ export function NoteEditor({
   // Flush a pending save on unmount so switching notes never drops the last
   // few keystrokes typed inside the debounce window.
   const flush = useCallback(() => {
-    if (!saveTimer.current || !editor) return;
+    if (!dirty.current || !saveTimer.current || !editor) return;
     clearTimeout(saveTimer.current);
     saveTimer.current = null;
     onChangeRef.current(editor.getHTML(), editor.getText());
@@ -86,7 +95,9 @@ export function NoteEditor({
           another, which gave the note two scrollbars and scrolled the toolbar
           out of reach. */}
       <div className="flex-1 overflow-y-auto" onBlur={flush}>
-        <div className="mx-auto w-full max-w-3xl">
+        {/* Left-anchored writing column. Must match the title's wrapper in
+            notes-screen.tsx exactly. */}
+        <div className="w-full max-w-3xl px-8 md:px-12">
           <EditorContent editor={editor} />
         </div>
       </div>

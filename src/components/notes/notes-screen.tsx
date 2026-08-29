@@ -25,23 +25,18 @@ export function NotesScreen() {
   const toggleFavorite = useMutation(api.notes.toggleFavorite);
   const removeFolder = useMutation(api.notes.removeFolder);
 
-  // Warm cache so a reload paints the tree before the socket connects.
-  const [cachedNotes, setCachedNotes] = useState<any[]>([]);
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("mosha_cached_notes");
-      if (saved) setCachedNotes(JSON.parse(saved));
-    } catch {}
-  }, []);
-  useEffect(() => {
-    if (convexNotes !== undefined) {
-      setCachedNotes(convexNotes);
-      try {
-        localStorage.setItem("mosha_cached_notes", JSON.stringify(convexNotes));
-      } catch {}
-    }
-  }, [convexNotes]);
-  const notes = convexNotes !== undefined ? convexNotes : cachedNotes;
+  /**
+   * No localStorage cache here, deliberately.
+   *
+   * It used to seed the tree while the socket connected, but the editor mounts
+   * with whatever content the note has at that moment and is keyed by note id
+   * — which does not change when the real data lands. So a note opened from a
+   * stale cache kept the stale body, and the next save wrote it back over the
+   * real one. It cost two notes before it was caught. A skeleton for a few
+   * hundred milliseconds is a much better trade than losing writing.
+   */
+  const notes = convexNotes ?? [];
+  const isLoadingNotes = convexNotes === undefined;
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -234,7 +229,13 @@ export function NotesScreen() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-1.5">
-            {notes.length === 0 && folders.length === 0 ? (
+            {isLoadingNotes ? (
+              <div className="space-y-1.5 p-2" aria-label="Loading notes">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="h-7 animate-pulse rounded-md bg-subtle" />
+                ))}
+              </div>
+            ) : notes.length === 0 && folders.length === 0 ? (
               <div className="space-y-3 px-3 py-12 text-center">
                 <p className="text-label text-ghost">No notes yet.</p>
                 <button
@@ -270,7 +271,9 @@ export function NotesScreen() {
 
       {/* ---- Editor pane -------------------------------------------------- */}
       <main className="flex h-full flex-1 flex-col overflow-hidden bg-surface-2">
-        {activeNote ? (
+        {/* The editor must never mount before the real note has loaded — it is
+            keyed by note id, so it would keep whatever body it started with. */}
+        {isLoadingNotes ? null : activeNote ? (
           <>
             <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-4 py-2">
               {!isSidebarOpen && (
@@ -386,12 +389,12 @@ export function NotesScreen() {
 
             {/* Title sits above the editor's scroll area so it stays put while
                 the note scrolls, and the toolbar stays reachable. */}
-            <div className="shrink-0 border-b border-line px-14 pb-3 pt-6 md:px-20">
+            <div className="shrink-0 border-b border-line px-8 pb-3 pt-6 md:px-12">
               <input
                 value={localTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Untitled"
-                className="mx-auto block w-full max-w-3xl bg-transparent font-serif
+                className="block w-full max-w-3xl bg-transparent font-serif
                            text-display text-ink outline-none placeholder:text-line-2"
               />
             </div>

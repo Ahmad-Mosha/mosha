@@ -25,29 +25,10 @@ export function TasksScreen() {
   const createTask = useMutation(api.tasks.create);
   const clearCompleted = useMutation(api.tasks.clearCompleted);
 
-  // Warm instant hydration cache
-  const [cachedTasks, setCachedTasks] = useState<any[]>([]);
-  const [isLoadedFromCache, setIsLoadedFromCache] = useState(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("mosha_cached_tasks");
-      if (saved) setCachedTasks(JSON.parse(saved));
-    } catch {}
-    setIsLoadedFromCache(true);
-  }, []);
-
-  useEffect(() => {
-    if (convexTasks !== undefined) {
-      setCachedTasks(convexTasks);
-      try {
-        localStorage.setItem("mosha_cached_tasks", JSON.stringify(convexTasks));
-      } catch {}
-    }
-  }, [convexTasks]);
-
-  const tasks = convexTasks !== undefined ? convexTasks : cachedTasks;
-  const isLoading = convexTasks === undefined && cachedTasks.length === 0 && !isLoadedFromCache;
+  // Read straight from Convex. A localStorage mirror showed tasks that no
+  // longer existed in the database, which made the screen lie about its state.
+  const tasks = convexTasks ?? [];
+  const isLoading = convexTasks === undefined;
 
   // View & Filters State
   const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
