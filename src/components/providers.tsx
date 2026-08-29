@@ -3,6 +3,8 @@
 import React, { ReactNode, useMemo } from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -17,9 +19,23 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <ConvexProvider client={convex}>
-      <TooltipProvider delayDuration={150}>
-        {children}
-      </TooltipProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem={false}
+        disableTransitionOnChange
+      >
+        <TooltipProvider delayDuration={150}>
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className:
+                "!bg-surface-2 !border-line !text-ink !text-label !rounded-xl",
+            }}
+          />
+        </TooltipProvider>
+      </ThemeProvider>
     </ConvexProvider>
   );
 }
