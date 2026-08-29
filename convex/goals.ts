@@ -12,7 +12,7 @@ export const SEED_GOALS = [
   {
     title: "Finish Military Service",
     description:
-      "Complete national duty with honor, physical strength, and mental resilience.",
+      "Complete national duty with honor, discipline, and physical strength.",
     icon: "🎖️",
     status: "in_progress",
     targetDate: "2025-12-31",
@@ -90,6 +90,21 @@ export const seedIfEmpty = mutation({
   },
 });
 
+// Mutation: Reset/Re-seed clean goals (useful for migrating old data format)
+export const resetToCleanGoals = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("major_life_goals").collect();
+    for (const item of all) {
+      await ctx.db.delete(item._id);
+    }
+    for (const goal of SEED_GOALS) {
+      await ctx.db.insert("major_life_goals", goal);
+    }
+    return { reset: true, count: SEED_GOALS.length };
+  },
+});
+
 // Mutation: Create a new major life goal
 export const create = mutation({
   args: {
@@ -108,6 +123,9 @@ export const create = mutation({
       })
     ),
     order: v.number(),
+    phase: v.optional(v.string()),
+    meaning: v.optional(v.string()),
+    notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("major_life_goals", {
@@ -139,6 +157,9 @@ export const update = mutation({
       )
     ),
     order: v.optional(v.number()),
+    phase: v.optional(v.string()),
+    meaning: v.optional(v.string()),
+    notes: v.optional(v.string()),
     completedAt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {

@@ -2,14 +2,14 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // 1. Major Life Goals (Simplified & Direct)
+  // 1. Major Life Goals
   major_life_goals: defineTable({
     title: v.string(),
     description: v.string(),
-    icon: v.string(), // Emoji or icon identifier
+    icon: v.string(),
     status: v.string(), // "in_progress" | "completed"
-    targetDate: v.optional(v.string()), // YYYY-MM-DD
-    progress: v.number(), // 0 - 100
+    targetDate: v.optional(v.string()),
+    progress: v.number(),
     milestones: v.array(
       v.object({
         id: v.string(),
@@ -18,6 +18,9 @@ export default defineSchema({
         completedAt: v.optional(v.string()),
       })
     ),
+    phase: v.optional(v.string()),
+    meaning: v.optional(v.string()),
+    notes: v.optional(v.string()),
     order: v.number(),
     completedAt: v.optional(v.string()),
     createdAt: v.string(),
@@ -30,9 +33,9 @@ export default defineSchema({
     title: v.string(),
     description: v.optional(v.string()),
     isBigRock: v.boolean(),
-    status: v.string(), // "todo" | "in_progress" | "done"
-    priority: v.string(), // "high" | "medium" | "low"
-    module: v.string(), // "goals" | "problems" | "gym" | "career" | "general"
+    status: v.string(),
+    priority: v.string(),
+    module: v.string(),
     dueDate: v.optional(v.string()),
     durationMinutes: v.optional(v.number()),
     completedAt: v.optional(v.string()),
