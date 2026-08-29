@@ -10,8 +10,14 @@ import {
   Trash2,
   Target,
   RotateCcw,
+  GripVertical,
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  addDays, effectiveStatus, isRecurring, RECURRENCE_LABEL, recurrenceOf, today,
+} from "../../../convex/recurrence";
 
 interface TaskItemProps {
   task: any;
@@ -24,7 +30,13 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
   const removeTask = useMutation(api.tasks.remove);
   const toggleSubtask = useMutation(api.tasks.toggleSubtask);
 
-  const isDone = task.status === "done";
+  // A recurring task ticked yesterday is pending again today, so the checkbox
+  // asks the rule rather than reading `status`.
+  const isDone = effectiveStatus(task) === "done";
+  const recurring = isRecurring(task);
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: task._id });
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -85,18 +97,47 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
   const subtasks = task.subtasks || [];
   const completedSubtasks = subtasks.filter((s: any) => s.completed).length;
 
+  // "3 days ago" reads faster than a date, and overdue needs to shout.
+  const now = today();
+  const overdue = Boolean(task.dueDate && task.dueDate < now && !isDone);
+  const dueLabel = !task.dueDate
+    ? ""
+    : task.dueDate === now
+      ? "Today"
+      : task.dueDate === addDays(now, 1)
+        ? "Tomorrow"
+        : task.dueDate === addDays(now, -1)
+          ? "Yesterday"
+          : task.dueDate;
+
   return (
     <article
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
       onClick={() => onEdit(task)}
       className={`group rounded-xl border p-3.5 transition-all cursor-pointer select-none ${
+        isDragging ? "opacity-40" : ""
+      } ${
         isDone
           ? "bg-subtle/80 border-line opacity-60"
-          : task.isDaily
+          : recurring
           ? "bg-gradient-to-r from-info-tint/20 via-surface-2 to-surface-2 border-info/35 hover:border-info/35 shadow-2xs"
           : "bg-surface-2 border-line hover:border-accent/40 shadow-2xs hover:shadow-xs"
       }`}
     >
       <div className="flex items-start gap-3">
+        {/* Drag handle — appears on hover so the row stays calm at rest */}
+        <button
+          {...attributes}
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`Reorder ${task.title}`}
+          className="mt-1 -ml-1 cursor-grab touch-none text-ghost opacity-0 transition-opacity
+                     group-hover:opacity-100 active:cursor-grabbing shrink-0"
+        >
+          <GripVertical className="w-3.5 h-3.5" />
+        </button>
+
         {/* Checkbox */}
         <button
           type="button"
@@ -104,7 +145,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
             isDone
               ? "bg-accent border-accent text-accent-fg"
-              : task.isDaily
+              : recurring
               ? "border-info/35 hover:border-info/35 bg-surface-2"
               : "border-line-2 hover:border-faint bg-surface-2"
           }`}
@@ -124,9 +165,9 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
             </h4>
 
             <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
-              {task.isDaily && (
+              {recurring && (
                 <span className="px-2 py-0.5 rounded text-meta font-mono font-bold bg-info-tint text-info border border-info/35 flex items-center gap-1">
-                  <RotateCcw className="w-2.5 h-2.5" /> Daily
+                  <RotateCcw className="w-2.5 h-2.5" /> {RECURRENCE_LABEL[recurrenceOf(task)]}
                   {(task.streakCount || 0) > 0 && (
                     <span className="text-warn font-bold ml-0.5">
                       🔥 {task.streakCount}d
@@ -200,10 +241,15 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           )}
 
           {/* Due Date (only if not Daily) */}
-          {task.dueDate && !task.isDaily && (
-            <div className="flex items-center gap-1 text-meta font-mono text-faint pt-0.5">
+          {task.dueDate && (
+            <div
+              className={`flex items-center gap-1 text-meta font-mono pt-0.5 ${
+                overdue ? "text-danger font-semibold" : "text-faint"
+              }`}
+            >
               <Calendar className="w-3 h-3" />
-              <span>{task.dueDate}</span>
+              <span>{dueLabel}</span>
+              {task.dueTime && <span>· {task.dueTime}</span>}
             </div>
           )}
         </div>
