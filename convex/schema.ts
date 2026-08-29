@@ -28,19 +28,15 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_status", ["status"]),
 
-  // 2. Powerful Tasks Mini-System
+  // 2. Clean Minimal Tasks Table
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
-    isBigRock: v.boolean(),
-    status: v.string(), // "todo" | "in_progress" | "blocked" | "done" | "archived"
+    status: v.string(), // "todo" | "in_progress" | "done"
     priority: v.string(), // "p1_urgent" | "p2_medium" | "p3_low"
-    module: v.string(), // "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
-    goalId: v.optional(v.id("major_life_goals")),
+    module: v.string(), // "general" | "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
     dueDate: v.optional(v.string()), // YYYY-MM-DD
-    dueTime: v.optional(v.string()), // HH:MM
-    estimatedMinutes: v.optional(v.number()), // e.g. 25, 50, 90
-    actualMinutes: v.optional(v.number()),
+    dueTime: v.optional(v.string()),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -51,7 +47,10 @@ export default defineSchema({
       )
     ),
     tags: v.optional(v.array(v.string())),
-    recurring: v.optional(v.string()), // "none" | "daily" | "weekdays" | "weekly"
+    isBigRock: v.optional(v.boolean()),
+    durationMinutes: v.optional(v.number()),
+    estimatedMinutes: v.optional(v.number()),
+    goalId: v.optional(v.id("major_life_goals")),
     order: v.optional(v.number()),
     completedAt: v.optional(v.string()),
     createdAt: v.string(),

@@ -4,35 +4,24 @@ import React, { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import {
-  X,
-  Plus,
-  Trash2,
-  Calendar,
-  Clock,
-  Flame,
-  Tag,
-  Target,
-  Sparkles,
-} from "lucide-react";
+import { X, Plus, Trash2, Calendar } from "lucide-react";
 
 interface TaskDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingTask?: any | null;
   defaultModule?: string;
-  defaultIsBigRock?: boolean;
 }
 
 const MODULE_OPTIONS = [
-  { id: "general", label: "General / Day-to-Day", icon: "📋" },
-  { id: "goals", label: "Major Life Goals", icon: "🎯" },
-  { id: "problems", label: "Problem Solving / LeetCode", icon: "🧩" },
-  { id: "learning", label: "CS & Systems Learning", icon: "📚" },
-  { id: "gym", label: "Gym & Vitality", icon: "🏋️" },
-  { id: "career", label: "Engineering Career", icon: "💼" },
-  { id: "finance", label: "Finance & Ledger", icon: "💰" },
-  { id: "personal", label: "Personal & Reflection", icon: "🌱" },
+  { id: "general", label: "General", icon: "📋" },
+  { id: "goals", label: "Major Goals", icon: "🎯" },
+  { id: "problems", label: "Problem Solving", icon: "🧩" },
+  { id: "learning", label: "CS Learning", icon: "📚" },
+  { id: "gym", label: "Gym & Fitness", icon: "🏋️" },
+  { id: "career", label: "Career", icon: "💼" },
+  { id: "finance", label: "Finance", icon: "💰" },
+  { id: "personal", label: "Personal", icon: "🌱" },
 ];
 
 export function TaskCreateDialog({
@@ -40,25 +29,20 @@ export function TaskCreateDialog({
   onClose,
   editingTask,
   defaultModule = "general",
-  defaultIsBigRock = false,
 }: TaskDialogProps) {
   const createTask = useMutation(api.tasks.create);
   const updateTask = useMutation(api.tasks.update);
+  const removeTask = useMutation(api.tasks.remove);
   const goals = useQuery(api.goals.list) || [];
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [isBigRock, setIsBigRock] = useState(defaultIsBigRock);
   const [priority, setPriority] = useState("p2_medium");
   const [module, setModule] = useState(defaultModule);
   const [goalId, setGoalId] = useState<string>("");
   const [dueDate, setDueDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [dueTime, setDueTime] = useState("");
-  const [estimatedMinutes, setEstimatedMinutes] = useState(50);
-  const [tagInput, setTagInput] = useState("");
-  const [tags, setTags] = useState<string[]>(["deepwork"]);
   const [subtasks, setSubtasks] = useState<
     { id: string; title: string; completed: boolean }[]
   >([]);
@@ -68,41 +52,21 @@ export function TaskCreateDialog({
     if (editingTask) {
       setTitle(editingTask.title || "");
       setDescription(editingTask.description || "");
-      setIsBigRock(Boolean(editingTask.isBigRock));
       setPriority(editingTask.priority || "p2_medium");
       setModule(editingTask.module || "general");
       setGoalId(editingTask.goalId || "");
       setDueDate(editingTask.dueDate || new Date().toISOString().split("T")[0]);
-      setDueTime(editingTask.dueTime || "");
-      setEstimatedMinutes(editingTask.estimatedMinutes || 50);
-      setTags(editingTask.tags || []);
       setSubtasks(editingTask.subtasks || []);
     } else {
       setTitle("");
       setDescription("");
-      setIsBigRock(defaultIsBigRock);
       setPriority("p2_medium");
       setModule(defaultModule);
       setGoalId("");
       setDueDate(new Date().toISOString().split("T")[0]);
-      setDueTime("");
-      setEstimatedMinutes(50);
-      setTags(["deepwork"]);
       setSubtasks([]);
     }
-  }, [editingTask, isOpen, defaultModule, defaultIsBigRock]);
-
-  const handleAddTag = () => {
-    const clean = tagInput.trim().replace(/^#/, "");
-    if (clean && !tags.includes(clean)) {
-      setTags([...tags, clean]);
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
-  };
+  }, [editingTask, isOpen, defaultModule]);
 
   const handleAddSubtask = () => {
     if (!newSubtaskText.trim()) return;
@@ -124,15 +88,12 @@ export function TaskCreateDialog({
     const payload = {
       title: title.trim(),
       description: description.trim() || undefined,
-      isBigRock,
       priority,
       module,
       goalId: goalId ? (goalId as any) : undefined,
       dueDate: dueDate || undefined,
-      dueTime: dueTime || undefined,
-      estimatedMinutes: Number(estimatedMinutes) || 25,
+      isBigRock: false,
       subtasks: subtasks.length > 0 ? subtasks : undefined,
-      tags: tags.length > 0 ? tags : undefined,
     };
 
     if (editingTask) {
@@ -147,20 +108,24 @@ export function TaskCreateDialog({
     onClose();
   };
 
+  const handleDelete = async () => {
+    if (editingTask) {
+      await removeTask({ id: editingTask._id });
+      onClose();
+    }
+  };
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs animate-in fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E8F0] animate-in zoom-in-95 max-h-[92vh] overflow-y-auto space-y-4">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E8F0] animate-in zoom-in-95 max-h-[92vh] overflow-y-auto space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-3">
             <div>
               <Dialog.Title className="font-serif text-xl font-bold text-[#1A202C]">
-                {editingTask ? "Edit Task" : "Create New Task"}
+                {editingTask ? "Edit Task" : "New Task"}
               </Dialog.Title>
-              <Dialog.Description className="text-xs text-[#718096]">
-                Structure daily focus, anchor 3 Big Rocks, and link to major pillars.
-              </Dialog.Description>
             </div>
             <Dialog.Close className="p-1.5 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] cursor-pointer">
               <X className="w-4 h-4" />
@@ -176,55 +141,19 @@ export function TaskCreateDialog({
               <input
                 type="text"
                 required
+                autoFocus
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="What needs to be accomplished?"
+                placeholder="e.g. Solve 3 LeetCode Graph problems..."
                 className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-sm text-[#1A202C]"
               />
             </div>
 
-            {/* Big Rock Spotlight Banner */}
-            <div
-              onClick={() => setIsBigRock(!isBigRock)}
-              className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                isBigRock
-                  ? "bg-amber-50/80 border-amber-300 shadow-2xs"
-                  : "bg-[#F8F9FA] border-[#E2E8F0] hover:border-[#CBD5E1]"
-              }`}
-            >
-              <div className="flex items-center space-x-2.5">
-                <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                    isBigRock
-                      ? "bg-amber-500 text-white"
-                      : "bg-[#E2E8F0] text-[#718096]"
-                  }`}
-                >
-                  <Flame className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-serif font-bold text-xs text-[#1A202C]">
-                    Today&apos;s 3 Big Rocks
-                  </div>
-                  <div className="text-[10px] text-[#718096]">
-                    Make this one of your 3 non-negotiable anchor tasks for today.
-                  </div>
-                </div>
-              </div>
-
-              <input
-                type="checkbox"
-                checked={isBigRock}
-                onChange={(e) => setIsBigRock(e.target.checked)}
-                className="rounded border-[#CBD5E1] text-amber-600 focus:ring-0 cursor-pointer w-4 h-4"
-              />
-            </div>
-
-            {/* Domain / Module & Linked Major Goal */}
+            {/* Category / Domain & Priority */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
-                  Domain / Category
+                  Category
                 </label>
                 <select
                   value={module}
@@ -241,14 +170,44 @@ export function TaskCreateDialog({
 
               <div className="space-y-1">
                 <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
-                  Link to Major Goal (Optional)
+                  Priority
+                </label>
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
+                >
+                  <option value="p1_urgent">🔥 High (P1)</option>
+                  <option value="p2_medium">⚡ Medium (P2)</option>
+                  <option value="p3_low">🌱 Low (P3)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Due Date & Link to Major Goal */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-[#718096]" /> Due Date
+                </label>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                  Linked Life Goal (Optional)
                 </label>
                 <select
                   value={goalId}
                   onChange={(e) => setGoalId(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
                 >
-                  <option value="">None (Independent Task)</option>
+                  <option value="">None</option>
                   {goals.map((g: any) => (
                     <option key={g._id} value={g._id}>
                       {g.icon || "🎯"} {g.title}
@@ -258,71 +217,25 @@ export function TaskCreateDialog({
               </div>
             </div>
 
-            {/* Priority & Date & Estimated Time */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
-                  Priority
-                </label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
-                >
-                  <option value="p1_urgent">🔥 P1 - Urgent / High</option>
-                  <option value="p2_medium">⚡ P2 - Medium</option>
-                  <option value="p3_low">🌱 P3 - Low</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-[#718096]" /> Due Date
-                </label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-[#718096]" /> Duration
-                </label>
-                <select
-                  value={estimatedMinutes}
-                  onChange={(e) => setEstimatedMinutes(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
-                >
-                  <option value={15}>15 mins (Quick Win)</option>
-                  <option value={25}>25 mins (1 Pomodoro)</option>
-                  <option value={50}>50 mins (Deep Work Block)</option>
-                  <option value={90}>90 mins (Flow Sprint)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Description / Notes */}
+            {/* Notes / Description */}
             <div className="space-y-1">
               <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
-                Description / Context Notes
+                Notes & Details
               </label>
               <textarea
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Key details, acceptance criteria, or steps..."
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none"
+                placeholder="Additional notes or links..."
+                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-xs"
               />
             </div>
 
-            {/* Subtasks Builder */}
+            {/* Subtasks / Checklist Builder */}
             <div className="space-y-2 pt-2 border-t border-[#ECEAE4]">
               <div className="flex items-center justify-between">
                 <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
-                  Subtasks / Checklist ({subtasks.length})
+                  Checklist ({subtasks.length})
                 </label>
               </div>
 
@@ -374,7 +287,7 @@ export function TaskCreateDialog({
                       handleAddSubtask();
                     }
                   }}
-                  placeholder="Add subtask..."
+                  placeholder="Add item..."
                   className="flex-1 px-3 py-1.5 rounded-lg border border-[#E2E8F0] text-xs focus:outline-none"
                 />
                 <button
@@ -387,58 +300,35 @@ export function TaskCreateDialog({
               </div>
             </div>
 
-            {/* Tags */}
-            <div className="space-y-1.5 pt-2 border-t border-[#ECEAE4]">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold flex items-center gap-1">
-                <Tag className="w-3 h-3" /> Tags
-              </label>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {tags.map((t) => (
-                  <span
-                    key={t}
-                    className="px-2 py-0.5 rounded-md bg-[#EDF2F7] text-[#333E50] font-mono text-[10px] flex items-center gap-1"
-                  >
-                    #{t}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(t)}
-                      className="text-[#718096] hover:text-rose-600 cursor-pointer"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-                <input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                  placeholder="+ tag"
-                  className="px-2 py-0.5 rounded border border-[#E2E8F0] text-[11px] w-20 focus:outline-none"
-                />
-              </div>
-            </div>
-
             {/* Footer Buttons */}
-            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-[#ECEAE4]">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-lg text-[#718096] hover:bg-[#F3F4F6] font-medium transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold shadow-xs transition-colors cursor-pointer"
-              >
-                {editingTask ? "Save Changes" : "Create Task"}
-              </button>
+            <div className="flex items-center justify-between pt-3 border-t border-[#ECEAE4]">
+              {editingTask ? (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer text-xs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                </button>
+              ) : (
+                <div />
+              )}
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-lg text-[#718096] hover:bg-[#F3F4F6] font-medium transition-colors cursor-pointer text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold shadow-xs transition-colors cursor-pointer text-xs"
+                >
+                  {editingTask ? "Save" : "Create Task"}
+                </button>
+              </div>
             </div>
           </form>
         </Dialog.Content>

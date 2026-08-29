@@ -13,19 +13,16 @@ export const list = query({
   },
 });
 
-// Mutation: Create task
+// Mutation: Create task (clean & backward-compatible)
 export const create = mutation({
   args: {
     title: v.string(),
     description: v.optional(v.string()),
-    isBigRock: v.boolean(),
-    status: v.optional(v.string()),
     priority: v.string(), // "p1_urgent" | "p2_medium" | "p3_low"
-    module: v.string(), // "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
-    goalId: v.optional(v.id("major_life_goals")),
+    module: v.string(), // "general" | "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
     dueDate: v.optional(v.string()),
     dueTime: v.optional(v.string()),
-    estimatedMinutes: v.optional(v.number()),
+    status: v.optional(v.string()),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -36,7 +33,10 @@ export const create = mutation({
       )
     ),
     tags: v.optional(v.array(v.string())),
-    recurring: v.optional(v.string()),
+    isBigRock: v.optional(v.boolean()),
+    durationMinutes: v.optional(v.number()),
+    estimatedMinutes: v.optional(v.number()),
+    goalId: v.optional(v.id("major_life_goals")),
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -55,15 +55,11 @@ export const update = mutation({
     id: v.id("tasks"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    isBigRock: v.optional(v.boolean()),
     status: v.optional(v.string()),
     priority: v.optional(v.string()),
     module: v.optional(v.string()),
-    goalId: v.optional(v.id("major_life_goals")),
     dueDate: v.optional(v.string()),
     dueTime: v.optional(v.string()),
-    estimatedMinutes: v.optional(v.number()),
-    actualMinutes: v.optional(v.number()),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -74,7 +70,10 @@ export const update = mutation({
       )
     ),
     tags: v.optional(v.array(v.string())),
-    recurring: v.optional(v.string()),
+    isBigRock: v.optional(v.boolean()),
+    durationMinutes: v.optional(v.number()),
+    estimatedMinutes: v.optional(v.number()),
+    goalId: v.optional(v.id("major_life_goals")),
     order: v.optional(v.number()),
     completedAt: v.optional(v.string()),
   },
