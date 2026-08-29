@@ -7,6 +7,7 @@ import { api } from "../../../convex/_generated/api";
 import { useMoshaStore } from "@/lib/store";
 import { X, Check, Edit2, Calendar, Trash2, CheckCircle2 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { formatGoalIcon } from "./goal-card";
 
 interface GoalDetailsProps {
   goal: any | null;
@@ -64,6 +65,7 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
 
   const completedCount = goal.milestones?.filter((m: any) => m.completed).length || 0;
   const totalMilestones = goal.milestones?.length || 0;
+  const displayedIcon = formatGoalIcon(goal.icon);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -73,8 +75,8 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           {/* Header */}
           <div className="flex items-start justify-between border-b border-[#ECEAE4] pb-4">
             <div className="flex items-center space-x-3.5">
-              <div className="w-12 h-12 rounded-xl bg-[#F8F9FA] border border-[#E2E8F0] flex items-center justify-center text-2xl shadow-2xs">
-                {goal.icon || "🎯"}
+              <div className="w-12 h-12 rounded-xl bg-[#F8F9FA] border border-[#E2E8F0] flex items-center justify-center text-2xl shadow-2xs shrink-0 select-none">
+                {displayedIcon}
               </div>
               <div>
                 <Dialog.Title className="font-serif text-2xl font-bold text-[#1A202C]">

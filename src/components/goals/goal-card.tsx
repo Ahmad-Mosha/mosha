@@ -1,10 +1,29 @@
 "use client";
 
 import React from "react";
-import { Calendar, CheckCircle2, ChevronRight, Check } from "lucide-react";
+import { Calendar, ChevronRight, Check } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+
+export function formatGoalIcon(icon: string | undefined): string {
+  if (!icon) return "🎯";
+  switch (icon) {
+    case "military_tech":
+    case "shield":
+      return "🎖️";
+    case "work":
+    case "briefcase":
+      return "💼";
+    case "favorite":
+    case "heart":
+      return "❤️";
+    case "award":
+      return "🏆";
+    default:
+      return icon;
+  }
+}
 
 export interface GoalProps {
   goal: {
@@ -27,6 +46,7 @@ export function GoalCard({ goal, onSelect }: GoalProps) {
   const completedMilestones =
     goal.milestones?.filter((m) => m.completed).length || 0;
   const totalMilestones = goal.milestones?.length || 0;
+  const displayedIcon = formatGoalIcon(goal.icon);
 
   const handleToggleFirstIncomplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -45,22 +65,22 @@ export function GoalCard({ goal, onSelect }: GoalProps) {
   return (
     <article
       onClick={() => onSelect(goal)}
-      className="bento-card rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-3 cursor-pointer hover:border-[#333E50]/40 transition-all group"
+      className="bento-card rounded-xl p-5 flex flex-col justify-between space-y-3.5 cursor-pointer hover:border-[#333E50]/40 transition-all group overflow-hidden"
     >
-      {/* Top Row: Icon + Title + Target Date */}
-      <div className="space-y-2">
+      {/* Top Section */}
+      <div className="space-y-2.5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-[#F8F9FA] border border-[#E2E8F0] flex items-center justify-center text-xl shadow-2xs group-hover:scale-105 transition-transform">
-              {goal.icon || "🎯"}
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
+            <div className="w-10 h-10 shrink-0 rounded-xl bg-[#F8F9FA] border border-[#E2E8F0] flex items-center justify-center text-xl shadow-2xs group-hover:scale-105 transition-transform select-none">
+              {displayedIcon}
             </div>
-            <div>
-              <h3 className="font-serif text-lg font-bold text-[#1A202C] leading-snug group-hover:text-[#333E50] transition-colors line-clamp-1">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-serif text-lg font-bold text-[#1A202C] leading-tight truncate group-hover:text-[#333E50] transition-colors">
                 {goal.title}
               </h3>
               {goal.targetDate && (
-                <span className="text-[11px] font-mono text-[#718096] flex items-center gap-1 mt-0.5">
-                  <Calendar className="w-3 h-3" />
+                <span className="text-[11px] font-mono text-[#718096] flex items-center gap-1 mt-1 truncate">
+                  <Calendar className="w-3 h-3 shrink-0" />
                   {goal.targetDate}
                 </span>
               )}
@@ -68,7 +88,7 @@ export function GoalCard({ goal, onSelect }: GoalProps) {
           </div>
 
           <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold shrink-0 ${
+            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold shrink-0 select-none ${
               goal.status === "completed"
                 ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                 : "bg-[#EDF2F7] text-[#333E50]"
@@ -86,7 +106,7 @@ export function GoalCard({ goal, onSelect }: GoalProps) {
         )}
       </div>
 
-      {/* Bottom Row: Progress bar & Milestones counter */}
+      {/* Bottom Section: Progress bar & Milestones counter */}
       <div className="pt-3 border-t border-[#ECEAE4] space-y-2">
         <div className="flex items-center justify-between text-xs font-mono">
           <span className="text-[#718096] text-[11px]">
