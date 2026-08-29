@@ -1,0 +1,279 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MOSHA - Unified Goals</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&amp;family=Geist+Mono:wght@400&amp;family=EB+Garamond:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f9f9f9",
+                        "secondary-container": "#d6e0f6",
+                        "tertiary": "#303f52",
+                        "surface-container": "#eeeeee",
+                        "primary-container": "#4a5568",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#bdc7dc",
+                        "surface-container-lowest": "#ffffff",
+                        "slate-gray": "#4A5568",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-container": "#47566a",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f3f3",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "outline-variant": "#c5c6cd",
+                        "on-secondary-container": "#596376",
+                        "on-secondary-fixed-variant": "#3d4759",
+                        "on-surface-variant": "#44474c",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#39485c",
+                        "on-primary-container": "#becae0",
+                        "on-secondary-fixed": "#121c2c",
+                        "surface": "#f9f9f9",
+                        "on-background": "#1a1c1c",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#bcc7dd",
+                        "on-primary-fixed": "#111c2c",
+                        "surface-tint": "#545f72",
+                        "text-main": "#1A202C",
+                        "surface-dim": "#dadada",
+                        "on-error-container": "#93000a",
+                        "primary": "#333e50",
+                        "outline": "#75777d",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "tertiary-fixed-dim": "#b8c8e0",
+                        "secondary": "#555f71",
+                        "primary-fixed-dim": "#bcc7dd",
+                        "tertiary-fixed": "#d4e4fc",
+                        "background": "#f9f9f9",
+                        "secondary-fixed": "#d9e3f9",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f1",
+                        "cool-border": "#E2E8F0",
+                        "surface-container-high": "#e8e8e8",
+                        "on-surface": "#1a1c1c",
+                        "on-tertiary-container": "#bccbe3",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#d8e3fa",
+                        "paper-white": "#FDFDFD",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "density-lg": "16px",
+                        "density-tight": "4px",
+                        "gutter": "16px",
+                        "margin-page": "24px",
+                        "density-md": "8px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "label-xs": ["Geist"],
+                        "mono-sm": ["Geist Mono"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"],
+                        "display-sm": ["EB Garamond"],
+                        "headline-sm": ["EB Garamond"],
+                        "body-lg": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "label-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "mono-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "display-sm": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f9f9f9; color: #1a1c1c; }
+    </style>
+</head>
+<body class="flex bg-surface font-body-md text-text-main antialiased selection:bg-secondary-container">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface dark:bg-surface-dim h-screen w-16 hover:w-64 transition-all duration-300 fixed left-0 top-0 z-50 border-r border-cool-border dark:border-outline-variant flex flex-col py-margin-page group overflow-hidden bg-surface-lowest">
+<div class="px-4 mb-8 flex items-center gap-4">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined font-label-md" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+<h1 class="font-headline-sm text-headline-sm font-bold text-slate-gray dark:text-primary-fixed-dim">MOSHA</h1>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Precision Workspace</p>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-2 px-2">
+<li class=""><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-colors" href="#"><span class="material-symbols-outlined w-6 text-center">dashboard</span><span class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Dashboard</span></a></li>
+<li class=""><a class="flex items-center gap-4 px-2 py-2 rounded text-primary dark:text-primary-fixed-dim border-r-2 border-primary dark:border-primary-fixed-dim hover:bg-surface-container dark:hover:bg-tertiary-container transition-colors bg-surface-container-low" href="#"><span class="material-symbols-outlined w-6 text-center" style="font-variation-settings: 'FILL' 1;">track_changes</span><span class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Goals</span></a></li>
+<li class=""><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-colors" href="#"><span class="material-symbols-outlined w-6 text-center">description</span><span class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Notes</span></a></li>
+<li class=""><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-colors" href="#"><span class="material-symbols-outlined w-6 text-center">account_tree</span><span class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Projects</span></a></li>
+<li class=""><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-colors" href="#"><span class="material-symbols-outlined w-6 text-center">school</span><span class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Learning</span></a></li>
+<li class=""><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-colors" href="#"><span class="material-symbols-outlined w-6 text-center">payments</span><span class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Finance</span></a></li>
+<li class=""><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-colors" href="#"><span class="material-symbols-outlined w-6 text-center">fitness_center</span><span class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Gym</span></a></li>
+</ul>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-16 min-h-screen flex flex-col bg-background">
+<!-- TopAppBar (Shared Component) -->
+<header class="bg-surface-bright dark:bg-surface-dim border-b border-cool-border dark:border-outline-variant docked full-width top-0 sticky z-40 flex justify-between items-center h-12 px-margin-page">
+<div class="flex items-center gap-4">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full pl-8 pr-3 py-1 bg-surface-container-lowest border border-cool-border rounded-DEFAULT font-body-sm text-body-sm focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container h-8" placeholder="Search goals..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-1.5 rounded hover:bg-surface-container-high transition-colors text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim"><span class="material-symbols-outlined text-[20px]">notifications</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-high transition-colors text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim"><span class="material-symbols-outlined text-[20px]">settings</span></button>
+<button class="p-1.5 rounded hover:bg-surface-container-high transition-colors text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim"><span class="material-symbols-outlined text-[20px]">account_circle</span></button>
+</div>
+</header>
+<!-- Canvas -->
+<div class="p-margin-page flex-1 max-w-[1600px] mx-auto w-full grid grid-cols-1 gap-6">
+<div class="flex justify-between items-end mb-2">
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-slate-gray">Unified Goals Matrix</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Strategic overview and detailed execution tracking.</p>
+</div>
+<button class="bg-slate-gray text-white font-label-md text-label-md px-4 py-2 rounded flex items-center gap-2 hover:bg-primary transition-colors h-8">
+<span class="material-symbols-outlined text-[16px]">add</span> New Goal
+                </button>
+</div>
+<!-- Major Milestones (Top Section) -->
+
+<!-- Normal Goals (Bottom Section) -->
+<section class="mt-4">
+<div class="flex items-center justify-between mb-4 border-b border-cool-border pb-2">
+<h3 class="font-label-md text-label-md text-slate-gray uppercase tracking-wider">Standard Objectives</h3>
+<div class="flex gap-2">
+<button class="font-label-xs text-label-xs px-2 py-1 bg-surface-container-high rounded text-on-surface">All</button>
+<button class="font-label-xs text-label-xs px-2 py-1 bg-surface-container-lowest border border-cool-border rounded text-on-surface-variant hover:bg-surface-container-low">Personal</button>
+<button class="font-label-xs text-label-xs px-2 py-1 bg-surface-container-lowest border border-cool-border rounded text-on-surface-variant hover:bg-surface-container-low">Health</button>
+</div>
+</div>
+<!-- High-density Data Table -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Goal Card 1: Books -->
+    <article class="bg-surface-container-lowest border border-cool-border rounded-lg p-4 flex flex-col gap-4">
+        <header class="flex justify-between items-start">
+            <div>
+                <span class="font-label-xs text-label-xs bg-surface-container-high px-1.5 py-0.5 rounded text-on-surface-variant uppercase tracking-wider">Personal</span>
+                <h3 class="font-label-md text-label-md mt-2 text-primary">Read 24 books this year</h3>
+            </div>
+            <span class="font-mono-sm text-mono-sm text-on-surface-variant">Q4 2024</span>
+        </header>
+        <div>
+            <div class="flex justify-between font-mono-sm text-mono-sm mb-1 text-on-surface-variant">
+                <span class="">Progress</span>
+                <span class="">45%</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-slate-gray w-[45%]"></div>
+            </div>
+        </div>
+        <ul class="flex flex-col gap-2 mt-2 border-t border-cool-border pt-4">
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-primary">check_box</span>
+                <span class="line-through text-on-surface-variant">Finish 10 books</span>
+            </li>
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-slate-gray">check_box_outline_blank</span>
+                <span class="">Join local book club</span>
+            </li>
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-slate-gray">check_box_outline_blank</span>
+                <span class="">Write 5 reviews</span>
+            </li>
+        </ul>
+    </article>
+
+    <!-- Goal Card 2: Marathon -->
+    <article class="bg-surface-container-lowest border border-cool-border rounded-lg p-4 flex flex-col gap-4">
+        <header class="flex justify-between items-start">
+            <div>
+                <span class="font-label-xs text-label-xs bg-surface-container-high px-1.5 py-0.5 rounded text-on-surface-variant uppercase tracking-wider">Health</span>
+                <h3 class="font-label-md text-label-md mt-2 text-primary">Run a half marathon</h3>
+            </div>
+            <span class="font-mono-sm text-mono-sm text-on-surface-variant">Oct 2024</span>
+        </header>
+        <div>
+            <div class="flex justify-between font-mono-sm text-mono-sm mb-1 text-on-surface-variant">
+                <span class="">Progress</span>
+                <span class="">20%</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-slate-gray w-[20%]"></div>
+            </div>
+        </div>
+        <ul class="flex flex-col gap-2 mt-2 border-t border-cool-border pt-4">
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-primary">check_box</span>
+                <span class="line-through text-on-surface-variant">Buy running shoes</span>
+            </li>
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-slate-gray">check_box_outline_blank</span>
+                <span class="">Week 1 training plan</span>
+            </li>
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-slate-gray">check_box_outline_blank</span>
+                <span class="">Register for event</span>
+            </li>
+        </ul>
+    </article>
+
+    <!-- Goal Card 3: React -->
+    <article class="bg-surface-container-lowest border border-cool-border rounded-lg p-4 flex flex-col gap-4">
+        <header class="flex justify-between items-start">
+            <div>
+                <span class="font-label-xs text-label-xs bg-surface-container-high px-1.5 py-0.5 rounded text-on-surface-variant uppercase tracking-wider">Career</span>
+                <h3 class="font-label-md text-label-md mt-2 text-primary">Master advanced React patterns</h3>
+            </div>
+            <span class="font-mono-sm text-mono-sm text-on-surface-variant">Ongoing</span>
+        </header>
+        <div>
+            <div class="flex justify-between font-mono-sm text-mono-sm mb-1 text-on-surface-variant">
+                <span class="">Progress</span>
+                <span class="">60%</span>
+            </div>
+            <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+                <div class="h-full bg-slate-gray w-[60%]"></div>
+            </div>
+        </div>
+        <ul class="flex flex-col gap-2 mt-2 border-t border-cool-border pt-4">
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-primary">check_box</span>
+                <span class="line-through text-on-surface-variant">Compound Components</span>
+            </li>
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-primary">check_box</span>
+                <span class="line-through text-on-surface-variant">Render Props</span>
+            </li>
+            <li class="flex items-center gap-2 font-body-sm text-body-sm">
+                <span class="material-symbols-outlined text-[16px] text-slate-gray">check_box_outline_blank</span>
+                <span class="">Higher Order Components</span>
+            </li>
+        </ul>
+    </article>
+</div>
+</section>
+</div>
+</main>
+
+
+</body></html>

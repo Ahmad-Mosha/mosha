@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MOSHA - Projects Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&amp;family=Geist+Mono:wght@400&amp;family=EB+Garamond:wght@500&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "surface-bright": "#f9f9f9",
+                            "secondary-container": "#d6e0f6",
+                            "tertiary": "#303f52",
+                            "surface-container": "#eeeeee",
+                            "primary-container": "#4a5568",
+                            "error": "#ba1a1a",
+                            "secondary-fixed-dim": "#bdc7dc",
+                            "surface-container-lowest": "#ffffff",
+                            "slate-gray": "#4A5568",
+                            "inverse-surface": "#2f3131",
+                            "tertiary-container": "#47566a",
+                            "error-container": "#ffdad6",
+                            "surface-container-low": "#f3f3f3",
+                            "surface-container-highest": "#e2e2e2",
+                            "on-primary-fixed-variant": "#3c475a",
+                            "outline-variant": "#c5c6cd",
+                            "on-secondary-container": "#596376",
+                            "on-secondary-fixed-variant": "#3d4759",
+                            "on-surface-variant": "#44474c",
+                            "surface-variant": "#e2e2e2",
+                            "on-tertiary-fixed-variant": "#39485c",
+                            "on-primary-container": "#becae0",
+                            "on-secondary-fixed": "#121c2c",
+                            "surface": "#f9f9f9",
+                            "on-background": "#1a1c1c",
+                            "on-tertiary": "#ffffff",
+                            "inverse-primary": "#bcc7dd",
+                            "on-primary-fixed": "#111c2c",
+                            "surface-tint": "#545f72",
+                            "text-main": "#1A202C",
+                            "surface-dim": "#dadada",
+                            "on-error-container": "#93000a",
+                            "primary": "#333e50",
+                            "outline": "#75777d",
+                            "on-tertiary-fixed": "#0d1c2e",
+                            "tertiary-fixed-dim": "#b8c8e0",
+                            "secondary": "#555f71",
+                            "primary-fixed-dim": "#bcc7dd",
+                            "tertiary-fixed": "#d4e4fc",
+                            "background": "#f9f9f9",
+                            "secondary-fixed": "#d9e3f9",
+                            "on-primary": "#ffffff",
+                            "inverse-on-surface": "#f0f1f1",
+                            "cool-border": "#E2E8F0",
+                            "surface-container-high": "#e8e8e8",
+                            "on-surface": "#1a1c1c",
+                            "on-tertiary-container": "#bccbe3",
+                            "on-error": "#ffffff",
+                            "primary-fixed": "#d8e3fa",
+                            "paper-white": "#FDFDFD",
+                            "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.125rem",
+                            "lg": "0.25rem",
+                            "xl": "0.5rem",
+                            "full": "0.75rem"
+                    },
+                    "spacing": {
+                            "density-lg": "16px",
+                            "density-tight": "4px",
+                            "gutter": "16px",
+                            "margin-page": "24px",
+                            "density-md": "8px",
+                            "unit": "4px"
+                    },
+                    "fontFamily": {
+                            "label-md": ["Geist"],
+                            "label-xs": ["Geist"],
+                            "mono-sm": ["Geist Mono"],
+                            "body-md": ["Geist"],
+                            "body-sm": ["Geist"],
+                            "display-sm": ["EB Garamond"],
+                            "headline-sm": ["EB Garamond"],
+                            "body-lg": ["Geist"]
+                    },
+                    "fontSize": {
+                            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                            "label-xs": ["11px", {"lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                            "mono-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                            "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                            "display-sm": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                            "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for high-density feel */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c5c6cd; }
+        
+        .nav-item-text { opacity: 0; transform: translateX(-10px); transition: all 0.2s ease; white-space: nowrap; }
+        #sidebar.w-64 .nav-item-text { opacity: 1; transform: translateX(0); }
+    </style>
+</head>
+<body class="bg-background text-text-main font-body-md overflow-hidden flex selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Shared Component: SideNavBar -->
+<nav class="bg-surface border-r border-cool-border h-screen w-16 transition-all duration-300 fixed left-0 top-0 z-50 flex flex-col py-margin-page overflow-hidden" id="sidebar">
+<div class="px-4 mb-8 flex items-center gap-4">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center shrink-0">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary">M</span>
+</div>
+<div class="nav-item-text flex flex-col">
+<span class="font-label-md text-label-md font-bold text-slate-gray">MOSHA</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">Precision Workspace</span>
+</div>
+</div>
+<ul class="flex flex-col gap-1 px-2">
+<!-- Inactive -->
+<li><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant hover:bg-surface-container transition-colors" href="#"><span class="material-symbols-outlined shrink-0 text-[20px]">dashboard</span><span class="nav-item-text font-label-md text-label-md">Dashboard</span></a></li>
+<li><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant hover:bg-surface-container transition-colors" href="#"><span class="material-symbols-outlined shrink-0 text-[20px]">track_changes</span><span class="nav-item-text font-label-md text-label-md">Goals</span></a></li>
+<li><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant hover:bg-surface-container transition-colors" href="#"><span class="material-symbols-outlined shrink-0 text-[20px]">description</span><span class="nav-item-text font-label-md text-label-md">Notes</span></a></li>
+<!-- Active -->
+<li><a class="flex items-center gap-4 px-2 py-2 rounded text-primary border-r-2 border-primary bg-surface-container-low opacity-80 scale-95 transition-transform" href="#"><span class="material-symbols-outlined shrink-0 text-[20px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_tree</span><span class="nav-item-text font-label-md text-label-md">Projects</span></a></li>
+<!-- Inactive -->
+<li><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant hover:bg-surface-container transition-colors" href="#"><span class="material-symbols-outlined shrink-0 text-[20px]">school</span><span class="nav-item-text font-label-md text-label-md">Learning</span></a></li>
+<li><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant hover:bg-surface-container transition-colors" href="#"><span class="material-symbols-outlined shrink-0 text-[20px]">payments</span><span class="nav-item-text font-label-md text-label-md">Finance</span></a></li>
+<li><a class="flex items-center gap-4 px-2 py-2 rounded text-on-surface-variant hover:bg-surface-container transition-colors" href="#"><span class="material-symbols-outlined shrink-0 text-[20px]">fitness_center</span><span class="nav-item-text font-label-md text-label-md">Gym</span></a></li>
+</ul>
+</nav>
+<!-- Main Workspace Container -->
+<main class="flex-1 ml-16 flex flex-col h-screen overflow-hidden bg-background transition-all duration-300" id="main-content">
+<!-- Shared Component: TopAppBar -->
+<header class="bg-surface-bright border-b border-cool-border docked full-width top-0 sticky z-40 flex justify-between items-center h-12 px-margin-page">
+<div class="flex items-center gap-4">
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all" id="sidebarToggle">
+<span class="material-symbols-outlined text-[20px]">menu</span>
+</button>
+<span class="font-headline-sm text-headline-sm tracking-tight text-slate-gray">Projects</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all"><span class="material-symbols-outlined text-[18px]">notifications</span></button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all"><span class="material-symbols-outlined text-[18px]">settings</span></button>
+<div class="w-8 h-8 rounded bg-surface-container border border-cool-border flex items-center justify-center ml-2 cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Fluid Grid Content Area -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Pane: Project Grid -->
+<div class="flex-1 p-margin-page overflow-y-auto">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Active Repositories</h2>
+<button class="bg-slate-gray text-paper-white font-label-md text-label-md px-3 py-1.5 rounded flex items-center gap-1 hover:bg-tertiary transition-colors"><span class="material-symbols-outlined text-[16px]">add</span> New Project</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-density-lg">
+<!-- Project Card 1 (Active State) -->
+<div class="project-card bg-surface-bright border border-primary ring-1 ring-primary p-4 flex flex-col gap-2 rounded cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-primary">Nexus API Gateway</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500 mt-1 shrink-0"></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 h-9">High-throughput rust microservice for routing internal data streams and handling auth delegation.</p>
+<div class="mt-2 pt-2 border-t border-cool-border flex justify-between items-end">
+<div class="flex gap-1 flex-wrap items-center">
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Rust</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">gRPC</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Redis</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-outline-variant text-[10px]">v1.4.2</span>
+</div>
+</div>
+<!-- Project Card 2 -->
+<div class="project-card bg-surface border border-cool-border hover:border-outline-variant p-4 flex flex-col gap-2 rounded cursor-pointer transition-all">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-text-main">Web UI Kit Core</span>
+<span class="w-2 h-2 rounded-full bg-amber-500 mt-1 shrink-0"></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 h-9">Shared React component library utilizing Radix primitives and Tailwind for the new dashboard overhaul.</p>
+<div class="mt-2 pt-2 border-t border-cool-border flex justify-between items-end">
+<div class="flex gap-1 flex-wrap items-center">
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">React</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Tailwind</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">TS</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-outline-variant text-[10px]">v2.1.0</span>
+</div>
+</div>
+<!-- Project Card 3 -->
+<div class="project-card bg-surface border border-cool-border hover:border-outline-variant p-4 flex flex-col gap-2 rounded cursor-pointer transition-all">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-text-main">Log Ingestion Pipeline</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500 mt-1 shrink-0"></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 h-9">ETL workers for aggregating server metrics and application logs into Elasticsearch.</p>
+<div class="mt-2 pt-2 border-t border-cool-border flex justify-between items-end">
+<div class="flex gap-1 flex-wrap items-center">
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Go</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Kafka</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Elastic</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-outline-variant text-[10px]">v0.9.8</span>
+</div>
+</div>
+<!-- Project Card 4 -->
+<div class="project-card bg-surface border border-cool-border hover:border-outline-variant p-4 flex flex-col gap-2 rounded cursor-pointer transition-all opacity-70">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-text-main">Legacy Auth Service</span>
+<span class="w-2 h-2 rounded-full bg-surface-dim mt-1 shrink-0"></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 h-9">Deprecated monolith component handling user sessions. Scheduled for decommissioning in Q3.</p>
+<div class="mt-2 pt-2 border-t border-cool-border flex justify-between items-end">
+<div class="flex gap-1 flex-wrap items-center">
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Node.js</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Express</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low border border-cool-border rounded font-label-xs text-label-xs text-secondary">Mongo</span>
+</div>
+<span class="font-mono-sm text-mono-sm text-outline-variant text-[10px]">v4.0.1</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Pane: Task List Details (Dense, Developer Focus) -->
+<div class="w-96 border-l border-cool-border bg-surface-bright hidden xl:flex flex-col h-full">
+<!-- Header -->
+<div class="px-margin-page py-4 border-b border-cool-border bg-surface flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">terminal</span>
+<h3 class="font-label-md text-label-md text-text-main">Nexus API Gateway</h3>
+</div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant text-[11px]">Branch: feature/grpc-multiplexing</span>
+</div>
+<!-- Tabs -->
+<div class="flex border-b border-cool-border px-margin-page pt-2 gap-4">
+<button class="font-label-md text-label-md text-primary border-b-2 border-primary pb-2 px-1">Tasks</button>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-text-main pb-2 px-1 transition-colors">Logs</button>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-text-main pb-2 px-1 transition-colors">Metrics</button>
+</div>
+<!-- Task List Content -->
+<div class="flex-1 overflow-y-auto p-4">
+<div class="flex flex-col gap-2">
+<!-- Task Item -->
+<div class="flex items-start gap-2 p-2 hover:bg-surface-container-low rounded group transition-colors">
+<input class="mt-1 rounded-sm border-cool-border text-primary focus:ring-primary focus:ring-offset-0 bg-surface w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+<div class="flex flex-col flex-1">
+<span class="font-body-sm text-body-sm text-text-main group-hover:text-primary transition-colors">Implement connection pooling for Redis cluster</span>
+<span class="font-mono-sm text-mono-sm text-outline-variant text-[10px] mt-0.5">#ISSUE-442 • 2h ago</span>
+</div>
+<span class="px-1.5 py-0.5 bg-error-container text-on-error-container rounded font-label-xs text-[9px] uppercase tracking-wider shrink-0">High</span>
+</div>
+<!-- Task Item -->
+<div class="flex items-start gap-2 p-2 hover:bg-surface-container-low rounded group transition-colors">
+<input checked="" class="mt-1 rounded-sm border-cool-border text-primary focus:ring-primary focus:ring-offset-0 bg-surface w-3.5 h-3.5 cursor-pointer opacity-50" type="checkbox"/>
+<div class="flex flex-col flex-1 opacity-50">
+<span class="font-body-sm text-body-sm text-text-main line-through">Refactor payload validation schema</span>
+<span class="font-mono-sm text-mono-sm text-outline-variant text-[10px] mt-0.5">#ISSUE-441 • Yesterday</span>
+</div>
+</div>
+<!-- Task Item -->
+<div class="flex items-start gap-2 p-2 hover:bg-surface-container-low rounded group transition-colors">
+<input class="mt-1 rounded-sm border-cool-border text-primary focus:ring-primary focus:ring-offset-0 bg-surface w-3.5 h-3.5 cursor-pointer" type="checkbox"/>
+<div class="flex flex-col flex-1">
+<span class="font-body-sm text-body-sm text-text-main group-hover:text-primary transition-colors">Write unit tests for authentication middleware</span>
+<span class="font-mono-sm text-mono-sm text-outline-variant text-[10px] mt-0.5">#ISSUE-445 • Unassigned</span>
+</div>
+<span class="px-1.5 py-0.5 bg-surface-container-highest text-on-surface-variant rounded font-label-xs text-[9px] uppercase tracking-wider shrink-0">Low</span>
+</div>
+</div>
+<!-- Note Section -->
+<div class="mt-6 border border-cool-border rounded bg-surface p-4 relative">
+<span class="absolute -top-2 left-2 bg-surface px-1 font-label-xs text-label-xs text-on-surface-variant uppercase tracking-widest text-[9px]">Dev Note</span>
+<p class="font-mono-sm text-mono-sm text-on-surface-variant text-[12px] leading-relaxed mt-1">
+                            Ensure we update the protobuf definitions in the shared repo before deploying the multiplexing branch to staging. The current schema drops field `origin_ip` causing 400s.
+                        </p>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="p-4 border-t border-cool-border bg-surface-container-low">
+<input class="w-full bg-surface-bright border border-cool-border rounded px-3 py-2 font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Add a quick task..." type="text"/>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Sidebar Toggle Logic
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+
+        sidebarToggle.addEventListener('click', () => {
+            if (sidebar.classList.contains('w-16')) {
+                sidebar.classList.remove('w-16');
+                sidebar.classList.add('w-64');
+                mainContent.classList.remove('ml-16');
+                mainContent.classList.add('ml-64');
+            } else {
+                sidebar.classList.add('w-16');
+                sidebar.classList.remove('w-64');
+                mainContent.classList.add('ml-16');
+                mainContent.classList.remove('ml-64');
+            }
+        });
+
+        // Simple script to toggle active state on cards for demonstration
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.project-card').forEach(c => {
+                    c.classList.remove('border-primary', 'ring-1', 'ring-primary');
+                    c.classList.add('border-cool-border', 'bg-surface');
+                    c.classList.remove('bg-surface-bright');
+                });
+                card.classList.remove('border-cool-border', 'bg-surface');
+                card.classList.add('border-primary', 'ring-1', 'ring-primary', 'bg-surface-bright');
+            });
+        });
+    </script>
+</body></html>
