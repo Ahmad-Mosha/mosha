@@ -1,14 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { TaskCreateDialog } from "./task-create-dialog";
-import { TaskItemRow } from "./task-item-row";
+import { TaskGroupedList, type TaskGroup } from "./task-grouped-list";
 import { TasksKanbanBoard } from "./tasks-kanban-board";
 import { Select } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
-import { listContainer, listItem } from "@/lib/motion";
+import { toast } from "sonner";
+import { parseTaskInput } from "@/lib/parse-task-input";
+import {
+  addDays, effectiveStatus, isRecurring, today,
+} from "../../../convex/recurrence";
 import {
   Plus,
   CheckCircle2,
@@ -48,28 +52,31 @@ export function TasksScreen() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<any | null>(null);
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const [pendingStatus, setPendingStatus] = useState<string | undefined>();
+  const searchRef = useRef<HTMLInputElement>(null);
+  const quickAddRef = useRef<HTMLInputElement>(null);
 
-  // Calculations
-  const completedCount = tasks.filter((t: any) => t.status === "done").length;
-  const dailyTasks = tasks.filter((t: any) => t.isDaily);
+  const todayStr = today();
+
+  // Completion is rule-aware: a daily ticked yesterday counts as pending again.
+  const doneOf = (t: any) => effectiveStatus(t) === "done";
+  const completedCount = tasks.filter(doneOf).length;
+  const recurringTasks = tasks.filter(isRecurring);
   const todayTasks = tasks.filter(
-    (t: any) => t.isDaily || t.dueDate === todayStr || (!t.dueDate && t.status !== "done")
+    (t: any) => isRecurring(t) || t.dueDate === todayStr || (!t.dueDate && !doneOf(t))
   );
 
   const filteredTasks = tasks.filter((t: any) => {
+    const done = doneOf(t);
     if (activeTab === "today") {
-      const isDailyTask = t.isDaily;
-      const isDueToday = t.dueDate === todayStr;
-      const isUndatedTodo = !t.dueDate && t.status !== "done";
-      if (!isDailyTask && !isDueToday && !isUndatedTodo && t.status === "done") return false;
-      if (t.dueDate && t.dueDate !== todayStr && !isDailyTask) return false;
-    } else if (activeTab === "daily") {
-      if (!t.isDaily) return false;
+      if (!isRecurring(t) && t.dueDate && t.dueDate > todayStr) return false;
+      if (done && t.dueDate !== todayStr && !isRecurring(t)) return false;
+    } else if (activeTab === "recurring") {
+      if (!isRecurring(t)) return false;
     } else if (activeTab === "upcoming") {
-      if (!t.dueDate || t.dueDate <= todayStr || t.status === "done" || t.isDaily) return false;
+      if (!t.dueDate || t.dueDate <= todayStr || done) return false;
     } else if (activeTab === "completed") {
-      if (t.status !== "done") return false;
+      if (!done) return false;
     }
 
     if (
@@ -86,27 +93,102 @@ export function TasksScreen() {
     return true;
   });
 
+  /**
+   * Group by when something is due rather than showing one flat wall. Overdue
+   * first, because that is the only bucket that needs a decision today.
+   */
+  const groupedTasks = useMemo<TaskGroup[]>(() => {
+    const tomorrow = addDays(todayStr, 1);
+    const weekEnd = addDays(todayStr, 7);
+    const buckets: Record<string, any[]> = {
+      overdue: [], today: [], tomorrow: [], week: [], later: [], someday: [], done: [],
+    };
+
+    for (const t of filteredTasks) {
+      if (doneOf(t) && !isRecurring(t)) buckets.done.push(t);
+      else if (!t.dueDate) buckets.someday.push(t);
+      else if (t.dueDate < todayStr) buckets.overdue.push(t);
+      else if (t.dueDate === todayStr) buckets.today.push(t);
+      else if (t.dueDate === tomorrow) buckets.tomorrow.push(t);
+      else if (t.dueDate <= weekEnd) buckets.week.push(t);
+      else buckets.later.push(t);
+    }
+
+    const order = (a: any, b: any) => (a.order ?? 1e9) - (b.order ?? 1e9);
+    const labels: [string, string, "danger" | "default"][] = [
+      ["overdue", "Overdue", "danger"],
+      ["today", "Today", "default"],
+      ["tomorrow", "Tomorrow", "default"],
+      ["week", "This week", "default"],
+      ["later", "Later", "default"],
+      ["someday", "No date", "default"],
+      ["done", "Completed", "default"],
+    ];
+
+    return labels
+      .filter(([id]) => buckets[id].length > 0)
+      .map(([id, label, tone]) => ({
+        id, label, tone,
+        tasks: [...buckets[id]].sort(order),
+      }));
+  }, [filteredTasks, todayStr]);
+
   const handleInlineAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inlineTitle.trim() || isInlineSubmitting) return;
 
     setIsInlineSubmitting(true);
     try {
+      // The typed line carries its own date, priority, tag and repeat rule;
+      // the dropdowns are the fallback for anything it did not mention.
+      const parsed = parseTaskInput(inlineTitle);
       await createTask({
-        title: inlineTitle.trim(),
-        priority: inlinePriority,
-        module: inlineModule,
-        dueDate: inlineIsDaily ? undefined : todayStr,
-        isDaily: inlineIsDaily,
+        title: parsed.title,
+        priority: parsed.priority ?? inlinePriority,
+        module: parsed.module ?? inlineModule,
+        dueDate: parsed.dueDate ?? (inlineIsDaily ? undefined : todayStr),
+        dueTime: parsed.dueTime,
+        recurrence: parsed.recurrence ?? (inlineIsDaily ? "daily" : "none"),
       });
       setInlineTitle("");
       setInlineIsDaily(false);
     } catch (err) {
-      console.error("Failed to create inline task:", err);
+      toast.error("Could not create task");
     } finally {
       setIsInlineSubmitting(false);
     }
   };
+
+  /**
+   * Keyboard shortcuts. Ignored while typing so they never swallow input, and
+   * scoped to this screen because that is the only place they mean anything.
+   */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      const typing =
+        el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
+
+      if (e.key === "Escape" && typing) {
+        (el as HTMLElement).blur();
+        return;
+      }
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (e.key === "n") {
+        e.preventDefault();
+        quickAddRef.current?.focus();
+      } else if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (e.key === "v") {
+        e.preventDefault();
+        setViewMode((m) => (m === "list" ? "kanban" : "list"));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const getGoalTitle = (goalId?: string) => {
     if (!goalId) return undefined;
@@ -194,7 +276,8 @@ export function TasksScreen() {
             type="text"
             value={inlineTitle}
             onChange={(e) => setInlineTitle(e.target.value)}
-            placeholder="Add a task or daily habit... (Press Enter to save)"
+            ref={quickAddRef}
+            placeholder="Add a task…  try: email dana tomorrow 5pm !1 #career"
             className="w-full bg-transparent px-2 py-1 text-label text-ink focus:outline-none placeholder:text-ghost"
           />
         </div>
@@ -264,7 +347,7 @@ export function TasksScreen() {
           {[
             { id: "all", label: `All (${tasks.length})` },
             { id: "today", label: `Today (${todayTasks.length})` },
-            { id: "daily", label: `🔁 Daily Habits (${dailyTasks.length})` },
+            { id: "recurring", label: `Repeating (${recurringTasks.length})` },
             { id: "upcoming", label: "Upcoming" },
             { id: "completed", label: `Completed (${completedCount})` },
           ].map((tab) => (
@@ -290,7 +373,8 @@ export function TasksScreen() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
+              ref={searchRef}
+              placeholder="Search…  (/)"
               className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border border-line bg-surface-2 text-label text-ink focus:outline-none focus:border-accent"
             />
           </div>
@@ -331,7 +415,10 @@ export function TasksScreen() {
             setIsDialogOpen(true);
           }}
           onAddTaskInStatus={(status) => {
+            // Previously the status was accepted and thrown away, so "add to
+            // In Progress" always produced a Todo.
             setEditingTask(null);
+            setPendingStatus(status);
             setIsDialogOpen(true);
           }}
         />
@@ -346,27 +433,14 @@ export function TasksScreen() {
           </p>
         </div>
       ) : (
-        <motion.div
-          className="space-y-2.5"
-          variants={listContainer}
-          initial="initial"
-          animate="animate"
-        >
-          <AnimatePresence initial={false}>
-            {filteredTasks.map((task: any) => (
-              <motion.div key={task._id} layout variants={listItem} exit="exit">
-                <TaskItemRow
-                  task={task}
-                  onEdit={(t) => {
-                    setEditingTask(t);
-                    setIsDialogOpen(true);
-                  }}
-                  goalTitle={getGoalTitle(task.goalId)}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <TaskGroupedList
+          groups={groupedTasks}
+          onEdit={(t) => {
+            setEditingTask(t);
+            setIsDialogOpen(true);
+          }}
+          getGoalTitle={getGoalTitle}
+        />
       )}
 
       {/* 5. Create / Edit Task Modal Dialog */}
@@ -375,10 +449,12 @@ export function TasksScreen() {
         onClose={() => {
           setIsDialogOpen(false);
           setEditingTask(null);
+          setPendingStatus(undefined);
         }}
         editingTask={editingTask}
         defaultModule={moduleFilter !== "all" ? moduleFilter : "general"}
-        defaultIsDaily={activeTab === "daily"}
+        defaultIsDaily={activeTab === "recurring"}
+        defaultStatus={pendingStatus}
       />
     </div>
   );
