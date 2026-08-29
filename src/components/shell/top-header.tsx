@@ -48,8 +48,9 @@ export function TopHeader() {
   };
 
   const moduleTitles: Record<string, string> = {
-    tasks: "Tasks & 3 Big Rocks (Home)",
+    tasks: "Tasks & Focus (Home)",
     goals: "Major Life Goals",
+    notes: "Notes & Knowledge Base",
     today: "Today's Sanctuary",
     problems: "Algorithmic Mastery Hub",
     learning: "Learning & CS Subjects",
@@ -94,7 +95,7 @@ export function TopHeader() {
           className="hidden sm:flex items-center space-x-2.5 px-3 py-1.5 rounded-lg bg-[#F8F9FA] hover:bg-[#F1F3F5] border border-[#E2E8F0] text-xs text-[#718096] transition-colors shadow-2xs group cursor-pointer"
         >
           <Search className="w-3.5 h-3.5 text-[#A0AEC0] group-hover:text-[#4A5568]" />
-          <span className="text-xs">Search tasks, goals, commands...</span>
+          <span className="text-xs">Search notes, tasks, goals...</span>
           <kbd className="px-1.5 py-0.5 rounded bg-white text-[10px] text-[#718096] border border-[#E2E8F0] font-mono shadow-2xs">
             ⌘K
           </kbd>

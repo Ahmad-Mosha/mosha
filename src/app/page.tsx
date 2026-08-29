@@ -9,6 +9,7 @@ import { TasksScreen } from "@/components/tasks/tasks-screen";
 import { TaskCreateDialog } from "@/components/tasks/task-create-dialog";
 import { MajorGoalsBento } from "@/components/goals/major-goals-bento";
 import { GoalDialog } from "@/components/goals/goal-dialog";
+import { NotesScreen } from "@/components/notes/notes-screen";
 import { ProblemSolvingView } from "@/components/modules/problem-solving-view";
 import { GymFitnessView } from "@/components/modules/gym-fitness-view";
 import { FinanceView } from "@/components/modules/finance-view";
@@ -33,6 +34,8 @@ export default function Home() {
         return <TasksScreen />;
       case "goals":
         return <MajorGoalsBento />;
+      case "notes":
+        return <NotesScreen />;
       case "problems":
         return <ProblemSolvingView />;
       case "gym":

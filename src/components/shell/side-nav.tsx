@@ -5,6 +5,7 @@ import { useMoshaStore, ModuleId } from "@/lib/store";
 import {
   CheckSquare,
   Target,
+  FileText,
   Code2,
   BookOpen,
   Briefcase,
@@ -31,6 +32,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { id: "tasks", label: "Tasks & Focus", icon: CheckSquare, badge: "Home" },
   { id: "goals", label: "Major Life Goals", icon: Target, badge: "Pillars" },
+  { id: "notes", label: "Notes & Knowledge", icon: FileText, badge: "Docs" },
   { id: "problems", label: "Problem Solving", icon: Code2, badge: "100%" },
   { id: "learning", label: "Learning & CS", icon: BookOpen },
   { id: "career", label: "Engineering Career", icon: Briefcase },

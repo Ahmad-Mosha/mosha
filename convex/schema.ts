@@ -25,7 +25,7 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_status", ["status"]),
 
-  // 2. Tasks & Daily Habits System (Pure & Clean)
+  // 2. Tasks & Daily Habits System
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
@@ -57,7 +57,33 @@ export default defineSchema({
     .index("by_module", ["module"])
     .index("by_daily", ["isDaily"]),
 
-  // 3. Problem Solving & Algorithmic Mastery Hub
+  // 3. Folders / Notebooks for Knowledge Base
+  folders: defineTable({
+    name: v.string(),
+    icon: v.string(), // e.g. 🏗️, 🧩, 🎖️, 💼, 💡, 📚
+    color: v.optional(v.string()),
+    order: v.number(),
+    createdAt: v.string(),
+  }).index("by_order", ["order"]),
+
+  // 4. Notes & Knowledge Base (Rich Text)
+  notes: defineTable({
+    title: v.string(),
+    content: v.string(), // HTML / JSON rich content
+    plainText: v.optional(v.string()), // For instant search
+    folderId: v.optional(v.id("folders")),
+    isPinned: v.boolean(),
+    isFavorite: v.boolean(),
+    tags: v.optional(v.array(v.string())),
+    goalId: v.optional(v.id("major_life_goals")),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_folder", ["folderId"])
+    .index("by_pinned", ["isPinned"])
+    .index("by_updated", ["updatedAt"]),
+
+  // 5. Problem Solving & Algorithmic Mastery Hub
   problems: defineTable({
     title: v.string(),
     url: v.optional(v.string()),
@@ -78,7 +104,7 @@ export default defineSchema({
     .index("by_next_review", ["nextReviewDate"])
     .index("by_pattern", ["pattern"]),
 
-  // 4. Learning & CS Roadmaps
+  // 6. Learning & CS Roadmaps
   learning_topics: defineTable({
     subject: v.string(),
     title: v.string(),
@@ -99,7 +125,7 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_subject", ["subject"]),
 
-  // 5. Iron Journal (Gym & Fitness)
+  // 7. Iron Journal (Gym & Fitness)
   gym_sessions: defineTable({
     title: v.string(),
     split: v.string(),
@@ -121,7 +147,7 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_date", ["date"]),
 
-  // 6. Sovereign Ledger (Personal Finance)
+  // 8. Sovereign Ledger (Personal Finance)
   finance_records: defineTable({
     type: v.string(),
     title: v.string(),
@@ -132,7 +158,7 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_date", ["date"]),
 
-  // 7. Engineering Journal & Lessons
+  // 9. Engineering Journal & Lessons
   journal_entries: defineTable({
     title: v.string(),
     category: v.string(),

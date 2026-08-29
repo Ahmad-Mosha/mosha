@@ -9,6 +9,7 @@ import {
   Search,
   CheckSquare,
   Target,
+  FileText,
   Code2,
   BookOpen,
   Dumbbell,
@@ -17,7 +18,6 @@ import {
   Flame,
   Plus,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 
 export function CommandMenu() {
@@ -32,6 +32,7 @@ export function CommandMenu() {
 
   const tasks = useQuery(api.tasks.list) || [];
   const goals = useQuery(api.goals.list) || [];
+  const notes = useQuery(api.notes.listNotes) || [];
 
   // Toggle Command Menu via ⌘K or Ctrl+K
   useEffect(() => {
@@ -136,7 +137,7 @@ export function CommandMenu() {
               >
                 <div className="flex items-center space-x-2">
                   <CheckSquare className="w-4 h-4 text-[#333E50]" />
-                  <span>Tasks & 3 Big Rocks (Home)</span>
+                  <span>Tasks & Focus (Home)</span>
                 </div>
                 <ArrowRight className="w-3 h-3 text-[#A0AEC0]" />
               </Command.Item>
@@ -151,6 +152,20 @@ export function CommandMenu() {
                 <div className="flex items-center space-x-2">
                   <Target className="w-4 h-4 text-purple-700" />
                   <span>Major Life Goals</span>
+                </div>
+                <ArrowRight className="w-3 h-3 text-[#A0AEC0]" />
+              </Command.Item>
+
+              <Command.Item
+                onSelect={() => {
+                  setActiveModule("notes");
+                  setCommandMenuOpen(false);
+                }}
+                className="flex items-center justify-between p-2 rounded-lg hover:bg-[#F8F9FA] cursor-pointer text-xs text-[#1A202C]"
+              >
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4 text-blue-700" />
+                  <span>Notes & Knowledge Base</span>
                 </div>
                 <ArrowRight className="w-3 h-3 text-[#A0AEC0]" />
               </Command.Item>
@@ -226,22 +241,20 @@ export function CommandMenu() {
               </Command.Item>
             </Command.Group>
 
-            {/* Quick Tasks List search */}
-            {tasks.length > 0 && (
-              <Command.Group heading="Active Tasks" className="text-[10px] font-mono uppercase text-[#718096] px-2 py-1 pt-2">
-                {tasks.slice(0, 5).map((t: any) => (
+            {/* Quick Notes Search */}
+            {notes.length > 0 && (
+              <Command.Group heading="Recent Notes" className="text-[10px] font-mono uppercase text-[#718096] px-2 py-1 pt-2">
+                {notes.slice(0, 4).map((n: any) => (
                   <Command.Item
-                    key={t._id}
+                    key={n._id}
                     onSelect={() => {
-                      setActiveModule("tasks");
+                      setActiveModule("notes");
                       setCommandMenuOpen(false);
                     }}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-[#F8F9FA] cursor-pointer text-xs"
                   >
-                    <span className="truncate text-[#1A202C]">{t.title}</span>
-                    <span className="text-[10px] font-mono text-[#A0AEC0]">
-                      {t.status === "done" ? "Done" : "Todo"}
-                    </span>
+                    <span className="truncate text-[#1A202C]">{n.title}</span>
+                    <span className="text-[10px] font-mono text-[#A0AEC0]">Note</span>
                   </Command.Item>
                 ))}
               </Command.Group>

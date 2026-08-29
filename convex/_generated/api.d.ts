@@ -13,6 +13,7 @@ import type * as goals from "../goals.js";
 import type * as gym from "../gym.js";
 import type * as journal from "../journal.js";
 import type * as learning from "../learning.js";
+import type * as notes from "../notes.js";
 import type * as problems from "../problems.js";
 import type * as tasks from "../tasks.js";
 
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   gym: typeof gym;
   journal: typeof journal;
   learning: typeof learning;
+  notes: typeof notes;
   problems: typeof problems;
   tasks: typeof tasks;
 }>;
