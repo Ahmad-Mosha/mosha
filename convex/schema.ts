@@ -7,7 +7,7 @@ export default defineSchema({
     title: v.string(),
     description: v.string(),
     icon: v.string(),
-    status: v.string(), // "in_progress" | "completed"
+    status: v.string(),
     targetDate: v.optional(v.string()),
     progress: v.number(),
     milestones: v.array(
@@ -28,19 +28,38 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_status", ["status"]),
 
-  // 2. Tasks & 3 Big Rocks
+  // 2. Powerful Tasks Mini-System
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
     isBigRock: v.boolean(),
-    status: v.string(),
-    priority: v.string(),
-    module: v.string(),
-    dueDate: v.optional(v.string()),
-    durationMinutes: v.optional(v.number()),
+    status: v.string(), // "todo" | "in_progress" | "blocked" | "done" | "archived"
+    priority: v.string(), // "p1_urgent" | "p2_medium" | "p3_low"
+    module: v.string(), // "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
+    goalId: v.optional(v.id("major_life_goals")),
+    dueDate: v.optional(v.string()), // YYYY-MM-DD
+    dueTime: v.optional(v.string()), // HH:MM
+    estimatedMinutes: v.optional(v.number()), // e.g. 25, 50, 90
+    actualMinutes: v.optional(v.number()),
+    subtasks: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          title: v.string(),
+          completed: v.boolean(),
+        })
+      )
+    ),
+    tags: v.optional(v.array(v.string())),
+    recurring: v.optional(v.string()), // "none" | "daily" | "weekdays" | "weekly"
+    order: v.optional(v.number()),
     completedAt: v.optional(v.string()),
     createdAt: v.string(),
-  }).index("by_status", ["status"]),
+  })
+    .index("by_status", ["status"])
+    .index("by_due_date", ["dueDate"])
+    .index("by_priority", ["priority"])
+    .index("by_module", ["module"]),
 
   // 3. Problem Solving & Algorithmic Mastery Hub
   problems: defineTable({
