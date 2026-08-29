@@ -8,15 +8,10 @@ import {
   FileText,
   Code2,
   BookOpen,
-  Briefcase,
   Layers,
   Dumbbell,
   Wallet,
   BookMarked,
-  GitBranch,
-  Mic,
-  Lightbulb,
-  BarChart3,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -29,21 +24,21 @@ interface NavItem {
   badge?: string;
 }
 
+/**
+ * Only modules with a real screen behind them. Career, Skill Graph, Interview,
+ * Ideas and Analytics are on the roadmap but rendered invented data, so they
+ * are out of the nav until they are built.
+ */
 const NAV_ITEMS: NavItem[] = [
   { id: "tasks", label: "Tasks & Focus", icon: CheckSquare, badge: "Home" },
   { id: "goals", label: "Major Life Goals", icon: Target, badge: "Pillars" },
   { id: "notes", label: "Notes & Knowledge", icon: FileText, badge: "Docs" },
-  { id: "problems", label: "Problem Solving", icon: Code2, badge: "100%" },
+  { id: "problems", label: "Problem Solving", icon: Code2 },
   { id: "learning", label: "Learning & CS", icon: BookOpen },
-  { id: "career", label: "Engineering Career", icon: Briefcase },
   { id: "projects", label: "Projects & Tech", icon: Layers },
   { id: "gym", label: "Gym & Fitness", icon: Dumbbell },
   { id: "finance", label: "Sovereign Finance", icon: Wallet },
   { id: "journal", label: "Engineering Journal", icon: BookMarked },
-  { id: "skills", label: "Skill Graph", icon: GitBranch },
-  { id: "interview", label: "Interview Mode", icon: Mic },
-  { id: "ideas", label: "Personal Ideas", icon: Lightbulb },
-  { id: "analytics", label: "Analytics & Pulse", icon: BarChart3 },
 ];
 
 export function SideNav() {
