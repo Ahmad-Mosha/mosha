@@ -6,21 +6,23 @@ import { api } from "../../../convex/_generated/api";
 import { TipTapEditor } from "./tiptap-editor";
 import { FolderDialog } from "./folder-dialog";
 import {
-  FolderPlus,
+  Folder,
+  FolderOpen,
+  ChevronRight,
+  ChevronDown,
   Plus,
   Search,
+  MoreVertical,
+  ArrowLeft,
   Pin,
   Star,
   Trash2,
-  Folder as FolderIcon,
   Tag,
   Target,
   FileText,
-  Clock,
-  MoreVertical,
-  Edit2,
-  ChevronRight,
+  FolderPlus,
 } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 export function NotesScreen() {
   const folders = useQuery(api.notes.listFolders) || [];
@@ -32,8 +34,6 @@ export function NotesScreen() {
   const removeNote = useMutation(api.notes.removeNote);
   const togglePinned = useMutation(api.notes.togglePinned);
   const toggleFavorite = useMutation(api.notes.toggleFavorite);
-  const removeFolder = useMutation(api.notes.removeFolder);
-  const seedIfEmpty = useMutation(api.notes.seedIfEmpty);
 
   // Warm instant hydration cache
   const [cachedNotes, setCachedNotes] = useState<any[]>([]);
@@ -58,40 +58,60 @@ export function NotesScreen() {
 
   const notes = convexNotes !== undefined ? convexNotes : cachedNotes;
 
-  // Auto seed initial welcoming note & folders if totally empty
-  useEffect(() => {
-    if (convexNotes && convexNotes.length === 0 && folders.length === 0) {
-      seedIfEmpty();
-    }
-  }, [convexNotes, folders.length, seedIfEmpty]);
-
-  // Active navigation states
-  const [selectedFolderId, setSelectedFolderId] = useState<string>("all"); // "all" | "pinned" | "favorites" | folderId
-  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  // Navigation & View State
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
+  const [activeEditingNoteId, setActiveEditingNoteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [tagInput, setTagInput] = useState("");
 
-  // Folder dialog state
+  // Folder Dialog
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
   const [editingFolder, setEditingFolder] = useState<any | null>(null);
+  const [parentFolderIdForNew, setParentFolderIdForNew] = useState<string | undefined>(undefined);
 
-  // Set default active note on first load
+  // Auto-expand parent folders on mount
   useEffect(() => {
-    if (!activeNoteId && notes.length > 0) {
-      setActiveNoteId(notes[0]._id);
-    }
-  }, [notes, activeNoteId]);
+    if (folders.length > 0) {
+      const expanded: Record<string, boolean> = {};
+      folders.forEach((f: any) => {
+        if (!f.parentId) {
+          expanded[f._id] = true;
+        }
+      });
+      setExpandedFolders((prev) => ({ ...expanded, ...prev }));
 
-  const activeNote = notes.find((n: any) => n._id === activeNoteId) || notes[0] || null;
+      // Set default selected folder to Architecture if available or first subfolder
+      if (!selectedFolderId) {
+        const arch = folders.find((f: any) => f.name.toLowerCase() === "architecture");
+        if (arch) {
+          setSelectedFolderId(arch._id);
+        } else if (folders.length > 0) {
+          setSelectedFolderId(folders[0]._id);
+        }
+      }
+    }
+  }, [folders, selectedFolderId]);
+
+  const toggleFolderExpand = (folderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [folderId]: !prev[folderId],
+    }));
+  };
+
+  const activeEditingNote = notes.find((n: any) => n._id === activeEditingNoteId) || null;
 
   // Debounced auto-save timer
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleEditorChange = (html: string, plainText: string) => {
-    if (!activeNote) return;
+    if (!activeEditingNote) return;
 
     // Optimistically update local cache
     const updatedNotes = notes.map((n: any) =>
-      n._id === activeNote._id ? { ...n, content: html, plainText, updatedAt: new Date().toISOString() } : n
+      n._id === activeEditingNote._id ? { ...n, content: html, plainText, updatedAt: new Date().toISOString() } : n
     );
     setCachedNotes(updatedNotes);
 
@@ -99,7 +119,7 @@ export function NotesScreen() {
     autoSaveTimerRef.current = setTimeout(async () => {
       try {
         await updateNote({
-          id: activeNote._id,
+          id: activeEditingNote._id,
           content: html,
           plainText,
         });
@@ -110,423 +130,486 @@ export function NotesScreen() {
   };
 
   const handleTitleChange = async (newTitle: string) => {
-    if (!activeNote) return;
+    if (!activeEditingNote) return;
     const updatedNotes = notes.map((n: any) =>
-      n._id === activeNote._id ? { ...n, title: newTitle, updatedAt: new Date().toISOString() } : n
+      n._id === activeEditingNote._id ? { ...n, title: newTitle, updatedAt: new Date().toISOString() } : n
     );
     setCachedNotes(updatedNotes);
 
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     autoSaveTimerRef.current = setTimeout(async () => {
       await updateNote({
-        id: activeNote._id,
+        id: activeEditingNote._id,
         title: newTitle,
       });
     }, 500);
   };
 
   const handleCreateNewNote = async () => {
-    const targetFolderId =
-      selectedFolderId !== "all" && selectedFolderId !== "pinned" && selectedFolderId !== "favorites"
-        ? (selectedFolderId as any)
-        : undefined;
-
     const newId = await createNote({
       title: "Untitled Note",
       content: "<p></p>",
       plainText: "",
-      folderId: targetFolderId,
+      folderId: (selectedFolderId as any) || undefined,
+      tags: [],
     });
 
     if (newId) {
-      setActiveNoteId(newId);
+      setActiveEditingNoteId(newId);
     }
   };
 
-  const handleDeleteNote = async (id: any) => {
+  const handleDeleteNote = async (id: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     await removeNote({ id });
-    const remaining = notes.filter((n: any) => n._id !== id);
-    setActiveNoteId(remaining.length > 0 ? remaining[0]._id : null);
+    if (activeEditingNoteId === id) {
+      setActiveEditingNoteId(null);
+    }
   };
 
-  // Filter computation
+  const handleAddTag = async (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && tagInput.trim() && activeEditingNote) {
+      e.preventDefault();
+      const currentTags = activeEditingNote.tags || [];
+      const cleanTag = tagInput.trim().replace(/^#/, "");
+      if (!currentTags.includes(cleanTag)) {
+        const nextTags = [...currentTags, cleanTag];
+        await updateNote({
+          id: activeEditingNote._id,
+          tags: nextTags,
+        });
+      }
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = async (tagToRemove: string) => {
+    if (!activeEditingNote) return;
+    const currentTags = activeEditingNote.tags || [];
+    const nextTags = currentTags.filter((t: string) => t !== tagToRemove);
+    await updateNote({
+      id: activeEditingNote._id,
+      tags: nextTags,
+    });
+  };
+
+  // Folder Hierarchy helpers
+  const parentFolders = folders.filter((f: any) => !f.parentId);
+  const getSubfolders = (parentId: string) =>
+    folders.filter((f: any) => f.parentId === parentId);
+
+  const selectedFolder = folders.find((f: any) => f._id === selectedFolderId);
+  const selectedParentFolder = selectedFolder?.parentId
+    ? folders.find((f: any) => f._id === selectedFolder.parentId)
+    : null;
+
+  // Filter notes for grid
   const filteredNotes = notes.filter((note: any) => {
-    if (selectedFolderId === "pinned" && !note.isPinned) return false;
-    if (selectedFolderId === "favorites" && !note.isFavorite) return false;
-    if (
-      selectedFolderId !== "all" &&
-      selectedFolderId !== "pinned" &&
-      selectedFolderId !== "favorites" &&
-      note.folderId !== selectedFolderId
-    ) {
-      return false;
+    if (selectedFolderId && note.folderId !== selectedFolderId) {
+      // Check if note belongs to subfolder of selected parent folder
+      const noteFolder = folders.find((f: any) => f._id === note.folderId);
+      if (noteFolder?.parentId !== selectedFolderId && note.folderId !== selectedFolderId) {
+        return false;
+      }
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchTitle = note.title?.toLowerCase().includes(q);
       const matchText = note.plainText?.toLowerCase().includes(q);
-      if (!matchTitle && !matchText) return false;
+      const matchTags = note.tags?.some((t: string) => t.toLowerCase().includes(q));
+      if (!matchTitle && !matchText && !matchTags) return false;
     }
 
     return true;
   });
 
-  const getFolderName = (folderId?: string) => {
-    if (!folderId) return undefined;
-    const f = folders.find((item: any) => item._id === folderId);
-    return f ? `${f.icon} ${f.name}` : undefined;
-  };
-
   return (
-    <div className="space-y-4 animate-in fade-in duration-200">
-      {/* 3-Column Layout: Folders Sidebar -> Notes List -> Rich Text Editor */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start min-h-[calc(100vh-140px)]">
-        {/* Column 1: Folders / Navigation Sidebar (3 Cols) */}
-        <div className="lg:col-span-3 bento-card rounded-2xl p-3.5 space-y-3 bg-[#FBFBFA]">
-          <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-2 px-1">
-            <h3 className="font-serif font-bold text-sm text-[#1A202C]">
-              Notebooks
-            </h3>
-            <button
-              onClick={() => {
-                setEditingFolder(null);
-                setIsFolderDialogOpen(true);
-              }}
-              title="Add New Folder"
-              className="p-1 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-white transition-colors cursor-pointer"
-            >
-              <FolderPlus className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Quick Filters */}
-          <div className="space-y-0.5 text-xs">
-            <button
-              onClick={() => setSelectedFolderId("all")}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                selectedFolderId === "all"
-                  ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                  : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <FileText className="w-3.5 h-3.5" />
-                <span>All Notes</span>
-              </div>
-              <span className="font-mono text-[10px] opacity-80">{notes.length}</span>
-            </button>
-
-            <button
-              onClick={() => setSelectedFolderId("pinned")}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                selectedFolderId === "pinned"
-                  ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                  : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <Pin className="w-3.5 h-3.5" />
-                <span>Pinned</span>
-              </div>
-              <span className="font-mono text-[10px] opacity-80">
-                {notes.filter((n: any) => n.isPinned).length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setSelectedFolderId("favorites")}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                selectedFolderId === "favorites"
-                  ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                  : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <Star className="w-3.5 h-3.5" />
-                <span>Favorites</span>
-              </div>
-              <span className="font-mono text-[10px] opacity-80">
-                {notes.filter((n: any) => n.isFavorite).length}
-              </span>
-            </button>
-          </div>
-
-          {/* Folders List */}
-          <div className="pt-2 border-t border-[#ECEAE4] space-y-1">
-            <div className="text-[10px] font-mono uppercase text-[#718096] px-1 font-semibold">
-              Folders ({folders.length})
-            </div>
-
-            <div className="space-y-0.5 max-h-56 overflow-y-auto">
-              {folders.map((f: any) => {
-                const count = notes.filter((n: any) => n.folderId === f._id).length;
-                const isSelected = selectedFolderId === f._id;
-
-                return (
-                  <div
-                    key={f._id}
-                    className={`group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
-                      isSelected
-                        ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                        : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
-                    }`}
-                    onClick={() => setSelectedFolderId(f._id)}
-                  >
-                    <div className="flex items-center space-x-2 truncate">
-                      <span>{f.icon || "📁"}</span>
-                      <span className="truncate">{f.name}</span>
-                    </div>
-
-                    <div className="flex items-center space-x-1">
-                      <span className="font-mono text-[10px] opacity-80">{count}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingFolder(f);
-                          setIsFolderDialogOpen(true);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-black transition-opacity"
-                        title="Rename"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+    <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm flex flex-col md:flex-row h-[calc(100vh-130px)] overflow-hidden animate-in fade-in duration-200 select-none">
+      {/* 1. Left Folder Tree Panel (Matching Stitch Design) */}
+      <aside className="w-full md:w-72 bg-white border-r border-[#E2E8F0] flex flex-col h-full shrink-0">
+        {/* Panel Header */}
+        <div className="px-5 py-4 border-b border-[#ECEAE4] flex justify-between items-center">
+          <h2 className="font-mono text-xs text-[#333E50] font-bold tracking-wider uppercase">
+            Knowledge Base
+          </h2>
+          <button
+            onClick={() => {
+              setEditingFolder(null);
+              setParentFolderIdForNew(undefined);
+              setIsFolderDialogOpen(true);
+            }}
+            className="text-[#4A5568] hover:text-[#1A202C] p-1.5 rounded-md hover:bg-[#F1F3F5] transition-colors cursor-pointer"
+            title="Create New Folder"
+          >
+            <FolderPlus className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Column 2: Notes List Pane (4 Cols) */}
-        <div className="lg:col-span-4 bento-card rounded-2xl p-3.5 space-y-3 bg-[#FDFDFD] flex flex-col justify-between">
-          <div className="space-y-2.5">
-            {/* Search & Add New Note Header */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="relative flex-1">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#A0AEC0]" />
+        {/* Tree Structure */}
+        <div className="px-3 py-3 flex-1 overflow-y-auto">
+          <ul className="space-y-1 text-xs">
+            {parentFolders.map((parent: any) => {
+              const subfolders = getSubfolders(parent._id);
+              const isExpanded = Boolean(expandedFolders[parent._id]);
+              const isSelected = selectedFolderId === parent._id;
+
+              return (
+                <li key={parent._id} className="space-y-0.5">
+                  {/* Parent Folder Row */}
+                  <div
+                    onClick={() => {
+                      setSelectedFolderId(parent._id);
+                      setActiveEditingNoteId(null);
+                    }}
+                    className={`flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition-colors group ${
+                      isSelected
+                        ? "bg-[#ECEFF3] text-[#1A202C] font-semibold border-l-2 border-[#333E50]"
+                        : "text-[#2D3748] hover:bg-[#F8F9FA]"
+                    }`}
+                  >
+                    {subfolders.length > 0 ? (
+                      <button
+                        onClick={(e) => toggleFolderExpand(parent._id, e)}
+                        className="text-[#718096] hover:text-[#1A202C] p-0.5 cursor-pointer"
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    ) : (
+                      <div className="w-4" />
+                    )}
+
+                    <Folder className="w-4 h-4 text-[#4A5568] group-hover:text-[#333E50] shrink-0" />
+                    <span className="flex-1 truncate font-medium">{parent.name}</span>
+                  </div>
+
+                  {/* Subfolders List */}
+                  {isExpanded && subfolders.length > 0 && (
+                    <ul className="pl-6 space-y-0.5 mt-0.5">
+                      {subfolders.map((sub: any) => {
+                        const isSubSelected = selectedFolderId === sub._id;
+                        return (
+                          <li key={sub._id}>
+                            <div
+                              onClick={() => {
+                                setSelectedFolderId(sub._id);
+                                setActiveEditingNoteId(null);
+                              }}
+                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-r-lg cursor-pointer transition-colors ${
+                                isSubSelected
+                                  ? "bg-[#ECEFF3] text-[#1A202C] font-semibold border-l-2 border-[#333E50]"
+                                  : "text-[#4A5568] hover:bg-[#F8F9FA] hover:text-[#1A202C]"
+                              }`}
+                            >
+                              <Folder className="w-3.5 h-3.5 text-[#718096] shrink-0" />
+                              <span className="flex-1 truncate">{sub.name}</span>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </aside>
+
+      {/* 2. Main Content Area: Grid View VS Full Editor Canvas */}
+      <main className="flex-1 flex flex-col h-full bg-[#FDFDFD] overflow-hidden">
+        {activeEditingNote ? (
+          /* ========================================================================= */
+          /* EDITOR VIEW: Clean, Tranquil, Full-Featured TipTap Writing Canvas        */
+          /* ========================================================================= */
+          <div className="flex-1 flex flex-col h-full overflow-hidden animate-in fade-in duration-150">
+            {/* Action & Metadata Header */}
+            <div className="h-16 border-b border-[#ECEAE4] px-6 bg-white flex justify-between items-center gap-4 shrink-0">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setActiveEditingNoteId(null)}
+                  className="px-3 py-1.5 rounded-lg border border-[#E2E8F0] hover:bg-[#F8F9FA] text-[#4A5568] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back to Notes</span>
+                </button>
+
+                {/* Breadcrumbs */}
+                <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#718096]">
+                  <span>{selectedParentFolder ? selectedParentFolder.name : "Notes"}</span>
+                  {selectedFolder && (
+                    <>
+                      <ChevronRight className="w-3 h-3 text-[#CBD5E1]" />
+                      <span className="font-semibold text-[#1A202C]">{selectedFolder.name}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Note Metadata Dropdowns & Actions */}
+              <div className="flex items-center space-x-2 text-xs">
+                {/* Folder Selector */}
+                <select
+                  value={activeEditingNote.folderId || ""}
+                  onChange={async (e) => {
+                    const val = e.target.value || undefined;
+                    await updateNote({
+                      id: activeEditingNote._id,
+                      folderId: val as any,
+                    });
+                  }}
+                  className="bg-[#F8F9FA] px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] text-xs text-[#1A202C] focus:outline-none cursor-pointer"
+                >
+                  <option value="">No Folder</option>
+                  {folders.map((f: any) => (
+                    <option key={f._id} value={f._id}>
+                      📁 {f.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Linked Life Goal */}
+                <select
+                  value={activeEditingNote.goalId || ""}
+                  onChange={async (e) => {
+                    const val = e.target.value || undefined;
+                    await updateNote({
+                      id: activeEditingNote._id,
+                      goalId: val as any,
+                    });
+                  }}
+                  className="hidden md:block bg-[#F8F9FA] px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] text-xs text-[#1A202C] focus:outline-none cursor-pointer"
+                >
+                  <option value="">No Linked Goal</option>
+                  {goals.map((g: any) => (
+                    <option key={g._id} value={g._id}>
+                      {g.icon || "🎯"} {g.title}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Pin & Favorite */}
+                <button
+                  onClick={() => togglePinned({ id: activeEditingNote._id })}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                    activeEditingNote.isPinned
+                      ? "bg-amber-50 border-amber-300 text-amber-700"
+                      : "border-[#E2E8F0] text-[#718096] hover:bg-[#F8F9FA]"
+                  }`}
+                  title="Pin note"
+                >
+                  <Pin className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={() => toggleFavorite({ id: activeEditingNote._id })}
+                  className={`p-2 rounded-lg border transition-colors cursor-pointer ${
+                    activeEditingNote.isFavorite
+                      ? "bg-amber-50 border-amber-300 text-amber-500 fill-amber-500"
+                      : "border-[#E2E8F0] text-[#718096] hover:bg-[#F8F9FA]"
+                  }`}
+                  title="Favorite note"
+                >
+                  <Star className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={() => handleDeleteNote(activeEditingNote._id)}
+                  className="p-2 rounded-lg border border-[#E2E8F0] text-[#718096] hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+                  title="Delete note"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Note Canvas Container */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-4 max-w-4xl w-full mx-auto">
+              {/* Title input */}
+              <input
+                type="text"
+                value={activeEditingNote.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Note Title..."
+                className="font-serif text-3xl md:text-4xl font-bold text-[#1A202C] focus:outline-none w-full bg-transparent placeholder:text-[#CBD5E1]"
+              />
+
+              {/* Tags Editor */}
+              <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-[#ECEAE4]/60">
+                {(activeEditingNote.tags || []).map((tag: string) => (
+                  <span
+                    key={tag}
+                    className="bg-[#F1F3F5] text-[#4A5568] px-2.5 py-1 rounded-md text-[11px] font-mono font-medium flex items-center gap-1"
+                  >
+                    <span>#{tag}</span>
+                    <button
+                      onClick={() => handleRemoveTag(tag)}
+                      className="text-[#A0AEC0] hover:text-rose-600 cursor-pointer text-xs ml-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+
                 <input
                   type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search notes..."
-                  className="w-full pl-8 pr-2 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-xs text-[#1A202C] focus:outline-none focus:border-[#333E50]"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleAddTag}
+                  placeholder="+ Add tag (Press Enter)..."
+                  className="text-xs font-mono text-[#4A5568] bg-transparent focus:outline-none px-2 py-0.5 placeholder:text-[#A0AEC0]"
                 />
-              </div>
-
-              <button
-                onClick={handleCreateNewNote}
-                className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Note</span>
-              </button>
-            </div>
-
-            {/* Notes List Scrollable */}
-            <div className="space-y-2 max-h-[calc(100vh-230px)] overflow-y-auto pr-0.5">
-              {filteredNotes.length === 0 ? (
-                <div className="py-12 text-center text-xs text-[#A0AEC0] font-mono">
-                  No notes found. Click &ldquo;+ Note&rdquo; to begin.
-                </div>
-              ) : (
-                filteredNotes.map((note: any) => {
-                  const isSelected = activeNote?._id === note._id;
-                  const folderLabel = getFolderName(note.folderId);
-
-                  return (
-                    <div
-                      key={note._id}
-                      onClick={() => setActiveNoteId(note._id)}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer space-y-1.5 select-none ${
-                        isSelected
-                          ? "bg-white border-[#333E50] shadow-xs"
-                          : "bg-white border-[#E2E8F0] hover:border-[#CBD5E1] shadow-2xs"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <h4
-                          className={`text-xs font-semibold leading-snug truncate ${
-                            isSelected ? "text-[#1A202C] font-bold" : "text-[#2D3748]"
-                          }`}
-                        >
-                          {note.title || "Untitled Note"}
-                        </h4>
-
-                        <div className="flex items-center space-x-1 shrink-0">
-                          {note.isPinned && (
-                            <Pin className="w-3 h-3 text-amber-500 fill-amber-500" />
-                          )}
-                          {note.isFavorite && (
-                            <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Plain text preview */}
-                      <p className="text-[11px] text-[#718096] line-clamp-2 leading-relaxed">
-                        {note.plainText || "No additional text content."}
-                      </p>
-
-                      {/* Footer Badge & Time */}
-                      <div className="flex items-center justify-between pt-1 text-[10px] font-mono text-[#A0AEC0]">
-                        {folderLabel ? (
-                          <span className="px-1.5 py-0.5 rounded bg-[#F1F3F5] text-[#4A5568] truncate max-w-[120px]">
-                            {folderLabel}
-                          </span>
-                        ) : (
-                          <span className="text-[#CBD5E1]">General</span>
-                        )}
-
-                        <span>
-                          {note.updatedAt
-                            ? new Date(note.updatedAt).toLocaleDateString([], {
-                                month: "short",
-                                day: "numeric",
-                              })
-                            : ""}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Column 3: Rich Text Editor Canvas (5 Cols on large, full on max) */}
-        <div className="lg:col-span-5 bento-card rounded-2xl p-4 sm:p-5 space-y-4 bg-white min-h-[560px]">
-          {activeNote ? (
-            <div className="space-y-4 flex flex-col h-full">
-              {/* Note Header: Title input + Folder dropdown + Quick Controls */}
-              <div className="space-y-2 border-b border-[#ECEAE4] pb-3">
-                <div className="flex items-center justify-between gap-2">
-                  <input
-                    type="text"
-                    value={activeNote.title}
-                    onChange={(e) => handleTitleChange(e.target.value)}
-                    placeholder="Note Title..."
-                    className="font-serif text-2xl font-bold text-[#1A202C] focus:outline-none w-full bg-transparent placeholder:text-[#A0AEC0]"
-                  />
-
-                  {/* Actions: Pin, Star, Delete */}
-                  <div className="flex items-center space-x-1 shrink-0">
-                    <button
-                      onClick={() => togglePinned({ id: activeNote._id })}
-                      className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                        activeNote.isPinned
-                          ? "bg-amber-50 border-amber-300 text-amber-700"
-                          : "border-[#E2E8F0] text-[#718096] hover:bg-[#F8F9FA]"
-                      }`}
-                      title="Pin note"
-                    >
-                      <Pin className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={() => toggleFavorite({ id: activeNote._id })}
-                      className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                        activeNote.isFavorite
-                          ? "bg-amber-50 border-amber-300 text-amber-500 fill-amber-500"
-                          : "border-[#E2E8F0] text-[#718096] hover:bg-[#F8F9FA]"
-                      }`}
-                      title="Favorite note"
-                    >
-                      <Star className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={() => handleDeleteNote(activeNote._id)}
-                      className="p-1.5 rounded-lg border border-[#E2E8F0] text-[#718096] hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
-                      title="Delete note"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Metadata Row: Folder Selector & Linked Goal */}
-                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#718096]">
-                  {/* Folder Selector */}
-                  <div className="flex items-center space-x-1">
-                    <FolderIcon className="w-3 h-3 text-[#718096]" />
-                    <select
-                      value={activeNote.folderId || ""}
-                      onChange={async (e) => {
-                        const val = e.target.value || undefined;
-                        await updateNote({
-                          id: activeNote._id,
-                          folderId: val as any,
-                        });
-                      }}
-                      className="bg-[#F8F9FA] px-2 py-0.5 rounded border border-[#E2E8F0] text-[#1A202C] focus:outline-none cursor-pointer"
-                    >
-                      <option value="">No Folder</option>
-                      {folders.map((f: any) => (
-                        <option key={f._id} value={f._id}>
-                          {f.icon} {f.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Goal Selector */}
-                  <div className="flex items-center space-x-1">
-                    <Target className="w-3 h-3 text-[#718096]" />
-                    <select
-                      value={activeNote.goalId || ""}
-                      onChange={async (e) => {
-                        const val = e.target.value || undefined;
-                        await updateNote({
-                          id: activeNote._id,
-                          goalId: val as any,
-                        });
-                      }}
-                      className="bg-[#F8F9FA] px-2 py-0.5 rounded border border-[#E2E8F0] text-[#1A202C] focus:outline-none cursor-pointer"
-                    >
-                      <option value="">No Linked Goal</option>
-                      {goals.map((g: any) => (
-                        <option key={g._id} value={g._id}>
-                          {g.icon || "🎯"} {g.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
               </div>
 
               {/* TipTap Rich Text Editor */}
-              <div className="flex-1">
-                <TipTapEditor
-                  key={activeNote._id}
-                  content={activeNote.content || ""}
-                  onChange={handleEditorChange}
-                />
+              <TipTapEditor
+                key={activeEditingNote._id}
+                content={activeEditingNote.content || ""}
+                onChange={handleEditorChange}
+              />
+            </div>
+          </div>
+        ) : (
+          /* ========================================================================= */
+          /* GRID VIEW: Matching the Stitch Design Exactly (Breadcrumbs + Cards Grid)   */
+          /* ========================================================================= */
+          <div className="flex-1 flex flex-col h-full overflow-hidden">
+            {/* Top Action Bar (Matching Stitch Screen) */}
+            <div className="h-16 border-b border-[#E2E8F0] flex justify-between items-center px-6 bg-white shrink-0">
+              {/* Breadcrumb path */}
+              <div className="flex items-center gap-2 text-sm text-[#4A5568]">
+                <span className="hover:text-[#1A202C] cursor-pointer transition-colors font-medium">
+                  {selectedParentFolder ? selectedParentFolder.name : "Engineering"}
+                </span>
+                <ChevronRight className="w-4 h-4 text-[#CBD5E1]" />
+                <span className="text-[#1A202C] font-semibold">
+                  {selectedFolder ? selectedFolder.name : "Architecture"}
+                </span>
+                <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#EDF2F7] text-[#4A5568]">
+                  {filteredNotes.length} notes
+                </span>
+              </div>
+
+              {/* Search & New Note Button */}
+              <div className="flex items-center gap-3">
+                <div className="relative hidden sm:block w-64">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#A0AEC0]" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search notes..."
+                    className="w-full bg-white border border-[#E2E8F0] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#1A202C] focus:outline-none focus:border-[#333E50]"
+                  />
+                </div>
+
+                <button
+                  onClick={handleCreateNewNote}
+                  className="px-4 py-2 bg-[#333E50] text-white rounded-lg text-xs font-semibold hover:bg-[#252E3B] transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>New Note</span>
+                </button>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-96 text-center space-y-3">
-              <FileText className="w-12 h-12 text-[#CBD5E1]" />
-              <h3 className="font-serif text-lg font-bold text-[#1A202C]">
-                No note selected
-              </h3>
-              <p className="text-xs text-[#718096] max-w-xs">
-                Select an existing note from the list or create a new one to begin writing.
-              </p>
-              <button
-                onClick={handleCreateNewNote}
-                className="px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-              >
-                + Create Note
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Folder Create / Rename Dialog */}
+            {/* Notes Grid (Matching Stitch Screen) */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {/* Note Cards */}
+                {filteredNotes.map((note: any) => (
+                  <div
+                    key={note._id}
+                    onClick={() => setActiveEditingNoteId(note._id)}
+                    className="bg-white border border-[#E2E8F0] rounded-xl p-5 hover:border-[#333E50] transition-all cursor-pointer flex flex-col h-60 group shadow-2xs hover:shadow-md relative overflow-hidden"
+                  >
+                    {/* Header: Title + Options */}
+                    <div className="flex justify-between items-start mb-2.5">
+                      <h3 className="font-semibold text-sm text-[#1A202C] leading-snug line-clamp-2 pr-2">
+                        {note.title || "Untitled Note"}
+                      </h3>
+
+                      <DropdownMenu.Root>
+                        <DropdownMenu.Trigger asChild onClick={(e) => e.stopPropagation()}>
+                          <button className="text-[#A0AEC0] hover:text-[#1A202C] p-1 hover:bg-[#F1F3F5] rounded-md transition-colors cursor-pointer shrink-0">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </DropdownMenu.Trigger>
+
+                        <DropdownMenu.Portal>
+                          <DropdownMenu.Content
+                            className="z-50 bg-white border border-[#E2E8F0] rounded-xl shadow-lg p-1 text-xs min-w-[130px] animate-in fade-in zoom-in-95"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <DropdownMenu.Item
+                              onClick={() => togglePinned({ id: note._id })}
+                              className="px-3 py-1.5 rounded-lg hover:bg-[#F8F9FA] cursor-pointer flex items-center gap-2"
+                            >
+                              <Pin className="w-3.5 h-3.5 text-amber-600" />
+                              <span>{note.isPinned ? "Unpin" : "Pin"}</span>
+                            </DropdownMenu.Item>
+                            <DropdownMenu.Item
+                              onClick={() => toggleFavorite({ id: note._id })}
+                              className="px-3 py-1.5 rounded-lg hover:bg-[#F8F9FA] cursor-pointer flex items-center gap-2"
+                            >
+                              <Star className="w-3.5 h-3.5 text-amber-500" />
+                              <span>{note.isFavorite ? "Unfavorite" : "Favorite"}</span>
+                            </DropdownMenu.Item>
+                            <DropdownMenu.Separator className="h-[1px] bg-[#ECEAE4] my-1" />
+                            <DropdownMenu.Item
+                              onClick={(e) => handleDeleteNote(note._id, e as any)}
+                              className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete</span>
+                            </DropdownMenu.Item>
+                          </DropdownMenu.Content>
+                        </DropdownMenu.Portal>
+                      </DropdownMenu.Root>
+                    </div>
+
+                    {/* Body snippet */}
+                    <p className="text-xs text-[#718096] leading-relaxed line-clamp-4 flex-1 mb-4">
+                      {note.plainText || "Click to open and write notes..."}
+                    </p>
+
+                    {/* Tags Pills at bottom */}
+                    <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
+                      {(note.tags && note.tags.length > 0 ? note.tags : ["notes"]).map(
+                        (tag: string) => (
+                          <span
+                            key={tag}
+                            className="bg-[#F1F3F5] text-[#4A5568] px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider font-semibold"
+                          >
+                            #{tag}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Empty State / Add New Placeholder Card (Matching Stitch Screen) */}
+                <div
+                  onClick={handleCreateNewNote}
+                  className="border-2 border-dashed border-[#CBD5E1] rounded-xl p-5 hover:border-[#333E50] transition-all cursor-pointer flex flex-col items-center justify-center h-60 group bg-[#FAFAFA] hover:bg-[#F4F5F7]"
+                >
+                  <Plus className="w-8 h-8 text-[#A0AEC0] group-hover:text-[#333E50] transition-colors mb-2" />
+                  <span className="font-semibold text-xs text-[#718096] group-hover:text-[#333E50] transition-colors">
+                    Create Note
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Folder Create Dialog */}
       <FolderDialog
         isOpen={isFolderDialogOpen}
         onClose={() => {

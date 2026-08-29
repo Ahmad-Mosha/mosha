@@ -57,20 +57,22 @@ export default defineSchema({
     .index("by_module", ["module"])
     .index("by_daily", ["isDaily"]),
 
-  // 3. Folders / Notebooks for Knowledge Base
+  // 3. Knowledge Base Folders & Hierarchy
   folders: defineTable({
     name: v.string(),
-    icon: v.string(), // e.g. 🏗️, 🧩, 🎖️, 💼, 💡, 📚
-    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    parentId: v.optional(v.id("folders")), // Parent folder for subfolder hierarchy
     order: v.number(),
     createdAt: v.string(),
-  }).index("by_order", ["order"]),
+  })
+    .index("by_order", ["order"])
+    .index("by_parent", ["parentId"]),
 
   // 4. Notes & Knowledge Base (Rich Text)
   notes: defineTable({
     title: v.string(),
     content: v.string(), // HTML / JSON rich content
-    plainText: v.optional(v.string()), // For instant search
+    plainText: v.optional(v.string()), // For instant search & preview snippets
     folderId: v.optional(v.id("folders")),
     isPinned: v.boolean(),
     isFavorite: v.boolean(),
