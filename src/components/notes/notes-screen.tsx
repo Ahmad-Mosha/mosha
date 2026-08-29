@@ -1,29 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { TipTapEditor } from "./tiptap-editor";
+import { NoteEditor } from "./editor";
+import { NoteTree } from "./note-tree";
 import { FolderDialog } from "./folder-dialog";
-import {
-  Folder,
-  ChevronRight,
-  ChevronDown,
-  Plus,
-  Search,
-  MoreVertical,
-  Pin,
-  Star,
-  Trash2,
-  FolderPlus,
-  Edit2,
-  FileText,
-  PanelLeftClose,
-  PanelLeft,
-  BookOpen,
-} from "lucide-react";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Select, NONE } from "@/components/ui/select";
+import { toast } from "sonner";
+import {
+  BookOpen, Folder, FolderPlus, PanelLeft, PanelLeftClose,
+  Pin, Plus, Search, Star, Trash2, X,
+} from "lucide-react";
 
 export function NotesScreen() {
   const folders = useQuery(api.notes.listFolders) || [];
@@ -37,579 +25,327 @@ export function NotesScreen() {
   const toggleFavorite = useMutation(api.notes.toggleFavorite);
   const removeFolder = useMutation(api.notes.removeFolder);
 
-  // Warm instant hydration cache
-  const [cachedNotes, setCachedNotes] = useState<any[]>([]);
+  /**
+   * No localStorage cache here, deliberately.
+   *
+   * It used to seed the tree while the socket connected, but the editor mounts
+   * with whatever content the note has at that moment and is keyed by note id
+   * — which does not change when the real data lands. So a note opened from a
+   * stale cache kept the stale body, and the next save wrote it back over the
+   * real one. It cost two notes before it was caught. A skeleton for a few
+   * hundred milliseconds is a much better trade than losing writing.
+   */
+  const notes = convexNotes ?? [];
+  const isLoadingNotes = convexNotes === undefined;
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("mosha_cached_notes");
-      if (saved) setCachedNotes(JSON.parse(saved));
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    if (convexNotes !== undefined) {
-      setCachedNotes(convexNotes);
-      try {
-        localStorage.setItem("mosha_cached_notes", JSON.stringify(convexNotes));
-      } catch {}
-    }
-  }, [convexNotes]);
-
-  const notes = convexNotes !== undefined ? convexNotes : cachedNotes;
-
-  // 2-Layer States: Sidebar Open/Close
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  // Selection & Tree Expand States
-  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [tagInput, setTagInput] = useState("");
-
-  // Local state for smooth title typing
   const [localTitle, setLocalTitle] = useState("");
-
-  // Folder Dialog
   const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
   const [editingFolder, setEditingFolder] = useState<any | null>(null);
 
-  // Auto-expand all folders on mount
+  // Expand every folder the first time they arrive, then leave the user's own
+  // open/closed choices alone.
+  const didAutoExpand = useRef(false);
   useEffect(() => {
-    if (folders.length > 0) {
-      const expanded: Record<string, boolean> = {};
-      folders.forEach((f: any) => {
-        expanded[f._id] = true;
-      });
-      setExpandedFolders((prev) => ({ ...expanded, ...prev }));
-    }
-  }, [folders.length]);
+    if (didAutoExpand.current || folders.length === 0) return;
+    didAutoExpand.current = true;
+    setExpanded(Object.fromEntries(folders.map((f: any) => [f._id, true])));
+  }, [folders]);
 
-  // Set default active note if none selected
   useEffect(() => {
-    if (notes.length > 0 && !activeNoteId) {
-      setActiveNoteId(notes[0]._id);
-    }
+    if (notes.length > 0 && !activeNoteId) setActiveNoteId(notes[0]._id);
   }, [notes, activeNoteId]);
 
   const activeNote = notes.find((n: any) => n._id === activeNoteId) || null;
 
-  // Sync localTitle whenever activeNote changes ID
   useEffect(() => {
-    if (activeNote) {
-      setLocalTitle(activeNote.title || "");
-    } else {
-      setLocalTitle("");
-    }
+    setLocalTitle(activeNote?.title || "");
   }, [activeNote?._id]);
 
-  const toggleFolderExpand = (folderId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedFolders((prev) => ({ ...prev, [folderId]: !prev[folderId] }));
-  };
+  const isSearching = searchQuery.trim().length > 0;
+  const visibleNotes = isSearching
+    ? notes.filter((n: any) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          n.title?.toLowerCase().includes(q) ||
+          n.plainText?.toLowerCase().includes(q) ||
+          n.tags?.some((t: string) => t.toLowerCase().includes(q))
+        );
+      })
+    : notes;
 
-  // Direct save handler called by TipTap when debounce expires (Zero re-render lag)
-  const handleEditorChange = async (html: string, plainText: string) => {
-    if (!activeNote) return;
-    try {
-      await updateNote({
-        id: activeNote._id,
-        content: html,
-        plainText,
-      });
-    } catch (err) {
-      console.error("Auto-save content failed:", err);
-    }
-  };
-
-  // Debounced auto-save timer for Title
-  const titleTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleTitleChange = (newTitle: string) => {
-    setLocalTitle(newTitle);
-    if (!activeNote) return;
-
-    if (titleTimerRef.current) clearTimeout(titleTimerRef.current);
-    titleTimerRef.current = setTimeout(async () => {
+  const handleEditorChange = useCallback(
+    async (content: string, plainText: string) => {
+      if (!activeNoteId) return;
       try {
-        await updateNote({
-          id: activeNote._id,
-          title: newTitle,
-        });
-      } catch (err) {
-        console.error("Auto-save title failed:", err);
+        await updateNote({ id: activeNoteId as any, content, plainText });
+      } catch {
+        toast.error("Could not save note");
       }
+    },
+    [activeNoteId, updateNote]
+  );
+
+  const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleTitleChange = (next: string) => {
+    setLocalTitle(next);
+    if (!activeNoteId) return;
+    if (titleTimer.current) clearTimeout(titleTimer.current);
+    titleTimer.current = setTimeout(() => {
+      updateNote({ id: activeNoteId as any, title: next }).catch(() =>
+        toast.error("Could not save title")
+      );
     }, 400);
   };
 
-  const handleCreateNewNote = async (folderId?: string) => {
+  const handleCreateNote = async (folderId?: string) => {
     try {
-      const newId = await createNote({
+      const id = await createNote({
         title: "Untitled Note",
         content: "<p></p>",
         plainText: "",
         folderId: (folderId as any) || undefined,
         tags: [],
       });
-
-      if (newId) {
-        setActiveNoteId(newId);
+      if (id) {
+        setActiveNoteId(id);
         setLocalTitle("Untitled Note");
-        if (folderId) {
-          setExpandedFolders((prev) => ({ ...prev, [folderId]: true }));
-        }
+        if (folderId) setExpanded((p) => ({ ...p, [folderId]: true }));
       }
-    } catch (err) {
-      console.error("Failed to create note:", err);
+    } catch {
+      toast.error("Could not create note");
     }
   };
 
-  const handleDeleteNote = async (id: any, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const handleDeleteNote = async (id: string) => {
+    const doomed = notes.find((n: any) => n._id === id);
     try {
-      await removeNote({ id });
+      await removeNote({ id: id as any });
       if (activeNoteId === id) {
-        const remaining = notes.filter((n: any) => n._id !== id);
-        setActiveNoteId(remaining.length > 0 ? remaining[0]._id : null);
+        const rest = notes.filter((n: any) => n._id !== id);
+        setActiveNoteId(rest[0]?._id ?? null);
       }
-    } catch (err) {
-      console.error("Failed to delete note:", err);
+      toast.success(`Deleted “${doomed?.title || "Untitled Note"}”`);
+    } catch {
+      toast.error("Could not delete note");
     }
   };
 
-  const handleDeleteFolder = async (folderId: any, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const handleDeleteFolder = async (id: string) => {
     try {
-      await removeFolder({ id: folderId });
-    } catch (err) {
-      console.error("Failed to delete folder:", err);
+      await removeFolder({ id: id as any });
+      toast.success("Folder deleted — its notes moved to General");
+    } catch {
+      toast.error("Could not delete folder");
     }
   };
 
-  const handleAddTag = async (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && tagInput.trim() && activeNote) {
-      e.preventDefault();
-      const currentTags = activeNote.tags || [];
-      const cleanTag = tagInput.trim().replace(/^#/, "");
-      if (!currentTags.includes(cleanTag)) {
-        const nextTags = [...currentTags, cleanTag];
-        await updateNote({
-          id: activeNote._id,
-          tags: nextTags,
-        });
-      }
-      setTagInput("");
+  const addTag = async (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter" || !tagInput.trim() || !activeNote) return;
+    e.preventDefault();
+    const tag = tagInput.trim().replace(/^#/, "");
+    const tags = activeNote.tags || [];
+    if (!tags.includes(tag)) {
+      await updateNote({ id: activeNote._id, tags: [...tags, tag] });
     }
+    setTagInput("");
   };
 
-  const handleRemoveTag = async (tagToRemove: string) => {
+  const removeTag = async (tag: string) => {
     if (!activeNote) return;
-    const currentTags = activeNote.tags || [];
-    const nextTags = currentTags.filter((t: string) => t !== tagToRemove);
     await updateNote({
       id: activeNote._id,
-      tags: nextTags,
+      tags: (activeNote.tags || []).filter((t: string) => t !== tag),
     });
   };
 
-  // Filter notes by search query
-  const getFilteredNotesForFolder = (folderId: string | null) => {
-    return notes.filter((note: any) => {
-      const matchFolder = folderId ? note.folderId === folderId : !note.folderId;
-      if (!matchFolder) return false;
-
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchTitle = note.title?.toLowerCase().includes(q);
-        const matchText = note.plainText?.toLowerCase().includes(q);
-        const matchTags = note.tags?.some((t: string) => t.toLowerCase().includes(q));
-        if (!matchTitle && !matchText && !matchTags) return false;
-      }
-      return true;
-    });
-  };
-
-  const uncategorizedNotes = getFilteredNotesForFolder(null);
-
-  // Active note folder
-  const activeNoteFolder = activeNote?.folderId
+  const activeFolder = activeNote?.folderId
     ? folders.find((f: any) => f._id === activeNote.folderId)
     : null;
 
   return (
-    <div className="w-full h-full bg-surface-2 flex flex-col md:flex-row overflow-hidden select-none">
-      {/* ========================================================================= */}
-      {/* LAYER 1: SIDEBAR (FOLDERS WITH NOTES DIRECTLY INSIDE)                      */}
-      {/* ========================================================================= */}
+    <div className="flex h-full w-full flex-col overflow-hidden bg-surface-2 md:flex-row">
+      {/* ---- Sidebar ------------------------------------------------------ */}
       {isSidebarOpen && (
-        <aside className="w-full md:w-72 lg:w-80 bg-subtle border-r border-line flex flex-col h-full shrink-0 animate-in slide-in-from-left duration-200">
-          {/* Header Bar */}
-          <div className="px-4 py-3 border-b border-line bg-surface-2 flex justify-between items-center">
-            <h2 className="font-mono text-label text-accent font-bold tracking-wider uppercase">
+        <aside className="flex h-full w-full shrink-0 flex-col border-r border-line bg-surface md:w-72">
+          <div className="flex items-center justify-between border-b border-line px-3 py-2.5">
+            <h2 className="font-mono text-meta font-semibold uppercase text-faint">
               Knowledge Base
             </h2>
-
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center gap-0.5">
               <button
-                onClick={() => handleCreateNewNote()}
-                className="text-muted hover:text-ink p-1.5 rounded-lg hover:bg-subtle-2 transition-colors cursor-pointer"
-                title="Create Note"
+                onClick={() => handleCreateNote()}
+                title="New note"
+                className="grid h-7 w-7 place-items-center rounded-md text-muted
+                           hover:bg-subtle-2 hover:text-ink transition-colors cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="h-4 w-4" />
               </button>
-
               <button
-                onClick={() => {
-                  setEditingFolder(null);
-                  setIsFolderDialogOpen(true);
-                }}
-                className="text-muted hover:text-ink p-1.5 rounded-lg hover:bg-subtle-2 transition-colors cursor-pointer"
-                title="Create Folder"
+                onClick={() => { setEditingFolder(null); setIsFolderDialogOpen(true); }}
+                title="New folder"
+                className="grid h-7 w-7 place-items-center rounded-md text-muted
+                           hover:bg-subtle-2 hover:text-ink transition-colors cursor-pointer"
               >
-                <FolderPlus className="w-4 h-4" />
+                <FolderPlus className="h-4 w-4" />
               </button>
-
               <button
                 onClick={() => setIsSidebarOpen(false)}
-                className="text-faint hover:text-ink p-1.5 rounded-lg hover:bg-subtle-2 transition-colors cursor-pointer"
-                title="Collapse Sidebar"
+                title="Hide sidebar"
+                className="grid h-7 w-7 place-items-center rounded-md text-faint
+                           hover:bg-subtle-2 hover:text-ink transition-colors cursor-pointer"
               >
-                <PanelLeftClose className="w-4 h-4" />
+                <PanelLeftClose className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="p-2.5 border-b border-line bg-surface-2">
+          <div className="border-b border-line p-2">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-ghost" />
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ghost" />
               <input
-                type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes..."
-                className="w-full bg-subtle border border-line rounded-lg pl-7 pr-2.5 py-1 text-label text-ink focus:outline-none focus:border-accent"
+                placeholder="Search notes…"
+                className="w-full rounded-lg border border-line bg-subtle py-1.5 pl-8 pr-7
+                           text-label text-ink outline-none transition-colors
+                           placeholder:text-ghost focus:border-accent focus:bg-surface-2"
               />
+              {isSearching && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-ghost
+                             hover:text-ink cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Tree: Folders & Notes */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-2 text-label">
-            {/* 1. Folders with their Notes */}
-            {folders.map((folder: any) => {
-              const isExpanded = Boolean(expandedFolders[folder._id]);
-              const folderNotes = getFilteredNotesForFolder(folder._id);
-
-              return (
-                <div key={folder._id} className="space-y-0.5">
-                  {/* Folder Row Header */}
-                  <div
-                    onClick={(e) => toggleFolderExpand(folder._id, e)}
-                    className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors group text-ink-2 font-medium"
-                  >
-                    <div className="flex items-center gap-1.5 truncate flex-1">
-                      <button
-                        onClick={(e) => toggleFolderExpand(folder._id, e)}
-                        className="text-faint hover:text-ink p-0.5 cursor-pointer"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                      <Folder className="w-4 h-4 text-muted shrink-0" />
-                      <span className="truncate font-semibold">{folder.name}</span>
-                    </div>
-
-                    <div className="flex items-center space-x-1">
-                      <span className="text-meta font-mono text-ghost">
-                        {folderNotes.length}
-                      </span>
-
-                      {/* Add note to folder */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCreateNewNote(folder._id);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-black/5 rounded text-faint hover:text-ink transition-opacity cursor-pointer"
-                        title="Add Note in Folder"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-
-                      {/* Folder Options */}
-                      <DropdownMenu.Root>
-                        <DropdownMenu.Trigger
-                          asChild
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-black/5 rounded text-faint hover:text-ink transition-opacity cursor-pointer">
-                            <MoreVertical className="w-3 h-3" />
-                          </button>
-                        </DropdownMenu.Trigger>
-                        <DropdownMenu.Portal>
-                          <DropdownMenu.Content
-                            className="z-50 bg-surface-2 border border-line rounded-xl shadow-lg p-1 text-label min-w-[130px]"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <DropdownMenu.Item
-                              onClick={() => {
-                                setEditingFolder(folder);
-                                setIsFolderDialogOpen(true);
-                              }}
-                              className="px-3 py-1.5 rounded-lg hover:bg-subtle cursor-pointer flex items-center gap-2"
-                            >
-                              <Edit2 className="w-3.5 h-3.5 text-faint" />
-                              <span>Rename Folder</span>
-                            </DropdownMenu.Item>
-                            <DropdownMenu.Item
-                              onClick={(e) =>
-                                handleDeleteFolder(folder._id, e as any)
-                              }
-                              className="px-3 py-1.5 rounded-lg hover:bg-danger-tint text-danger cursor-pointer flex items-center gap-2"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Delete Folder</span>
-                            </DropdownMenu.Item>
-                          </DropdownMenu.Content>
-                        </DropdownMenu.Portal>
-                      </DropdownMenu.Root>
-                    </div>
-                  </div>
-
-                  {/* Notes Inside Folder */}
-                  {isExpanded && (
-                    <div className="pl-5 space-y-0.5 border-l border-line ml-3 mt-0.5">
-                      {folderNotes.length === 0 ? (
-                        <div
-                          onClick={() => handleCreateNewNote(folder._id)}
-                          className="px-2 py-1 text-meta text-ghost hover:text-accent cursor-pointer flex items-center gap-1"
-                        >
-                          <Plus className="w-3 h-3" />
-                          <span>Add note...</span>
-                        </div>
-                      ) : (
-                        folderNotes.map((note: any) => {
-                          const isSelected = activeNote?._id === note._id;
-                          return (
-                            <div
-                              key={note._id}
-                              onClick={() => setActiveNoteId(note._id)}
-                              className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors group/note ${
-                                isSelected
-                                  ? "bg-accent text-accent-fg font-semibold shadow-xs"
-                                  : "text-muted hover:bg-surface-2 hover:text-ink"
-                              }`}
-                            >
-                              <div className="flex items-center gap-1.5 truncate flex-1">
-                                <FileText
-                                  className={`w-3.5 h-3.5 shrink-0 ${
-                                    isSelected ? "text-accent-fg" : "text-ghost"
-                                  }`}
-                                />
-                                <span className="truncate">
-                                  {note.title || "Untitled Note"}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center space-x-1 shrink-0">
-                                {note.isPinned && (
-                                  <Pin
-                                    className={`w-3 h-3 ${
-                                      isSelected
-                                        ? "text-warn fill-warn"
-                                        : "text-warn fill-warn"
-                                    }`}
-                                  />
-                                )}
-                                <button
-                                  onClick={(e) =>
-                                    handleDeleteNote(note._id, e)
-                                  }
-                                  className={`opacity-0 group-hover/note:opacity-100 p-0.5 rounded transition-opacity cursor-pointer ${
-                                    isSelected
-                                      ? "hover:bg-accent-fg/20 text-accent-fg"
-                                      : "hover:bg-danger-tint text-danger"
-                                  }`}
-                                  title="Delete Note"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* 2. Uncategorized / General Notes */}
-            <div className="pt-2">
-              <div className="px-2 py-1 text-meta font-mono text-faint uppercase font-semibold">
-                General Notes ({uncategorizedNotes.length})
+          <div className="flex-1 overflow-y-auto px-1.5">
+            {isLoadingNotes ? (
+              <div className="space-y-1.5 p-2" aria-label="Loading notes">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="h-7 animate-pulse rounded-md bg-subtle" />
+                ))}
               </div>
-
-              <div className="space-y-0.5 mt-0.5">
-                {uncategorizedNotes.map((note: any) => {
-                  const isSelected = activeNote?._id === note._id;
-                  return (
-                    <div
-                      key={note._id}
-                      onClick={() => setActiveNoteId(note._id)}
-                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors group/note ${
-                        isSelected
-                          ? "bg-accent text-accent-fg font-semibold shadow-xs"
-                          : "text-muted hover:bg-surface-2 hover:text-ink"
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 truncate flex-1">
-                        <FileText
-                          className={`w-3.5 h-3.5 shrink-0 ${
-                            isSelected ? "text-accent-fg" : "text-ghost"
-                          }`}
-                        />
-                        <span className="truncate">
-                          {note.title || "Untitled Note"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center space-x-1 shrink-0">
-                        {note.isPinned && (
-                          <Pin
-                            className={`w-3 h-3 ${
-                              isSelected
-                                ? "text-warn fill-warn"
-                                : "text-warn fill-warn"
-                            }`}
-                          />
-                        )}
-                        <button
-                          onClick={(e) => handleDeleteNote(note._id, e)}
-                          className={`opacity-0 group-hover/note:opacity-100 p-0.5 rounded transition-opacity cursor-pointer ${
-                            isSelected
-                              ? "hover:bg-accent-fg/20 text-accent-fg"
-                              : "hover:bg-danger-tint text-danger"
-                          }`}
-                          title="Delete Note"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Empty State */}
-            {folders.length === 0 && uncategorizedNotes.length === 0 && (
-              <div className="py-12 text-center px-4 space-y-2">
-                <p className="text-label text-ghost">No notes created yet.</p>
+            ) : notes.length === 0 && folders.length === 0 ? (
+              <div className="space-y-3 px-3 py-12 text-center">
+                <p className="text-label text-ghost">No notes yet.</p>
                 <button
-                  onClick={() => handleCreateNewNote()}
-                  className="px-3 py-1.5 rounded-lg bg-accent text-accent-fg text-label font-semibold hover:bg-accent-hover shadow-xs cursor-pointer inline-block"
+                  onClick={() => handleCreateNote()}
+                  className="rounded-lg bg-accent px-3 py-1.5 text-label font-semibold
+                             text-accent-fg hover:bg-accent-hover cursor-pointer"
                 >
-                  + Create First Note
+                  Create first note
                 </button>
               </div>
+            ) : isSearching && visibleNotes.length === 0 ? (
+              <p className="px-3 py-8 text-center text-label text-ghost">
+                Nothing matches “{searchQuery}”.
+              </p>
+            ) : (
+              <NoteTree
+                folders={folders as any}
+                notes={visibleNotes as any}
+                activeNoteId={activeNoteId}
+                expanded={expanded}
+                isSearching={isSearching}
+                onToggleFolder={(id) => setExpanded((p) => ({ ...p, [id]: !p[id] }))}
+                onSelectNote={setActiveNoteId}
+                onCreateNote={handleCreateNote}
+                onEditFolder={(f) => { setEditingFolder(f); setIsFolderDialogOpen(true); }}
+                onDeleteFolder={handleDeleteFolder}
+                onDeleteNote={handleDeleteNote}
+              />
             )}
           </div>
         </aside>
       )}
 
-      {/* ========================================================================= */}
-      {/* LAYER 2: THE FULL-WIDTH NOTE WRITING CANVAS (100% SCREEN REAL ESTATE)     */}
-      {/* ========================================================================= */}
-      <main className="flex-1 flex flex-col h-full bg-surface-2 overflow-hidden">
-        {activeNote ? (
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
-            {/* Top Toolbar Bar */}
-            <div className="px-6 py-3 border-b border-line flex flex-wrap items-center justify-between gap-3 bg-surface shrink-0 text-label">
-              {/* Left Controls: Open Sidebar Toggle & Folder Breadcrumb */}
-              <div className="flex items-center space-x-2">
-                {!isSidebarOpen && (
-                  <button
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="p-1.5 rounded-lg border border-line hover:bg-subtle-2 text-muted transition-colors cursor-pointer flex items-center gap-1.5"
-                    title="Open Notes Sidebar"
-                  >
-                    <PanelLeft className="w-3.5 h-3.5" />
-                    <span className="font-semibold">Sidebar</span>
-                  </button>
-                )}
+      {/* ---- Editor pane -------------------------------------------------- */}
+      <main className="flex h-full flex-1 flex-col overflow-hidden bg-surface-2">
+        {/* The editor must never mount before the real note has loaded — it is
+            keyed by note id, so it would keep whatever body it started with. */}
+        {isLoadingNotes ? null : activeNote ? (
+          <>
+            <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-4 py-2">
+              {!isSidebarOpen && (
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Show sidebar"
+                  className="grid h-7 w-7 place-items-center rounded-md border border-line
+                             text-muted hover:bg-subtle transition-colors cursor-pointer"
+                >
+                  <PanelLeft className="h-3.5 w-3.5" />
+                </button>
+              )}
 
-                <div className="flex items-center gap-1.5 text-label text-faint">
-                  <Folder className="w-3.5 h-3.5 text-ghost" />
-                  <span className="font-medium text-ink">
-                    {activeNoteFolder ? activeNoteFolder.name : "General Notes"}
-                  </span>
-                </div>
-              </div>
+              <span className="flex items-center gap-1.5 text-label text-faint">
+                <Folder className="h-3.5 w-3.5 text-ghost" />
+                {activeFolder ? activeFolder.name : "General"}
+              </span>
 
-              {/* Tags Manager */}
-              <div className="flex flex-wrap items-center gap-1.5 flex-1 max-w-md">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
                 {(activeNote.tags || []).map((tag: string) => (
                   <span
                     key={tag}
-                    className="bg-subtle-2 text-muted px-2 py-0.5 rounded text-meta font-mono font-medium flex items-center gap-1"
+                    className="flex items-center gap-1 rounded bg-subtle-2 px-1.5 py-0.5
+                               font-mono text-meta text-muted"
                   >
-                    <span>#{tag}</span>
+                    #{tag}
                     <button
-                      onClick={() => handleRemoveTag(tag)}
-                      className="text-ghost hover:text-danger cursor-pointer ml-0.5"
+                      onClick={() => removeTag(tag)}
+                      className="text-ghost hover:text-danger cursor-pointer"
+                      title={`Remove #${tag}`}
                     >
-                      ×
+                      <X className="h-2.5 w-2.5" />
                     </button>
                   </span>
                 ))}
-
                 <input
-                  type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleAddTag}
-                  placeholder="+ tag..."
-                  className="text-label font-mono text-muted bg-transparent focus:outline-none px-1 py-0.5 placeholder:text-ghost w-16"
+                  onKeyDown={addTag}
+                  placeholder="+ tag"
+                  className="w-16 bg-transparent px-1 font-mono text-meta text-muted
+                             outline-none placeholder:text-ghost"
                 />
               </div>
 
-              {/* Metadata & Actions */}
-              <div className="flex items-center space-x-1.5">
-                {/* Folder Dropdown */}
+              <div className="flex items-center gap-1.5">
                 <Select
                   value={activeNote.folderId || NONE}
-                  onValueChange={async (v) => {
-                    await updateNote({
+                  onValueChange={(v) =>
+                    updateNote({
                       id: activeNote._id,
                       folderId: (v === NONE ? undefined : v) as any,
-                    });
-                  }}
+                    })
+                  }
+                  size="sm"
                   options={[
-                    { value: NONE, label: "📁 General (No Folder)" },
-                    ...folders.map((f: any) => ({
-                      value: f._id,
-                      label: `📁 ${f.name}`,
-                    })),
+                    { value: NONE, label: "General" },
+                    ...folders.map((f: any) => ({ value: f._id, label: f.name })),
                   ]}
                 />
-
-                {/* Linked Life Goal */}
                 <Select
                   value={activeNote.goalId || NONE}
-                  onValueChange={async (v) => {
-                    await updateNote({
+                  onValueChange={(v) =>
+                    updateNote({
                       id: activeNote._id,
                       goalId: (v === NONE ? undefined : v) as any,
-                    });
-                  }}
+                    })
+                  }
+                  size="sm"
                   className="hidden xl:inline-flex"
                   options={[
-                    { value: NONE, label: "No Linked Goal" },
+                    { value: NONE, label: "No linked goal" },
                     ...goals.map((g: any) => ({
                       value: g._id,
                       label: `${g.icon || "🎯"} ${g.title}`,
@@ -619,84 +355,81 @@ export function NotesScreen() {
 
                 <button
                   onClick={() => togglePinned({ id: activeNote._id })}
-                  className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                  title={activeNote.isPinned ? "Unpin" : "Pin note"}
+                  className={`grid h-7 w-7 place-items-center rounded-md border transition-colors cursor-pointer ${
                     activeNote.isPinned
-                      ? "bg-warn-tint border-warn/35 text-warn"
+                      ? "border-warn/35 bg-warn-tint text-warn"
                       : "border-line text-faint hover:bg-subtle"
                   }`}
-                  title="Pin note"
                 >
-                  <Pin className="w-3.5 h-3.5" />
+                  <Pin className={`h-3.5 w-3.5 ${activeNote.isPinned ? "fill-current" : ""}`} />
                 </button>
-
                 <button
                   onClick={() => toggleFavorite({ id: activeNote._id })}
-                  className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                  title={activeNote.isFavorite ? "Unstar" : "Star note"}
+                  className={`grid h-7 w-7 place-items-center rounded-md border transition-colors cursor-pointer ${
                     activeNote.isFavorite
-                      ? "bg-warn-tint border-warn/35 text-warn fill-warn"
+                      ? "border-warn/35 bg-warn-tint text-warn"
                       : "border-line text-faint hover:bg-subtle"
                   }`}
-                  title="Favorite note"
                 >
-                  <Star className="w-3.5 h-3.5" />
+                  <Star className={`h-3.5 w-3.5 ${activeNote.isFavorite ? "fill-current" : ""}`} />
                 </button>
-
                 <button
                   onClick={() => handleDeleteNote(activeNote._id)}
-                  className="p-1.5 rounded-lg border border-line text-faint hover:bg-danger-tint hover:text-danger transition-colors cursor-pointer"
                   title="Delete note"
+                  className="grid h-7 w-7 place-items-center rounded-md border border-line
+                             text-faint hover:bg-danger-tint hover:text-danger
+                             transition-colors cursor-pointer"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Note Canvas (Spacious & Clean) */}
-            <div className="flex-1 overflow-y-auto px-6 md:px-14 py-6 space-y-4 max-w-6xl w-full mx-auto">
+            {/* Title sits above the editor's scroll area so it stays put while
+                the note scrolls, and the toolbar stays reachable. */}
+            <div className="shrink-0 border-b border-line px-8 pb-3 pt-6 md:px-12">
               <input
-                type="text"
                 value={localTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Note Title..."
-                className="font-serif text-display md:text-display font-bold text-ink focus:outline-none w-full bg-transparent placeholder:text-line-2 border-b border-transparent focus:border-line pb-2 transition-colors"
+                placeholder="Untitled"
+                className="block w-full max-w-3xl bg-transparent font-serif
+                           text-display text-ink outline-none placeholder:text-line-2"
               />
+            </div>
 
-              {/* TipTap Rich Text Editor */}
-              <TipTapEditor
+            <div className="min-h-0 flex-1">
+              <NoteEditor
                 key={activeNote._id}
                 initialContent={activeNote.content || ""}
                 onChange={handleEditorChange}
               />
             </div>
-          </div>
+          </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-            <BookOpen className="w-12 h-12 text-line-2" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+            <BookOpen className="h-10 w-10 text-line-2" />
             <div className="space-y-1">
-              <h3 className="font-serif text-title font-bold text-ink">
-                Knowledge Base Workspace
-              </h3>
-              <p className="text-label text-faint max-w-sm">
-                Select a note from the sidebar or click below to create a new note.
+              <h3 className="font-serif text-title text-ink">Knowledge Base</h3>
+              <p className="max-w-xs text-label text-faint">
+                Pick a note from the sidebar, or start a new one.
               </p>
             </div>
             <button
-              onClick={() => handleCreateNewNote()}
-              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-xs transition-colors cursor-pointer"
+              onClick={() => handleCreateNote()}
+              className="rounded-xl bg-accent px-5 py-2.5 text-label font-semibold
+                         text-accent-fg hover:bg-accent-hover transition-colors cursor-pointer"
             >
-              + Create Note
+              New note
             </button>
           </div>
         )}
       </main>
 
-      {/* Folder Create / Rename Dialog */}
       <FolderDialog
         isOpen={isFolderDialogOpen}
-        onClose={() => {
-          setIsFolderDialogOpen(false);
-          setEditingFolder(null);
-        }}
+        onClose={() => { setIsFolderDialogOpen(false); setEditingFolder(null); }}
         editingFolder={editingFolder}
       />
     </div>

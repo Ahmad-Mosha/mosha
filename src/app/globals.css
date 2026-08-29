@@ -244,7 +244,13 @@ body [data-state],
 
 .tiptap ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
 .tiptap ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
-.tiptap li { margin-bottom: 0.25rem; line-height: 1.6; }
+.tiptap li { margin-bottom: 0.15rem; line-height: 1.6; }
+
+/* Tiptap wraps each list item's text in its own <p>, which was picking up the
+   0.75rem paragraph margin and pushing list rows far apart. */
+.tiptap li > p { margin-bottom: 0; }
+.tiptap li > ul,
+.tiptap li > ol { margin-top: 0.15rem; margin-bottom: 0; }
 
 .tiptap ul[data-type="taskList"] {
   list-style: none;
@@ -322,3 +328,64 @@ body [data-state],
 .hljs-built_in, .hljs-class .hljs-title { color: #C4A6FA; }
 .hljs-emphasis { font-style: italic; }
 .hljs-strong { font-weight: bold; }
+
+/* --- Tables ------------------------------------------------------------- */
+.tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+}
+.tiptap th,
+.tiptap td {
+  border: 1px solid var(--color-line);
+  padding: 0.5rem 0.65rem;
+  vertical-align: top;
+  position: relative;
+  min-width: 4rem;
+}
+.tiptap th {
+  background: var(--color-subtle);
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-ink);
+}
+.tiptap .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  pointer-events: none;
+}
+.tiptap .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--color-accent);
+  cursor: col-resize;
+}
+
+/* --- Selection inside the document -------------------------------------- */
+.tiptap ::selection {
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+/* A node selected as a whole (image, divider, table) reads as a card, not text. */
+.tiptap .ProseMirror-selectednode {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* --- Placeholder on every empty block, not only the first ---------------- */
+.tiptap .is-empty::before {
+  color: var(--color-ghost);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

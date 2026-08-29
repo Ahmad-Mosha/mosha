@@ -72,23 +72,31 @@ export default function Home() {
         {/* Top Header Bar */}
         <TopHeader />
 
-        {/* Main Content View (Edge-to-Edge full width for Notes & Projects workspace) */}
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.main
+        {/* Edge-to-edge workspaces (Notes, Projects) mount a full-height editor.
+            Fading that whole subtree stalls the animation mid-flight and washes
+            out the screen, so those swap instantly; the padded module screens
+            keep the transition. */}
+        {isEdgeToEdge ? (
+          <main
             key={activeModule}
-            variants={screenTransition}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className={`flex-1 w-full ${
-              isEdgeToEdge
-                ? "h-[calc(100vh-53px)] overflow-hidden"
-                : "px-6 py-6 max-w-7xl mx-auto"
-            }`}
+            className="flex-1 w-full h-[calc(100vh-53px)] overflow-hidden"
           >
             {renderModuleContent()}
-          </motion.main>
-        </AnimatePresence>
+          </main>
+        ) : (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.main
+              key={activeModule}
+              variants={screenTransition}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex-1 w-full px-6 py-6 max-w-7xl mx-auto"
+            >
+              {renderModuleContent()}
+            </motion.main>
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Global Modals */}

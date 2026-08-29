@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { ProjectKanban } from "./project-kanban";
-import { TipTapEditor } from "../notes/tiptap-editor";
+import { NoteEditor } from "../notes/editor";
 import {
   ArrowLeft,
   Github,
@@ -276,7 +276,7 @@ export function ProjectDetailView({
               </span>
             </div>
 
-            <TipTapEditor
+            <NoteEditor
               key={project._id}
               initialContent={project.devNotes || "<h2>Architecture Overview</h2><p>Document technical details here...</p>"}
               onChange={handleDevNotesChange}
