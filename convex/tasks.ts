@@ -19,12 +19,13 @@ export const create = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     priority: v.string(), // "p1_urgent" | "p2_medium" | "p3_low"
-    module: v.string(), // "general" | "problems" | "learning" | "gym" | "career" | "goals" | "finance" | "personal"
+    module: v.string(), // "general" | "problems" | "learning" | "gym" | "career" | "goals" | "finance" | "personal" | "projects"
     dueDate: v.optional(v.string()),
     dueTime: v.optional(v.string()),
     isDaily: v.optional(v.boolean()),
     status: v.optional(v.string()),
     goalId: v.optional(v.id("major_life_goals")),
+    projectId: v.optional(v.id("projects")),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -49,6 +50,7 @@ export const create = mutation({
       status: args.status || "todo",
       streakCount: isDaily ? 0 : undefined,
       goalId: args.goalId,
+      projectId: args.projectId,
       subtasks: args.subtasks,
       order: args.order,
       createdAt: new Date().toISOString(),
@@ -63,15 +65,16 @@ export const update = mutation({
     id: v.id("tasks"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    status: v.optional(v.string()),
     priority: v.optional(v.string()),
     module: v.optional(v.string()),
     dueDate: v.optional(v.string()),
     dueTime: v.optional(v.string()),
+    status: v.optional(v.string()),
+    goalId: v.optional(v.id("major_life_goals")),
+    projectId: v.optional(v.id("projects")),
     isDaily: v.optional(v.boolean()),
     streakCount: v.optional(v.number()),
     lastCompletedDate: v.optional(v.string()),
-    goalId: v.optional(v.id("major_life_goals")),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -87,57 +90,47 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const { id, ...fields } = args;
     await ctx.db.patch(id, fields);
-    return id;
   },
 });
 
-// Mutation: Toggle task completion with streak calculation
+// Mutation: Toggle task completion status
 export const toggle = mutation({
   args: { id: v.id("tasks") },
   handler: async (ctx, args) => {
     const task = await ctx.db.get(args.id);
     if (!task) throw new Error("Task not found");
 
-    const today = new Date().toISOString().split("T")[0];
-    const nextStatus = task.status === "done" ? "todo" : "done";
-
-    let streakCount = task.streakCount;
     if (task.isDaily) {
-      if (nextStatus === "done") {
-        streakCount = (task.streakCount || 0) + 1;
+      const today = new Date().toISOString().split("T")[0];
+      const isAlreadyCompletedToday = task.lastCompletedDate === today;
+
+      if (isAlreadyCompletedToday) {
+        // Toggle back
+        await ctx.db.patch(args.id, {
+          status: "todo",
+          lastCompletedDate: undefined,
+          streakCount: Math.max(0, (task.streakCount || 1) - 1),
+        });
       } else {
-        streakCount = Math.max(0, (task.streakCount || 1) - 1);
+        // Increment streak
+        await ctx.db.patch(args.id, {
+          status: "done",
+          lastCompletedDate: today,
+          streakCount: (task.streakCount || 0) + 1,
+          completedAt: new Date().toISOString(),
+        });
       }
+    } else {
+      const nextStatus = task.status === "done" ? "todo" : "done";
+      await ctx.db.patch(args.id, {
+        status: nextStatus,
+        completedAt: nextStatus === "done" ? new Date().toISOString() : undefined,
+      });
     }
-
-    await ctx.db.patch(args.id, {
-      status: nextStatus,
-      completedAt: nextStatus === "done" ? new Date().toISOString() : undefined,
-      lastCompletedDate: nextStatus === "done" ? today : undefined,
-      streakCount,
-    });
-
-    return { status: nextStatus, streakCount };
   },
 });
 
-// Mutation: Update status (for Kanban)
-export const updateStatus = mutation({
-  args: {
-    id: v.id("tasks"),
-    status: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const today = new Date().toISOString().split("T")[0];
-    await ctx.db.patch(args.id, {
-      status: args.status,
-      completedAt: args.status === "done" ? new Date().toISOString() : undefined,
-      lastCompletedDate: args.status === "done" ? today : undefined,
-    });
-  },
-});
-
-// Mutation: Toggle subtask
+// Mutation: Toggle subtask completion
 export const toggleSubtask = mutation({
   args: {
     taskId: v.id("tasks"),
@@ -145,20 +138,24 @@ export const toggleSubtask = mutation({
   },
   handler: async (ctx, args) => {
     const task = await ctx.db.get(args.taskId);
-    if (!task || !task.subtasks) return;
+    if (!task || !task.subtasks) throw new Error("Task or subtasks not found");
 
-    const updated = task.subtasks.map((st) => {
-      if (st.id === args.subtaskId) {
-        return { ...st, completed: !st.completed };
-      }
-      return st;
+    const updatedSubtasks = task.subtasks.map((st) =>
+      st.id === args.subtaskId ? { ...st, completed: !st.completed } : st
+    );
+
+    const allCompleted = updatedSubtasks.every((st) => st.completed);
+    const nextStatus = allCompleted && updatedSubtasks.length > 0 ? "done" : task.status;
+
+    await ctx.db.patch(args.taskId, {
+      subtasks: updatedSubtasks,
+      status: nextStatus,
+      completedAt: nextStatus === "done" ? new Date().toISOString() : task.completedAt,
     });
-
-    await ctx.db.patch(args.taskId, { subtasks: updated });
   },
 });
 
-// Mutation: Delete task
+// Mutation: Remove task
 export const remove = mutation({
   args: { id: v.id("tasks") },
   handler: async (ctx, args) => {
@@ -166,50 +163,29 @@ export const remove = mutation({
   },
 });
 
-// Mutation: Clear all completed tasks
-export const clearCompleted = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const doneTasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_status", (q) => q.eq("status", "done"))
-      .collect();
-
-    for (const t of doneTasks) {
-      await ctx.db.delete(t._id);
-    }
-    return { cleared: doneTasks.length };
+// Mutation: Update task status
+export const updateStatus = mutation({
+  args: {
+    id: v.id("tasks"),
+    status: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const isDone = args.status === "done";
+    await ctx.db.patch(args.id, {
+      status: args.status,
+      completedAt: isDone ? new Date().toISOString() : undefined,
+    });
   },
 });
 
-// Mutation: Migrate and clean all legacy fields from database
-export const cleanupLegacyFields = mutation({
+// Mutation: Clear completed tasks
+export const clearCompleted = mutation({
   args: {},
   handler: async (ctx) => {
-    const all = await ctx.db.query("tasks").collect();
-    let cleaned = 0;
-    for (const doc of all) {
-      // Re-insert clean document
-      const cleanDoc = {
-        title: doc.title,
-        description: doc.description,
-        status: doc.status || "todo",
-        priority: doc.priority || "p2_medium",
-        module: doc.module || "general",
-        dueDate: doc.dueDate,
-        dueTime: doc.dueTime,
-        isDaily: Boolean(doc.isDaily),
-        streakCount: doc.streakCount,
-        lastCompletedDate: doc.lastCompletedDate,
-        goalId: doc.goalId,
-        subtasks: doc.subtasks,
-        order: doc.order,
-        completedAt: doc.completedAt,
-        createdAt: doc.createdAt || new Date().toISOString(),
-      };
-      await ctx.db.replace(doc._id, cleanDoc);
-      cleaned++;
+    const tasks = await ctx.db.query("tasks").collect();
+    const completed = tasks.filter((t) => t.status === "done" && !t.isDaily);
+    for (const t of completed) {
+      await ctx.db.delete(t._id);
     }
-    return { cleaned };
   },
 });

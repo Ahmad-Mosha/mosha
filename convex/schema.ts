@@ -25,19 +25,39 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_status", ["status"]),
 
-  // 2. Tasks & Daily Habits System
+  // 2. Projects & Engineering Repositories Hub
+  projects: defineTable({
+    name: v.string(),
+    description: v.string(),
+    status: v.string(), // "active" | "in_progress" | "planning" | "in_review" | "completed" | "on_hold"
+    techStack: v.array(v.string()), // e.g. ["Rust", "gRPC", "Redis"]
+    version: v.optional(v.string()), // e.g. "v1.4.2"
+    branch: v.optional(v.string()), // e.g. "main" or "feature/grpc-multiplexing"
+    githubUrl: v.optional(v.string()),
+    liveUrl: v.optional(v.string()),
+    devNotes: v.optional(v.string()), // Architecture notes / RFC content
+    goalId: v.optional(v.id("major_life_goals")),
+    order: v.number(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_order", ["order"])
+    .index("by_status", ["status"]),
+
+  // 3. Tasks & Daily Habits System
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
-    status: v.string(), // "todo" | "in_progress" | "done"
+    status: v.string(), // "todo" | "in_progress" | "in_review" | "done"
     priority: v.string(), // "p1_urgent" | "p2_medium" | "p3_low"
-    module: v.string(), // "general" | "problems" | "learning" | "gym" | "career" | "goals" | "finance" | "personal"
+    module: v.string(), // "general" | "problems" | "learning" | "gym" | "career" | "goals" | "finance" | "personal" | "projects"
     dueDate: v.optional(v.string()), // YYYY-MM-DD
     dueTime: v.optional(v.string()),
     isDaily: v.boolean(), // Daily recurring habit
     streakCount: v.optional(v.number()), // Streak for daily habits (e.g. 5 days)
     lastCompletedDate: v.optional(v.string()), // YYYY-MM-DD
     goalId: v.optional(v.id("major_life_goals")), // Link to Major Life Goal
+    projectId: v.optional(v.id("projects")), // Link to Project
     subtasks: v.optional(
       v.array(
         v.object({
@@ -55,9 +75,10 @@ export default defineSchema({
     .index("by_due_date", ["dueDate"])
     .index("by_priority", ["priority"])
     .index("by_module", ["module"])
-    .index("by_daily", ["isDaily"]),
+    .index("by_daily", ["isDaily"])
+    .index("by_project", ["projectId"]),
 
-  // 3. Knowledge Base Folders & Hierarchy
+  // 4. Knowledge Base Folders & Hierarchy
   folders: defineTable({
     name: v.string(),
     icon: v.optional(v.string()),
@@ -68,12 +89,13 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_parent", ["parentId"]),
 
-  // 4. Notes & Knowledge Base (Rich Text)
+  // 5. Notes & Knowledge Base (Rich Text)
   notes: defineTable({
     title: v.string(),
     content: v.string(), // HTML / JSON rich content
     plainText: v.optional(v.string()), // For instant search & preview snippets
     folderId: v.optional(v.id("folders")),
+    projectId: v.optional(v.id("projects")), // Linked to Project
     isPinned: v.boolean(),
     isFavorite: v.boolean(),
     tags: v.optional(v.array(v.string())),
@@ -82,10 +104,11 @@ export default defineSchema({
     updatedAt: v.string(),
   })
     .index("by_folder", ["folderId"])
+    .index("by_project", ["projectId"])
     .index("by_pinned", ["isPinned"])
     .index("by_updated", ["updatedAt"]),
 
-  // 5. Problem Solving & Algorithmic Mastery Hub
+  // 6. Problem Solving & Algorithmic Mastery Hub
   problems: defineTable({
     title: v.string(),
     url: v.optional(v.string()),
@@ -106,7 +129,7 @@ export default defineSchema({
     .index("by_next_review", ["nextReviewDate"])
     .index("by_pattern", ["pattern"]),
 
-  // 6. Learning & CS Roadmaps
+  // 7. Learning & CS Roadmaps
   learning_topics: defineTable({
     subject: v.string(),
     title: v.string(),
@@ -127,7 +150,7 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_subject", ["subject"]),
 
-  // 7. Iron Journal (Gym & Fitness)
+  // 8. Iron Journal (Gym & Fitness)
   gym_sessions: defineTable({
     title: v.string(),
     split: v.string(),
@@ -149,7 +172,7 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_date", ["date"]),
 
-  // 8. Sovereign Ledger (Personal Finance)
+  // 9. Sovereign Ledger (Personal Finance)
   finance_records: defineTable({
     type: v.string(),
     title: v.string(),
@@ -160,7 +183,7 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_date", ["date"]),
 
-  // 9. Engineering Journal & Lessons
+  // 10. Engineering Journal & Lessons
   journal_entries: defineTable({
     title: v.string(),
     category: v.string(),

@@ -10,6 +10,7 @@ import { TaskCreateDialog } from "@/components/tasks/task-create-dialog";
 import { MajorGoalsBento } from "@/components/goals/major-goals-bento";
 import { GoalDialog } from "@/components/goals/goal-dialog";
 import { NotesScreen } from "@/components/notes/notes-screen";
+import { ProjectsScreen } from "@/components/projects/projects-screen";
 import { ProblemSolvingView } from "@/components/modules/problem-solving-view";
 import { GymFitnessView } from "@/components/modules/gym-fitness-view";
 import { FinanceView } from "@/components/modules/finance-view";
@@ -36,6 +37,8 @@ export default function Home() {
         return <MajorGoalsBento />;
       case "notes":
         return <NotesScreen />;
+      case "projects":
+        return <ProjectsScreen />;
       case "problems":
         return <ProblemSolvingView />;
       case "gym":
@@ -51,6 +54,8 @@ export default function Home() {
     }
   };
 
+  const isEdgeToEdge = activeModule === "notes" || activeModule === "projects";
+
   return (
     <div className="min-h-screen bg-[#F9F9F9] flex flex-row antialiased text-[#1A202C]">
       {/* Collapsible Sidebar with Mini Variant */}
@@ -65,10 +70,10 @@ export default function Home() {
         {/* Top Header Bar */}
         <TopHeader />
 
-        {/* Main Content View (Edge-to-Edge full width for Notes workspace) */}
+        {/* Main Content View (Edge-to-Edge full width for Notes & Projects workspace) */}
         <main
           className={`flex-1 w-full animate-in fade-in duration-150 ${
-            activeModule === "notes"
+            isEdgeToEdge
               ? "h-[calc(100vh-53px)] overflow-hidden"
               : "px-6 py-6 max-w-7xl mx-auto"
           }`}

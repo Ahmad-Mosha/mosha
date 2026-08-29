@@ -15,6 +15,7 @@ import type * as journal from "../journal.js";
 import type * as learning from "../learning.js";
 import type * as notes from "../notes.js";
 import type * as problems from "../problems.js";
+import type * as projects from "../projects.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   learning: typeof learning;
   notes: typeof notes;
   problems: typeof problems;
+  projects: typeof projects;
   tasks: typeof tasks;
 }>;
 
