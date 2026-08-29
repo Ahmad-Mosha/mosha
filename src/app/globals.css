@@ -253,3 +253,71 @@ body {
   padding: 0.1rem 0.25rem;
   border-radius: 0.2rem;
 }
+
+/* Syntax Highlighting Themes for Code Blocks */
+.hljs-comment,
+.hljs-quote {
+  color: #64748B;
+  font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+  color: #F43F5E;
+  font-weight: 600;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+  color: #E11D48;
+}
+
+.hljs-literal {
+  color: #38BDF8;
+  font-weight: 600;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta .hljs-string {
+  color: #34D399;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+  color: #FBBF24;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+  color: #60A5FA;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #A78BFA;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
