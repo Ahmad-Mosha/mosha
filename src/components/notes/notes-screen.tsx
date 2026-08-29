@@ -236,22 +236,22 @@ export function NotesScreen() {
     : null;
 
   return (
-    <div className="w-full h-full bg-white flex flex-col md:flex-row overflow-hidden select-none">
+    <div className="w-full h-full bg-surface-2 flex flex-col md:flex-row overflow-hidden select-none">
       {/* ========================================================================= */}
       {/* LAYER 1: SIDEBAR (FOLDERS WITH NOTES DIRECTLY INSIDE)                      */}
       {/* ========================================================================= */}
       {isSidebarOpen && (
-        <aside className="w-full md:w-72 lg:w-80 bg-[#FAFAFA] border-r border-[#ECEAE4] flex flex-col h-full shrink-0 animate-in slide-in-from-left duration-200">
+        <aside className="w-full md:w-72 lg:w-80 bg-subtle border-r border-line flex flex-col h-full shrink-0 animate-in slide-in-from-left duration-200">
           {/* Header Bar */}
-          <div className="px-4 py-3 border-b border-[#ECEAE4] bg-white flex justify-between items-center">
-            <h2 className="font-mono text-xs text-[#333E50] font-bold tracking-wider uppercase">
+          <div className="px-4 py-3 border-b border-line bg-surface-2 flex justify-between items-center">
+            <h2 className="font-mono text-xs text-accent font-bold tracking-wider uppercase">
               Knowledge Base
             </h2>
 
             <div className="flex items-center space-x-1">
               <button
                 onClick={() => handleCreateNewNote()}
-                className="text-[#4A5568] hover:text-[#1A202C] p-1.5 rounded-lg hover:bg-[#F1F3F5] transition-colors cursor-pointer"
+                className="text-muted hover:text-ink p-1.5 rounded-lg hover:bg-subtle-2 transition-colors cursor-pointer"
                 title="Create Note"
               >
                 <Plus className="w-4 h-4" />
@@ -262,7 +262,7 @@ export function NotesScreen() {
                   setEditingFolder(null);
                   setIsFolderDialogOpen(true);
                 }}
-                className="text-[#4A5568] hover:text-[#1A202C] p-1.5 rounded-lg hover:bg-[#F1F3F5] transition-colors cursor-pointer"
+                className="text-muted hover:text-ink p-1.5 rounded-lg hover:bg-subtle-2 transition-colors cursor-pointer"
                 title="Create Folder"
               >
                 <FolderPlus className="w-4 h-4" />
@@ -270,7 +270,7 @@ export function NotesScreen() {
 
               <button
                 onClick={() => setIsSidebarOpen(false)}
-                className="text-[#718096] hover:text-[#1A202C] p-1.5 rounded-lg hover:bg-[#F1F3F5] transition-colors cursor-pointer"
+                className="text-faint hover:text-ink p-1.5 rounded-lg hover:bg-subtle-2 transition-colors cursor-pointer"
                 title="Collapse Sidebar"
               >
                 <PanelLeftClose className="w-4 h-4" />
@@ -279,15 +279,15 @@ export function NotesScreen() {
           </div>
 
           {/* Search Bar */}
-          <div className="p-2.5 border-b border-[#ECEAE4] bg-white">
+          <div className="p-2.5 border-b border-line bg-surface-2">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#A0AEC0]" />
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-ghost" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notes..."
-                className="w-full bg-[#F8F9FA] border border-[#E2E8F0] rounded-lg pl-7 pr-2.5 py-1 text-xs text-[#1A202C] focus:outline-none focus:border-[#333E50]"
+                className="w-full bg-subtle border border-line rounded-lg pl-7 pr-2.5 py-1 text-xs text-ink focus:outline-none focus:border-accent"
               />
             </div>
           </div>
@@ -304,12 +304,12 @@ export function NotesScreen() {
                   {/* Folder Row Header */}
                   <div
                     onClick={(e) => toggleFolderExpand(folder._id, e)}
-                    className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-[#F1F3F5] cursor-pointer transition-colors group text-[#2D3748] font-medium"
+                    className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors group text-ink-2 font-medium"
                   >
                     <div className="flex items-center gap-1.5 truncate flex-1">
                       <button
                         onClick={(e) => toggleFolderExpand(folder._id, e)}
-                        className="text-[#718096] hover:text-[#1A202C] p-0.5 cursor-pointer"
+                        className="text-faint hover:text-ink p-0.5 cursor-pointer"
                       >
                         {isExpanded ? (
                           <ChevronDown className="w-3.5 h-3.5" />
@@ -317,12 +317,12 @@ export function NotesScreen() {
                           <ChevronRight className="w-3.5 h-3.5" />
                         )}
                       </button>
-                      <Folder className="w-4 h-4 text-[#4A5568] shrink-0" />
+                      <Folder className="w-4 h-4 text-muted shrink-0" />
                       <span className="truncate font-semibold">{folder.name}</span>
                     </div>
 
                     <div className="flex items-center space-x-1">
-                      <span className="text-[10px] font-mono text-[#A0AEC0]">
+                      <span className="text-[10px] font-mono text-ghost">
                         {folderNotes.length}
                       </span>
 
@@ -332,7 +332,7 @@ export function NotesScreen() {
                           e.stopPropagation();
                           handleCreateNewNote(folder._id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-black/5 rounded text-[#718096] hover:text-[#1A202C] transition-opacity cursor-pointer"
+                        className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-black/5 rounded text-faint hover:text-ink transition-opacity cursor-pointer"
                         title="Add Note in Folder"
                       >
                         <Plus className="w-3 h-3" />
@@ -344,13 +344,13 @@ export function NotesScreen() {
                           asChild
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-black/5 rounded text-[#718096] hover:text-[#1A202C] transition-opacity cursor-pointer">
+                          <button className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-black/5 rounded text-faint hover:text-ink transition-opacity cursor-pointer">
                             <MoreVertical className="w-3 h-3" />
                           </button>
                         </DropdownMenu.Trigger>
                         <DropdownMenu.Portal>
                           <DropdownMenu.Content
-                            className="z-50 bg-white border border-[#E2E8F0] rounded-xl shadow-lg p-1 text-xs min-w-[130px]"
+                            className="z-50 bg-surface-2 border border-line rounded-xl shadow-lg p-1 text-xs min-w-[130px]"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <DropdownMenu.Item
@@ -358,9 +358,9 @@ export function NotesScreen() {
                                 setEditingFolder(folder);
                                 setIsFolderDialogOpen(true);
                               }}
-                              className="px-3 py-1.5 rounded-lg hover:bg-[#F8F9FA] cursor-pointer flex items-center gap-2"
+                              className="px-3 py-1.5 rounded-lg hover:bg-subtle cursor-pointer flex items-center gap-2"
                             >
-                              <Edit2 className="w-3.5 h-3.5 text-[#718096]" />
+                              <Edit2 className="w-3.5 h-3.5 text-faint" />
                               <span>Rename Folder</span>
                             </DropdownMenu.Item>
                             <DropdownMenu.Item
@@ -380,11 +380,11 @@ export function NotesScreen() {
 
                   {/* Notes Inside Folder */}
                   {isExpanded && (
-                    <div className="pl-5 space-y-0.5 border-l border-[#E2E8F0] ml-3 mt-0.5">
+                    <div className="pl-5 space-y-0.5 border-l border-line ml-3 mt-0.5">
                       {folderNotes.length === 0 ? (
                         <div
                           onClick={() => handleCreateNewNote(folder._id)}
-                          className="px-2 py-1 text-[11px] text-[#A0AEC0] hover:text-[#333E50] cursor-pointer flex items-center gap-1"
+                          className="px-2 py-1 text-[11px] text-ghost hover:text-accent cursor-pointer flex items-center gap-1"
                         >
                           <Plus className="w-3 h-3" />
                           <span>Add note...</span>
@@ -398,14 +398,14 @@ export function NotesScreen() {
                               onClick={() => setActiveNoteId(note._id)}
                               className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors group/note ${
                                 isSelected
-                                  ? "bg-[#333E50] text-white font-semibold shadow-xs"
-                                  : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
+                                  ? "bg-accent text-accent-fg font-semibold shadow-xs"
+                                  : "text-muted hover:bg-surface-2 hover:text-ink"
                               }`}
                             >
                               <div className="flex items-center gap-1.5 truncate flex-1">
                                 <FileText
                                   className={`w-3.5 h-3.5 shrink-0 ${
-                                    isSelected ? "text-white" : "text-[#A0AEC0]"
+                                    isSelected ? "text-accent-fg" : "text-ghost"
                                   }`}
                                 />
                                 <span className="truncate">
@@ -429,7 +429,7 @@ export function NotesScreen() {
                                   }
                                   className={`opacity-0 group-hover/note:opacity-100 p-0.5 rounded transition-opacity cursor-pointer ${
                                     isSelected
-                                      ? "hover:bg-white/20 text-white"
+                                      ? "hover:bg-accent-fg/20 text-accent-fg"
                                       : "hover:bg-rose-50 text-rose-500"
                                   }`}
                                   title="Delete Note"
@@ -449,7 +449,7 @@ export function NotesScreen() {
 
             {/* 2. Uncategorized / General Notes */}
             <div className="pt-2">
-              <div className="px-2 py-1 text-[11px] font-mono text-[#718096] uppercase font-semibold">
+              <div className="px-2 py-1 text-[11px] font-mono text-faint uppercase font-semibold">
                 General Notes ({uncategorizedNotes.length})
               </div>
 
@@ -462,14 +462,14 @@ export function NotesScreen() {
                       onClick={() => setActiveNoteId(note._id)}
                       className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors group/note ${
                         isSelected
-                          ? "bg-[#333E50] text-white font-semibold shadow-xs"
-                          : "text-[#4A5568] hover:bg-white hover:text-[#1A202C]"
+                          ? "bg-accent text-accent-fg font-semibold shadow-xs"
+                          : "text-muted hover:bg-surface-2 hover:text-ink"
                       }`}
                     >
                       <div className="flex items-center gap-1.5 truncate flex-1">
                         <FileText
                           className={`w-3.5 h-3.5 shrink-0 ${
-                            isSelected ? "text-white" : "text-[#A0AEC0]"
+                            isSelected ? "text-accent-fg" : "text-ghost"
                           }`}
                         />
                         <span className="truncate">
@@ -491,7 +491,7 @@ export function NotesScreen() {
                           onClick={(e) => handleDeleteNote(note._id, e)}
                           className={`opacity-0 group-hover/note:opacity-100 p-0.5 rounded transition-opacity cursor-pointer ${
                             isSelected
-                              ? "hover:bg-white/20 text-white"
+                              ? "hover:bg-accent-fg/20 text-accent-fg"
                               : "hover:bg-rose-50 text-rose-500"
                           }`}
                           title="Delete Note"
@@ -508,10 +508,10 @@ export function NotesScreen() {
             {/* Empty State */}
             {folders.length === 0 && uncategorizedNotes.length === 0 && (
               <div className="py-12 text-center px-4 space-y-2">
-                <p className="text-xs text-[#A0AEC0]">No notes created yet.</p>
+                <p className="text-xs text-ghost">No notes created yet.</p>
                 <button
                   onClick={() => handleCreateNewNote()}
-                  className="px-3 py-1.5 rounded-lg bg-[#333E50] text-white text-xs font-semibold hover:bg-[#252E3B] shadow-xs cursor-pointer inline-block"
+                  className="px-3 py-1.5 rounded-lg bg-accent text-accent-fg text-xs font-semibold hover:bg-accent-hover shadow-xs cursor-pointer inline-block"
                 >
                   + Create First Note
                 </button>
@@ -524,17 +524,17 @@ export function NotesScreen() {
       {/* ========================================================================= */}
       {/* LAYER 2: THE FULL-WIDTH NOTE WRITING CANVAS (100% SCREEN REAL ESTATE)     */}
       {/* ========================================================================= */}
-      <main className="flex-1 flex flex-col h-full bg-white overflow-hidden">
+      <main className="flex-1 flex flex-col h-full bg-surface-2 overflow-hidden">
         {activeNote ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Top Toolbar Bar */}
-            <div className="px-6 py-3 border-b border-[#ECEAE4] flex flex-wrap items-center justify-between gap-3 bg-[#FCFCFB] shrink-0 text-xs">
+            <div className="px-6 py-3 border-b border-line flex flex-wrap items-center justify-between gap-3 bg-surface shrink-0 text-xs">
               {/* Left Controls: Open Sidebar Toggle & Folder Breadcrumb */}
               <div className="flex items-center space-x-2">
                 {!isSidebarOpen && (
                   <button
                     onClick={() => setIsSidebarOpen(true)}
-                    className="p-1.5 rounded-lg border border-[#E2E8F0] hover:bg-[#F1F3F5] text-[#4A5568] transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="p-1.5 rounded-lg border border-line hover:bg-subtle-2 text-muted transition-colors cursor-pointer flex items-center gap-1.5"
                     title="Open Notes Sidebar"
                   >
                     <PanelLeft className="w-3.5 h-3.5" />
@@ -542,9 +542,9 @@ export function NotesScreen() {
                   </button>
                 )}
 
-                <div className="flex items-center gap-1.5 text-xs text-[#718096]">
-                  <Folder className="w-3.5 h-3.5 text-[#A0AEC0]" />
-                  <span className="font-medium text-[#1A202C]">
+                <div className="flex items-center gap-1.5 text-xs text-faint">
+                  <Folder className="w-3.5 h-3.5 text-ghost" />
+                  <span className="font-medium text-ink">
                     {activeNoteFolder ? activeNoteFolder.name : "General Notes"}
                   </span>
                 </div>
@@ -555,12 +555,12 @@ export function NotesScreen() {
                 {(activeNote.tags || []).map((tag: string) => (
                   <span
                     key={tag}
-                    className="bg-[#F1F3F5] text-[#4A5568] px-2 py-0.5 rounded text-[11px] font-mono font-medium flex items-center gap-1"
+                    className="bg-subtle-2 text-muted px-2 py-0.5 rounded text-[11px] font-mono font-medium flex items-center gap-1"
                   >
                     <span>#{tag}</span>
                     <button
                       onClick={() => handleRemoveTag(tag)}
-                      className="text-[#A0AEC0] hover:text-rose-600 cursor-pointer ml-0.5"
+                      className="text-ghost hover:text-rose-600 cursor-pointer ml-0.5"
                     >
                       ×
                     </button>
@@ -573,7 +573,7 @@ export function NotesScreen() {
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleAddTag}
                   placeholder="+ tag..."
-                  className="text-xs font-mono text-[#4A5568] bg-transparent focus:outline-none px-1 py-0.5 placeholder:text-[#A0AEC0] w-16"
+                  className="text-xs font-mono text-muted bg-transparent focus:outline-none px-1 py-0.5 placeholder:text-ghost w-16"
                 />
               </div>
 
@@ -589,7 +589,7 @@ export function NotesScreen() {
                       folderId: val as any,
                     });
                   }}
-                  className="bg-white px-2.5 py-1 rounded-lg border border-[#E2E8F0] text-xs text-[#1A202C] focus:outline-none cursor-pointer"
+                  className="bg-surface-2 px-2.5 py-1 rounded-lg border border-line text-xs text-ink focus:outline-none cursor-pointer"
                 >
                   <option value="">📁 General (No Folder)</option>
                   {folders.map((f: any) => (
@@ -609,7 +609,7 @@ export function NotesScreen() {
                       goalId: val as any,
                     });
                   }}
-                  className="hidden xl:block bg-white px-2.5 py-1 rounded-lg border border-[#E2E8F0] text-xs text-[#1A202C] focus:outline-none cursor-pointer"
+                  className="hidden xl:block bg-surface-2 px-2.5 py-1 rounded-lg border border-line text-xs text-ink focus:outline-none cursor-pointer"
                 >
                   <option value="">No Linked Goal</option>
                   {goals.map((g: any) => (
@@ -624,7 +624,7 @@ export function NotesScreen() {
                   className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                     activeNote.isPinned
                       ? "bg-amber-50 border-amber-300 text-amber-700"
-                      : "border-[#E2E8F0] text-[#718096] hover:bg-[#F8F9FA]"
+                      : "border-line text-faint hover:bg-subtle"
                   }`}
                   title="Pin note"
                 >
@@ -636,7 +636,7 @@ export function NotesScreen() {
                   className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                     activeNote.isFavorite
                       ? "bg-amber-50 border-amber-300 text-amber-500 fill-amber-500"
-                      : "border-[#E2E8F0] text-[#718096] hover:bg-[#F8F9FA]"
+                      : "border-line text-faint hover:bg-subtle"
                   }`}
                   title="Favorite note"
                 >
@@ -645,7 +645,7 @@ export function NotesScreen() {
 
                 <button
                   onClick={() => handleDeleteNote(activeNote._id)}
-                  className="p-1.5 rounded-lg border border-[#E2E8F0] text-[#718096] hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg border border-line text-faint hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
                   title="Delete note"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -660,7 +660,7 @@ export function NotesScreen() {
                 value={localTitle}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Note Title..."
-                className="font-serif text-3xl md:text-5xl font-bold text-[#1A202C] focus:outline-none w-full bg-transparent placeholder:text-[#CBD5E1] border-b border-transparent focus:border-[#E2E8F0] pb-2 transition-colors"
+                className="font-serif text-3xl md:text-5xl font-bold text-ink focus:outline-none w-full bg-transparent placeholder:text-line-2 border-b border-transparent focus:border-line pb-2 transition-colors"
               />
 
               {/* TipTap Rich Text Editor */}
@@ -673,18 +673,18 @@ export function NotesScreen() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-            <BookOpen className="w-12 h-12 text-[#CBD5E1]" />
+            <BookOpen className="w-12 h-12 text-line-2" />
             <div className="space-y-1">
-              <h3 className="font-serif text-2xl font-bold text-[#1A202C]">
+              <h3 className="font-serif text-2xl font-bold text-ink">
                 Knowledge Base Workspace
               </h3>
-              <p className="text-xs text-[#718096] max-w-sm">
+              <p className="text-xs text-faint max-w-sm">
                 Select a note from the sidebar or click below to create a new note.
               </p>
             </div>
             <button
               onClick={() => handleCreateNewNote()}
-              className="px-5 py-2.5 rounded-xl bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
             >
               + Create Note
             </button>

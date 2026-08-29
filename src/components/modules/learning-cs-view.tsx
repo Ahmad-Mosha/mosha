@@ -23,14 +23,14 @@ export function LearningCsView() {
         <div>
           <div className="flex items-center space-x-2 text-xs">
             <BookOpen className="w-4 h-4 text-emerald-700" />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
               The Polymath Engine
             </span>
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A202C] mt-1">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink mt-1">
             Learning & Computer Science Roadmaps
           </h1>
-          <p className="text-xs sm:text-sm text-[#4A5568] max-w-xl leading-relaxed mt-1">
+          <p className="text-xs sm:text-sm text-muted max-w-xl leading-relaxed mt-1">
             Deep systems understanding across OS, Database internals, Networks, Go, Node.js, and Bun.
           </p>
         </div>
@@ -44,8 +44,8 @@ export function LearningCsView() {
             onClick={() => setActiveSubject(sub)}
             className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
               activeSubject === sub
-                ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
+                ? "bg-accent text-accent-fg font-semibold shadow-2xs"
+                : "bg-surface-2 border border-line text-faint hover:text-ink"
             }`}
           >
             {sub}
@@ -55,7 +55,7 @@ export function LearningCsView() {
 
       {/* Topics Grid */}
       {filteredTopics.length === 0 ? (
-        <div className="bento-card rounded-xl p-10 text-center text-xs text-[#A0AEC0]">
+        <div className="bento-card rounded-xl p-10 text-center text-xs text-ghost">
           No roadmaps or topics added yet for {activeSubject}.
         </div>
       ) : (
@@ -67,7 +67,7 @@ export function LearningCsView() {
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#EDF2F7] text-[#333E50]">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-subtle-2 text-accent">
                     {topic.subject}
                   </span>
                   <span
@@ -81,26 +81,26 @@ export function LearningCsView() {
                   </span>
                 </div>
 
-                <h2 className="font-serif text-lg font-bold text-[#1A202C]">
+                <h2 className="font-serif text-lg font-bold text-ink">
                   {topic.title}
                 </h2>
-                <p className="text-xs text-[#4A5568] leading-relaxed">
+                <p className="text-xs text-muted leading-relaxed">
                   {topic.description}
                 </p>
               </div>
 
-              <div className="space-y-3 pt-3 border-t border-[#ECEAE4]">
+              <div className="space-y-3 pt-3 border-t border-line">
                 {topic.notes && (
-                  <p className="text-[11px] text-[#718096] italic bg-[#F8F9FA] p-2 rounded">
+                  <p className="text-[11px] text-faint italic bg-subtle p-2 rounded">
                     {topic.notes}
                   </p>
                 )}
 
                 {/* Progress Bar */}
-                <div className="w-full bg-[#E2E8F0] h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-line h-1.5 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${
-                      topic.status === "mastered" ? "bg-emerald-600" : "bg-[#333E50]"
+                      topic.status === "mastered" ? "bg-emerald-600" : "bg-accent"
                     }`}
                     style={{ width: `${topic.progress}%` }}
                   />
@@ -113,10 +113,10 @@ export function LearningCsView() {
                     href={res.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between text-xs text-[#333E50] hover:underline font-semibold"
+                    className="flex items-center justify-between text-xs text-accent hover:underline font-semibold"
                   >
                     <span className="truncate">{res.title}</span>
-                    <ExternalLink className="w-3 h-3 shrink-0 ml-1 text-[#718096]" />
+                    <ExternalLink className="w-3 h-3 shrink-0 ml-1 text-faint" />
                   </a>
                 ))}
               </div>

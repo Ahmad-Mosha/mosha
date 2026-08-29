@@ -49,7 +49,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
         );
       case "p3_low":
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#F1F3F5] text-[#718096]">
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-subtle-2 text-faint">
             Low
           </span>
         );
@@ -75,7 +75,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
     };
     const item = map[mod] || { label: "General", icon: "📋" };
     return (
-      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#EDF2F7] text-[#4A5568] flex items-center gap-1">
+      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-subtle-2 text-muted flex items-center gap-1">
         <span>{item.icon}</span>
         <span>{item.label}</span>
       </span>
@@ -90,10 +90,10 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
       onClick={() => onEdit(task)}
       className={`group rounded-xl border p-3.5 transition-all cursor-pointer select-none ${
         isDone
-          ? "bg-[#F8F9FA]/80 border-[#E2E8F0] opacity-60"
+          ? "bg-subtle/80 border-line opacity-60"
           : task.isDaily
           ? "bg-gradient-to-r from-blue-50/20 via-white to-white border-blue-200 hover:border-blue-300 shadow-2xs"
-          : "bg-white border-[#E2E8F0] hover:border-[#333E50]/40 shadow-2xs hover:shadow-xs"
+          : "bg-surface-2 border-line hover:border-accent/40 shadow-2xs hover:shadow-xs"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -103,10 +103,10 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           onClick={handleToggle}
           className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
             isDone
-              ? "bg-[#333E50] border-[#333E50] text-white"
+              ? "bg-accent border-accent text-accent-fg"
               : task.isDaily
-              ? "border-blue-400 hover:border-blue-600 bg-white"
-              : "border-[#CBD5E1] hover:border-[#718096] bg-white"
+              ? "border-blue-400 hover:border-blue-600 bg-surface-2"
+              : "border-line-2 hover:border-faint bg-surface-2"
           }`}
         >
           {isDone && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -117,7 +117,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           <div className="flex flex-wrap items-center gap-2">
             <h4
               className={`text-sm font-semibold leading-snug truncate ${
-                isDone ? "line-through text-[#A0AEC0]" : "text-[#1A202C]"
+                isDone ? "line-through text-ghost" : "text-ink"
               }`}
             >
               {task.title}
@@ -146,7 +146,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           </div>
 
           {task.description && (
-            <p className="text-xs text-[#718096] line-clamp-2 leading-relaxed">
+            <p className="text-xs text-faint line-clamp-2 leading-relaxed">
               {task.description}
             </p>
           )}
@@ -154,13 +154,13 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
           {/* Subtasks inline checklist */}
           {subtasks.length > 0 && (
             <div className="space-y-1 pt-1">
-              <div className="text-[10px] font-mono text-[#718096] flex items-center gap-2">
+              <div className="text-[10px] font-mono text-faint flex items-center gap-2">
                 <span>
                   Checklist: {completedSubtasks}/{subtasks.length}
                 </span>
-                <div className="w-20 bg-[#E2E8F0] h-1.5 rounded-full overflow-hidden">
+                <div className="w-20 bg-line h-1.5 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#333E50] h-full rounded-full"
+                    className="bg-accent h-full rounded-full"
                     style={{
                       width: `${(completedSubtasks / subtasks.length) * 100}%`,
                     }}
@@ -179,15 +179,15 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
                     }}
                     className={`text-[11px] flex items-center gap-1.5 px-2 py-0.5 rounded border transition-colors cursor-pointer ${
                       st.completed
-                        ? "bg-[#F1F3F5] text-[#A0AEC0] line-through border-transparent"
-                        : "bg-white text-[#4A5568] border-[#E2E8F0] hover:border-[#CBD5E1]"
+                        ? "bg-subtle-2 text-ghost line-through border-transparent"
+                        : "bg-surface-2 text-muted border-line hover:border-line-2"
                     }`}
                   >
                     <span
                       className={`w-3 h-3 rounded-xs border flex items-center justify-center text-[9px] ${
                         st.completed
-                          ? "bg-[#333E50] border-[#333E50] text-white"
-                          : "border-[#CBD5E1]"
+                          ? "bg-accent border-accent text-accent-fg"
+                          : "border-line-2"
                       }`}
                     >
                       {st.completed && "✓"}
@@ -201,7 +201,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
 
           {/* Due Date (only if not Daily) */}
           {task.dueDate && !task.isDaily && (
-            <div className="flex items-center gap-1 text-[11px] font-mono text-[#718096] pt-0.5">
+            <div className="flex items-center gap-1 text-[11px] font-mono text-faint pt-0.5">
               <Calendar className="w-3 h-3" />
               <span>{task.dueDate}</span>
             </div>
@@ -217,7 +217,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
               onEdit(task);
             }}
             title="Edit task"
-            className="p-1.5 rounded-lg hover:bg-[#F1F3F5] text-[#718096] hover:text-[#1A202C] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-subtle-2 text-faint hover:text-ink transition-colors cursor-pointer"
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
@@ -229,7 +229,7 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
               removeTask({ id: task._id });
             }}
             title="Delete task"
-            className="p-1.5 rounded-lg hover:bg-rose-50 text-[#718096] hover:text-rose-600 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-rose-50 text-faint hover:text-rose-600 transition-colors cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>

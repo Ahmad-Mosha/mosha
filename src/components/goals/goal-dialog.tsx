@@ -115,17 +115,17 @@ export function GoalDialog() {
     <Dialog.Root open={isGoalDialogOpen} onOpenChange={setGoalDialogOpen}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs animate-in fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E8F0] animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-3 mb-4">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-2 p-6 shadow-2xl border border-line animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between border-b border-line pb-3 mb-4">
             <div>
-              <Dialog.Title className="font-serif text-xl font-bold text-[#1A202C]">
+              <Dialog.Title className="font-serif text-xl font-bold text-ink">
                 {editingGoalId ? "Edit Major Goal" : "Add Major Life Goal"}
               </Dialog.Title>
-              <Dialog.Description className="text-xs text-[#718096]">
+              <Dialog.Description className="text-xs text-faint">
                 Set a monumental life milestone with actionable sub-milestones.
               </Dialog.Description>
             </div>
-            <Dialog.Close className="p-1.5 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] cursor-pointer">
+            <Dialog.Close className="p-1.5 rounded-md text-faint hover:text-ink hover:bg-subtle-2 cursor-pointer">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -135,19 +135,19 @@ export function GoalDialog() {
             <div className="flex items-start gap-3">
               {/* Emoji Emblem Picker */}
               <div className="relative">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold block mb-1">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold block mb-1">
                   Emblem
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="w-12 h-10 rounded-lg border border-[#E2E8F0] hover:border-[#333E50] bg-[#F8F9FA] flex items-center justify-center text-xl cursor-pointer transition-colors"
+                  className="w-12 h-10 rounded-lg border border-line hover:border-accent bg-subtle flex items-center justify-center text-xl cursor-pointer transition-colors"
                 >
                   {icon}
                 </button>
 
                 {showEmojiPicker && (
-                  <div className="absolute top-16 left-0 z-50 p-2 bg-white border border-[#E2E8F0] rounded-xl shadow-xl grid grid-cols-6 gap-1 w-56 animate-in fade-in zoom-in-95">
+                  <div className="absolute top-16 left-0 z-50 p-2 bg-surface-2 border border-line rounded-xl shadow-xl grid grid-cols-6 gap-1 w-56 animate-in fade-in zoom-in-95">
                     {EMOJI_OPTIONS.map((emoji) => (
                       <button
                         key={emoji}
@@ -156,8 +156,8 @@ export function GoalDialog() {
                           setIcon(emoji);
                           setShowEmojiPicker(false);
                         }}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center text-base hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
-                          icon === emoji ? "bg-[#333E50]/10 border border-[#333E50]" : ""
+                        className={`w-8 h-8 rounded-md flex items-center justify-center text-base hover:bg-subtle-2 cursor-pointer transition-colors ${
+                          icon === emoji ? "bg-accent/10 border border-accent" : ""
                         }`}
                       >
                         {emoji}
@@ -169,7 +169,7 @@ export function GoalDialog() {
 
               {/* Title */}
               <div className="flex-1 space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Goal Title *
                 </label>
                 <input
@@ -178,7 +178,7 @@ export function GoalDialog() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Finish Military Service, Get First Job..."
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-sm text-[#1A202C]"
+                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-sm text-ink"
                 />
               </div>
             </div>
@@ -186,26 +186,26 @@ export function GoalDialog() {
             {/* Target Date (Calendar Component) & Status */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-[#718096]" />
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-faint" />
                   Target Date
                 </label>
                 <input
                   type="date"
                   value={targetDate}
                   onChange={(e) => setTargetDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-xs text-[#1A202C] bg-white cursor-pointer"
+                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink bg-surface-2 cursor-pointer"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Status
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-xs text-[#1A202C] bg-white cursor-pointer"
+                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink bg-surface-2 cursor-pointer"
                 >
                   <option value="in_progress">In Progress ⚡</option>
                   <option value="planning">Planning 🧭</option>
@@ -218,7 +218,7 @@ export function GoalDialog() {
 
             {/* Core Mission & Description */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                 Core Mission & Description
               </label>
               <textarea
@@ -226,17 +226,17 @@ export function GoalDialog() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What is the core purpose and mission of this goal?"
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-xs text-[#1A202C]"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink"
               />
             </div>
 
             {/* Sub-Milestones Checklist Builder */}
-            <div className="space-y-2 pt-2 border-t border-[#ECEAE4]">
+            <div className="space-y-2 pt-2 border-t border-line">
               <div className="flex items-center justify-between">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Milestones ({milestones.length})
                 </label>
-                <span className="text-[10px] text-[#A0AEC0] font-mono">
+                <span className="text-[10px] text-ghost font-mono">
                   Checking items recalculates progress
                 </span>
               </div>
@@ -245,7 +245,7 @@ export function GoalDialog() {
                 {milestones.map((m, idx) => (
                   <div
                     key={m.id}
-                    className="flex items-center gap-2 p-2 rounded-lg bg-[#F8F9FA] border border-[#E2E8F0]"
+                    className="flex items-center gap-2 p-2 rounded-lg bg-subtle border border-line"
                   >
                     <input
                       type="checkbox"
@@ -255,7 +255,7 @@ export function GoalDialog() {
                         updated[idx].completed = e.target.checked;
                         setMilestones(updated);
                       }}
-                      className="rounded border-[#CBD5E1] text-[#333E50] focus:ring-0 cursor-pointer"
+                      className="rounded border-line-2 text-accent focus:ring-0 cursor-pointer"
                     />
                     <input
                       type="text"
@@ -265,12 +265,12 @@ export function GoalDialog() {
                         updated[idx].title = e.target.value;
                         setMilestones(updated);
                       }}
-                      className="flex-1 bg-transparent text-xs text-[#1A202C] focus:outline-none"
+                      className="flex-1 bg-transparent text-xs text-ink focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveMilestone(m.id)}
-                      className="text-[#A0AEC0] hover:text-rose-600 p-1 cursor-pointer"
+                      className="text-ghost hover:text-rose-600 p-1 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -291,12 +291,12 @@ export function GoalDialog() {
                     }
                   }}
                   placeholder="Add next sub-milestone..."
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-[#E2E8F0] text-xs text-[#1A202C] focus:outline-none"
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-line text-xs text-ink focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddMilestone}
-                  className="px-3 py-1.5 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add
                 </button>
@@ -304,7 +304,7 @@ export function GoalDialog() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-[#ECEAE4]">
+            <div className="flex items-center justify-between pt-4 border-t border-line">
               {editingGoalId ? (
                 <button
                   type="button"
@@ -321,13 +321,13 @@ export function GoalDialog() {
                 <button
                   type="button"
                   onClick={() => setGoalDialogOpen(false)}
-                  className="px-4 py-2 rounded-lg text-[#718096] hover:bg-[#F3F4F6] font-medium transition-colors cursor-pointer text-xs"
+                  className="px-4 py-2 rounded-lg text-faint hover:bg-subtle-2 font-medium transition-colors cursor-pointer text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold shadow-xs transition-colors cursor-pointer text-xs"
+                  className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg font-semibold shadow-xs transition-colors cursor-pointer text-xs"
                 >
                   {editingGoalId ? "Save Changes" : "Create Goal"}
                 </button>

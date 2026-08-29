@@ -1,120 +1,215 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-@layer base {
-  :root {
-    --background: #F9F9F9;
-    --foreground: #1A202C;
-    
-    --card: #FDFDFD;
-    --card-foreground: #1A202C;
-    
-    --popover: #FFFFFF;
-    --popover-foreground: #1A202C;
-    
-    --primary: #333E50;
-    --primary-foreground: #FFFFFF;
-    
-    --secondary: #555F71;
-    --secondary-foreground: #FFFFFF;
-    
-    --muted: #EEEEEE;
-    --muted-foreground: #718096;
-    
-    --accent: #E2E8F0;
-    --accent-foreground: #1A202C;
-    
-    --border: #E2E8F0;
-    --input: #E2E8F0;
-    --ring: #333E50;
-    
-    --radius: 0.5rem;
-  }
+/* ==========================================================================
+   MOSHA DESIGN TOKENS
+   Every colour, size and motion value in the system resolves to one of these.
+   Never hardcode a hex value in a component — add a token here instead.
+   ========================================================================== */
+
+@theme {
+  /* --- Typography families ------------------------------------------------ */
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'EB Garamond', Georgia, serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-arabic: 'Amiri', 'Traditional Arabic', serif;
+
+  /* --- Type scale ---------------------------------------------------------
+     Six roles with intent. Use these instead of raw text-xs everywhere.
+     display  page titles          title  section headers
+     heading  card / group titles  body   prose and controls
+     label    dense UI text        meta   timestamps, counts, tags
+     ------------------------------------------------------------------------ */
+  --text-display: 2.25rem;
+  --text-display--line-height: 1.12;
+  --text-display--letter-spacing: -0.022em;
+  --text-display--font-weight: 700;
+
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.22;
+  --text-title--letter-spacing: -0.018em;
+  --text-title--font-weight: 700;
+
+  --text-heading: 1.0625rem;
+  --text-heading--line-height: 1.4;
+  --text-heading--letter-spacing: -0.011em;
+  --text-heading--font-weight: 600;
+
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.6;
+
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.45;
+
+  --text-meta: 0.6875rem;
+  --text-meta--line-height: 1.45;
+  --text-meta--letter-spacing: 0.045em;
+
+  /* --- Semantic colours (light) ------------------------------------------- */
+  --color-canvas: #F7F7F6;
+  --color-surface: #FDFDFC;
+  --color-surface-2: #FFFFFF;
+  --color-subtle: #F2F3F4;
+  --color-subtle-2: #E9EBEE;
+
+  --color-line: #E4E6E9;
+  --color-line-2: #CFD3D9;
+
+  --color-ink: #17191C;
+  --color-ink-2: #2C3037;
+  --color-muted: #555C68;
+  --color-faint: #7C838F;
+  --color-ghost: #A5ABB5;
+
+  --color-accent: #333E50;
+  --color-accent-hover: #242D3C;
+  --color-accent-fg: #FFFFFF;
+  --color-accent-soft: #EBEEF3;
+
+  /* Status — each has a fill, a tint and a readable foreground */
+  --color-success: #0E9F6E;
+  --color-success-tint: #E4F6EE;
+  --color-warn: #D08700;
+  --color-warn-tint: #FCF2DC;
+  --color-danger: #E02424;
+  --color-danger-tint: #FDECEC;
+  --color-info: #2B6CB0;
+  --color-info-tint: #E6EFF8;
+  --color-shipped: #7C3AED;
+  --color-shipped-tint: #F0E9FD;
+
+  /* --- Motion -------------------------------------------------------------
+     One easing curve for the whole system. Consistency reads as quality. */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* --- Semantic colours (dark) ---------------------------------------------
+   Only the tokens change. No component knows dark mode exists. */
+.dark {
+  --color-canvas: #0F1114;
+  --color-surface: #16181D;
+  --color-surface-2: #1C1F25;
+  --color-subtle: #212530;
+  --color-subtle-2: #2A2F3A;
+
+  --color-line: #262A33;
+  --color-line-2: #363C48;
+
+  --color-ink: #E9EBEE;
+  --color-ink-2: #D3D7DE;
+  --color-muted: #A0A7B4;
+  --color-faint: #7E8694;
+  --color-ghost: #5C6472;
+
+  --color-accent: #9DB0CE;
+  --color-accent-hover: #B4C3DB;
+  --color-accent-fg: #0F1114;
+  --color-accent-soft: #232936;
+
+  --color-success: #34D399;
+  --color-success-tint: #10291F;
+  --color-warn: #FBBF24;
+  --color-warn-tint: #2B2110;
+  --color-danger: #F87171;
+  --color-danger-tint: #2E1616;
+  --color-info: #7FB0E8;
+  --color-info-tint: #14212E;
+  --color-shipped: #C4A6FA;
+  --color-shipped-tint: #221A33;
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
 
 body {
-  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--background);
-  color: var(--foreground);
+  font-family: var(--font-sans);
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.font-serif {
-  font-family: 'EB Garamond', Georgia, serif;
+/* Theme swap should feel like a dimmer, not a strobe. Transition only the
+   painted surfaces — transitioning `all` here janks every hover in the app. */
+body,
+body * {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease-out-quint);
+}
+/* ...but never fight an element's own animation or transform work. */
+body [style*="transform"],
+body [data-state],
+.no-theme-transition,
+.no-theme-transition * {
+  transition-property: none;
 }
 
-.font-mono {
-  font-family: 'Geist Mono', monospace;
+.font-serif { font-family: var(--font-serif); }
+.font-mono { font-family: var(--font-mono); }
+.font-arabic { font-family: var(--font-arabic); }
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
 }
 
-.font-arabic {
-  font-family: 'Amiri', 'Traditional Arabic', serif;
-}
-
-/* Material Symbols configuration */
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 20px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'liga';
-}
-
-/* Smooth custom scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* --- Scrollbars: present when needed, invisible when not ------------------ */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: transparent;
   border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+*:hover::-webkit-scrollbar-thumb { background: var(--color-line-2); background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ghost); background-clip: content-box; }
+
+/* Focus rings: visible for keyboards, invisible for mice. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Bento Card Transitions */
+/* ==========================================================================
+   PRIMITIVES
+   ========================================================================== */
+
 .bento-card {
-  background: #FDFDFD;
-  border: 1px solid #E2E8F0;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02), 0 4px 12px -4px rgba(0, 0, 0, 0.03);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  transition: border-color 220ms var(--ease-out-quint),
+              box-shadow 220ms var(--ease-out-quint),
+              transform 220ms var(--ease-out-quint);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.02), 0 4px 12px -4px rgb(0 0 0 / 0.03);
 }
-
 .bento-card:hover {
-  border-color: #CBD5E1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 10px 24px -6px rgba(0, 0, 0, 0.06);
+  border-color: var(--color-line-2);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.04), 0 10px 24px -6px rgb(0 0 0 / 0.06);
   transform: translateY(-1px);
 }
+.dark .bento-card { box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px -4px rgb(0 0 0 / 0.25); }
+.dark .bento-card:hover { box-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 10px 24px -6px rgb(0 0 0 / 0.35); }
 
-/* TipTap Rich Text Editor Custom Styles */
-.tiptap {
-  outline: none !important;
-  min-height: 320px;
-}
+/* ==========================================================================
+   RICH TEXT EDITOR (TipTap)
+   ========================================================================== */
+
+.tiptap { outline: none !important; }
 
 .tiptap p {
   margin-bottom: 0.75rem;
   line-height: 1.7;
-  color: #2D3748;
+  color: var(--color-ink-2);
 }
 
 .tiptap p.is-editor-empty:first-child::before {
-  color: #A0AEC0;
+  color: var(--color-ghost);
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -122,23 +217,23 @@ body {
 }
 
 .tiptap h1 {
-  font-family: 'EB Garamond', Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 1.85rem;
   font-weight: 700;
   line-height: 1.25;
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
-  color: #1A202C;
+  color: var(--color-ink);
 }
 
 .tiptap h2 {
-  font-family: 'EB Garamond', Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 1.45rem;
   font-weight: 700;
   line-height: 1.3;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
-  color: #1A202C;
+  color: var(--color-ink);
 }
 
 .tiptap h3 {
@@ -147,177 +242,86 @@ body {
   line-height: 1.35;
   margin-top: 1rem;
   margin-bottom: 0.4rem;
-  color: #2D3748;
+  color: var(--color-ink-2);
 }
 
-.tiptap ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
-  space-y: 0.25rem;
-}
-
-.tiptap ol {
-  list-style-type: decimal;
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
-  space-y: 0.25rem;
-}
-
-.tiptap li {
-  margin-bottom: 0.25rem;
-  line-height: 1.6;
-}
+.tiptap ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.tiptap ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.tiptap li { margin-bottom: 0.25rem; line-height: 1.6; }
 
 .tiptap ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
   margin-bottom: 0.75rem;
 }
-
 .tiptap ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
   margin-bottom: 0.35rem;
 }
-
 .tiptap ul[data-type="taskList"] li > label {
   margin-top: 0.2rem;
   user-select: none;
   cursor: pointer;
 }
-
 .tiptap ul[data-type="taskList"] li > label input[type="checkbox"] {
   cursor: pointer;
-  accent-color: #333E50;
+  accent-color: var(--color-accent);
   width: 15px;
   height: 15px;
   border-radius: 4px;
 }
-
-.tiptap ul[data-type="taskList"] li > div {
-  flex: 1 1 auto;
-}
+.tiptap ul[data-type="taskList"] li > div { flex: 1 1 auto; }
 
 .tiptap blockquote {
-  border-left: 3px solid #333E50;
-  padding-left: 1rem;
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
+  border-left: 3px solid var(--color-accent);
+  padding: 0.5rem 0 0.5rem 1rem;
+  margin: 0.75rem 0;
   font-style: italic;
-  color: #4A5568;
-  background: #F8F9FA;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  color: var(--color-muted);
+  background: var(--color-subtle);
   border-radius: 0 0.5rem 0.5rem 0;
 }
 
 .tiptap pre {
-  background: #1E293B;
-  color: #F8FAFC;
-  font-family: 'Geist Mono', monospace;
+  background: #12151B;
+  color: #E6E9EF;
+  font-family: var(--font-mono);
   padding: 0.85rem 1rem;
   border-radius: 0.75rem;
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
+  margin: 0.75rem 0;
   overflow-x: auto;
-  font-size: 0.85rem;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  line-height: 1.6;
 }
-
-.tiptap pre code {
-  color: inherit;
-  padding: 0;
-  background: none;
-  font-size: inherit;
-}
+.tiptap pre code { color: inherit; padding: 0; background: none; font-size: inherit; }
 
 .tiptap code {
-  background: #EDF2F7;
-  color: #2D3748;
-  font-family: 'Geist Mono', monospace;
+  background: var(--color-subtle-2);
+  color: var(--color-ink-2);
+  font-family: var(--font-mono);
   font-size: 0.85em;
   padding: 0.15rem 0.35rem;
   border-radius: 0.25rem;
 }
 
-.tiptap hr {
-  border: none;
-  border-top: 1px solid #E2E8F0;
-  margin: 1.5rem 0;
-}
+.tiptap hr { border: none; border-top: 1px solid var(--color-line); margin: 1.5rem 0; }
 
 .tiptap mark {
-  background-color: #FEF08A;
   padding: 0.1rem 0.25rem;
   border-radius: 0.2rem;
 }
 
-/* Syntax Highlighting Themes for Code Blocks */
-.hljs-comment,
-.hljs-quote {
-  color: #64748B;
-  font-style: italic;
-}
-
-.hljs-doctag,
-.hljs-keyword,
-.hljs-formula {
-  color: #F43F5E;
-  font-weight: 600;
-}
-
-.hljs-section,
-.hljs-name,
-.hljs-selector-tag,
-.hljs-deletion,
-.hljs-subst {
-  color: #E11D48;
-}
-
-.hljs-literal {
-  color: #38BDF8;
-  font-weight: 600;
-}
-
-.hljs-string,
-.hljs-regexp,
-.hljs-addition,
-.hljs-attribute,
-.hljs-meta .hljs-string {
-  color: #34D399;
-}
-
-.hljs-attr,
-.hljs-variable,
-.hljs-template-variable,
-.hljs-type,
-.hljs-selector-class,
-.hljs-selector-attr,
-.hljs-selector-pseudo,
-.hljs-number {
-  color: #FBBF24;
-}
-
-.hljs-symbol,
-.hljs-bullet,
-.hljs-link,
-.hljs-meta,
-.hljs-selector-id,
-.hljs-title {
-  color: #60A5FA;
-}
-
-.hljs-built_in,
-.hljs-class .hljs-title {
-  color: #A78BFA;
-}
-
-.hljs-emphasis {
-  font-style: italic;
-}
-
-.hljs-strong {
-  font-weight: bold;
-}
+/* --- Syntax highlighting (code blocks are always dark, in both themes) ---- */
+.hljs-comment, .hljs-quote { color: #6B7687; font-style: italic; }
+.hljs-doctag, .hljs-keyword, .hljs-formula { color: #FF7B92; font-weight: 600; }
+.hljs-section, .hljs-name, .hljs-selector-tag, .hljs-deletion, .hljs-subst { color: #FF9E86; }
+.hljs-literal { color: #7FD3F7; font-weight: 600; }
+.hljs-string, .hljs-regexp, .hljs-addition, .hljs-attribute, .hljs-meta .hljs-string { color: #6EE7B7; }
+.hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-type,
+.hljs-selector-class, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-number { color: #FCD34D; }
+.hljs-symbol, .hljs-bullet, .hljs-link, .hljs-meta, .hljs-selector-id, .hljs-title { color: #7FB0F5; }
+.hljs-built_in, .hljs-class .hljs-title { color: #C4A6FA; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: bold; }

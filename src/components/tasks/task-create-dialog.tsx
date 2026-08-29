@@ -141,15 +141,15 @@ export function TaskCreateDialog({
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs animate-in fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E8F0] animate-in zoom-in-95 max-h-[92vh] overflow-y-auto space-y-4">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-2 p-6 shadow-2xl border border-line animate-in zoom-in-95 max-h-[92vh] overflow-y-auto space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-3">
+          <div className="flex items-center justify-between border-b border-line pb-3">
             <div>
-              <Dialog.Title className="font-serif text-xl font-bold text-[#1A202C]">
+              <Dialog.Title className="font-serif text-xl font-bold text-ink">
                 {editingTask ? "Edit Task" : "New Task"}
               </Dialog.Title>
             </div>
-            <Dialog.Close className="p-1.5 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] cursor-pointer">
+            <Dialog.Close className="p-1.5 rounded-md text-faint hover:text-ink hover:bg-subtle-2 cursor-pointer">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -164,7 +164,7 @@ export function TaskCreateDialog({
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Title Input */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                 Task Title *
               </label>
               <input
@@ -174,7 +174,7 @@ export function TaskCreateDialog({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Solve 1 LeetCode Graph problem..."
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-sm text-[#1A202C]"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-sm text-ink"
               />
             </div>
 
@@ -184,7 +184,7 @@ export function TaskCreateDialog({
               className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                 isDaily
                   ? "bg-blue-50/80 border-blue-300 shadow-2xs"
-                  : "bg-[#F8F9FA] border-[#E2E8F0] hover:border-[#CBD5E1]"
+                  : "bg-subtle border-line hover:border-line-2"
               }`}
             >
               <div className="flex items-center space-x-2.5">
@@ -192,16 +192,16 @@ export function TaskCreateDialog({
                   className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                     isDaily
                       ? "bg-blue-600 text-white"
-                      : "bg-[#E2E8F0] text-[#718096]"
+                      : "bg-line text-faint"
                   }`}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <div className="font-serif font-bold text-xs text-[#1A202C]">
+                  <div className="font-serif font-bold text-xs text-ink">
                     Daily Recurring Task
                   </div>
-                  <div className="text-[10px] text-[#718096]">
+                  <div className="text-[10px] text-faint">
                     Repeats every single day (e.g. daily problem solving, workout, reading).
                   </div>
                 </div>
@@ -211,20 +211,20 @@ export function TaskCreateDialog({
                 type="checkbox"
                 checked={isDaily}
                 onChange={(e) => setIsDaily(e.target.checked)}
-                className="rounded border-[#CBD5E1] text-blue-600 focus:ring-0 cursor-pointer w-4 h-4"
+                className="rounded border-line-2 text-blue-600 focus:ring-0 cursor-pointer w-4 h-4"
               />
             </div>
 
             {/* Category / Domain & Priority */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Category
                 </label>
                 <select
                   value={module}
                   onChange={(e) => setModule(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
+                  className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer"
                 >
                   {MODULE_OPTIONS.map((opt) => (
                     <option key={opt.id} value={opt.id}>
@@ -235,13 +235,13 @@ export function TaskCreateDialog({
               </div>
 
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Priority
                 </label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
+                  className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer"
                 >
                   <option value="p1_urgent">🔥 High (P1)</option>
                   <option value="p2_medium">⚡ Medium (P2)</option>
@@ -254,26 +254,26 @@ export function TaskCreateDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {!isDaily && (
                 <div className="space-y-1">
-                  <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-[#718096]" /> Due Date
+                  <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-faint" /> Due Date
                   </label>
                   <input
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer text-xs"
+                    className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer text-xs"
                   />
                 </div>
               )}
 
               <div className={`space-y-1 ${isDaily ? "sm:col-span-2" : ""}`}>
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Linked Life Goal (Optional)
                 </label>
                 <select
                   value={goalId}
                   onChange={(e) => setGoalId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white focus:border-[#333E50] focus:outline-none cursor-pointer"
+                  className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer"
                 >
                   <option value="">None</option>
                   {goals.map((g: any) => (
@@ -287,7 +287,7 @@ export function TaskCreateDialog({
 
             {/* Notes / Description */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                 Notes & Details
               </label>
               <textarea
@@ -295,14 +295,14 @@ export function TaskCreateDialog({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Additional notes or links..."
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-xs"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs"
               />
             </div>
 
             {/* Subtasks / Checklist Builder */}
-            <div className="space-y-2 pt-2 border-t border-[#ECEAE4]">
+            <div className="space-y-2 pt-2 border-t border-line">
               <div className="flex items-center justify-between">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Checklist ({subtasks.length})
                 </label>
               </div>
@@ -311,7 +311,7 @@ export function TaskCreateDialog({
                 {subtasks.map((st, idx) => (
                   <div
                     key={st.id}
-                    className="flex items-center gap-2 p-1.5 rounded-lg bg-[#F8F9FA] border border-[#E2E8F0]"
+                    className="flex items-center gap-2 p-1.5 rounded-lg bg-subtle border border-line"
                   >
                     <input
                       type="checkbox"
@@ -321,7 +321,7 @@ export function TaskCreateDialog({
                         updated[idx].completed = e.target.checked;
                         setSubtasks(updated);
                       }}
-                      className="rounded border-[#CBD5E1] text-[#333E50] focus:ring-0 cursor-pointer"
+                      className="rounded border-line-2 text-accent focus:ring-0 cursor-pointer"
                     />
                     <input
                       type="text"
@@ -331,12 +331,12 @@ export function TaskCreateDialog({
                         updated[idx].title = e.target.value;
                         setSubtasks(updated);
                       }}
-                      className="flex-1 bg-transparent text-xs text-[#1A202C] focus:outline-none"
+                      className="flex-1 bg-transparent text-xs text-ink focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveSubtask(st.id)}
-                      className="text-[#A0AEC0] hover:text-rose-600 p-1 cursor-pointer"
+                      className="text-ghost hover:text-rose-600 p-1 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -356,12 +356,12 @@ export function TaskCreateDialog({
                     }
                   }}
                   placeholder="Add item..."
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-[#E2E8F0] text-xs focus:outline-none"
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-line text-xs focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddSubtask}
-                  className="px-3 py-1.5 rounded-lg bg-[#F1F3F5] hover:bg-[#E2E8F0] text-[#1A202C] font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-subtle-2 hover:bg-line text-ink font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add
                 </button>
@@ -369,7 +369,7 @@ export function TaskCreateDialog({
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex items-center justify-between pt-3 border-t border-[#ECEAE4]">
+            <div className="flex items-center justify-between pt-3 border-t border-line">
               {editingTask ? (
                 <button
                   type="button"
@@ -386,14 +386,14 @@ export function TaskCreateDialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg text-[#718096] hover:bg-[#F3F4F6] font-medium transition-colors cursor-pointer text-xs"
+                  className="px-4 py-2 rounded-lg text-faint hover:bg-subtle-2 font-medium transition-colors cursor-pointer text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] disabled:opacity-50 text-white font-semibold shadow-xs transition-colors cursor-pointer text-xs"
+                  className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-fg font-semibold shadow-xs transition-colors cursor-pointer text-xs"
                 >
                   {isSubmitting ? "Saving..." : editingTask ? "Save" : "Create Task"}
                 </button>

@@ -78,7 +78,7 @@ export function MajorGoalsBento() {
       </div>
 
       {/* 2. Control Bar (+ Add Major Goal & Filter Pills) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-b border-[#ECEAE4] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-b border-line pb-3">
         {/* Left: Dynamic Status Filter Pills */}
         <div className="flex items-center space-x-1.5 text-xs overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {filters.map((f) => (
@@ -87,8 +87,8 @@ export function MajorGoalsBento() {
               onClick={() => setActiveFilter(f.id)}
               className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
                 activeFilter === f.id
-                  ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                  : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
+                  ? "bg-accent text-accent-fg font-semibold shadow-2xs"
+                  : "bg-surface-2 border border-line text-faint hover:text-ink"
               }`}
             >
               {f.label}
@@ -102,7 +102,7 @@ export function MajorGoalsBento() {
             setEditingGoalId(null);
             setGoalDialogOpen(true);
           }}
-          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto shrink-0"
+          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Major Goal</span>
@@ -118,24 +118,24 @@ export function MajorGoalsBento() {
               className="bento-card rounded-xl p-5 space-y-4 animate-pulse"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-[#E2E8F0]" />
+                <div className="w-10 h-10 rounded-xl bg-line" />
                 <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-[#E2E8F0] rounded w-3/4" />
-                  <div className="h-3 bg-[#E2E8F0] rounded w-1/2" />
+                  <div className="h-4 bg-line rounded w-3/4" />
+                  <div className="h-3 bg-line rounded w-1/2" />
                 </div>
               </div>
-              <div className="h-3 bg-[#E2E8F0] rounded w-full" />
-              <div className="h-2 bg-[#E2E8F0] rounded-full w-full" />
+              <div className="h-3 bg-line rounded w-full" />
+              <div className="h-2 bg-line rounded-full w-full" />
             </div>
           ))}
         </div>
       ) : displayedGoals.length === 0 ? (
         <div className="bento-card rounded-xl p-10 text-center space-y-3">
-          <Target className="w-8 h-8 text-[#CBD5E1] mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-[#1A202C]">
+          <Target className="w-8 h-8 text-line-2 mx-auto" />
+          <h3 className="font-serif text-lg font-bold text-ink">
             No goals found in this view
           </h3>
-          <p className="text-xs text-[#718096] max-w-sm mx-auto">
+          <p className="text-xs text-faint max-w-sm mx-auto">
             Click &ldquo;Add Major Goal&rdquo; above to create a new milestone.
           </p>
         </div>

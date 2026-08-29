@@ -54,25 +54,25 @@ export function SideNav() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-50 h-screen bg-[#FDFDFD] border-r border-[#E2E8F0] flex flex-col justify-between transition-all duration-300 ease-in-out ${
+      className={`fixed left-0 top-0 z-50 h-screen bg-surface border-r border-line flex flex-col justify-between transition-all duration-300 ease-in-out ${
         isMini ? "w-16" : "w-64"
       }`}
     >
       {/* Top Brand Header */}
-      <div className="flex items-center justify-between px-3.5 py-4 border-b border-[#ECEAE4]/60">
+      <div className="flex items-center justify-between px-3.5 py-4 border-b border-line/60">
         <div
           onClick={() => setActiveModule("tasks")}
           className="flex items-center space-x-3 cursor-pointer overflow-hidden select-none"
         >
-          <div className="w-8 h-8 rounded-lg bg-[#333E50] text-white flex items-center justify-center font-serif font-bold text-base shadow-sm shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-accent text-accent-fg flex items-center justify-center font-serif font-bold text-base shadow-sm shrink-0">
             M
           </div>
           {!isMini && (
             <div className="leading-tight transition-opacity duration-200">
-              <span className="font-serif font-bold text-base tracking-tight text-[#1A202C]">
+              <span className="font-serif font-bold text-base tracking-tight text-ink">
                 MOSHA
               </span>
-              <span className="block text-[10px] font-mono uppercase tracking-wider text-[#718096]">
+              <span className="block text-[10px] font-mono uppercase tracking-wider text-faint">
                 Precision Workspace
               </span>
             </div>
@@ -83,7 +83,7 @@ export function SideNav() {
         <button
           onClick={toggleSidebar}
           title={isMini ? "Expand Sidebar" : "Collapse to Mini"}
-          className="p-1 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+          className="p-1 rounded-md text-faint hover:text-ink hover:bg-subtle-2 transition-colors cursor-pointer"
         >
           {isMini ? (
             <ChevronRight className="w-4 h-4" />
@@ -105,13 +105,13 @@ export function SideNav() {
               onClick={() => setActiveModule(item.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group relative cursor-pointer ${
                 isActive
-                  ? "bg-[#333E50] text-white shadow-xs font-semibold"
-                  : "text-[#4A5568] hover:bg-[#F4F5F7] hover:text-[#1A202C]"
+                  ? "bg-accent text-accent-fg shadow-xs font-semibold"
+                  : "text-muted hover:bg-subtle-2 hover:text-ink"
               } ${isMini ? "justify-center px-0" : ""}`}
             >
               <Icon
                 className={`w-4 h-4 shrink-0 transition-transform ${
-                  isActive ? "text-white" : "text-[#718096] group-hover:text-[#1A202C]"
+                  isActive ? "text-accent-fg" : "text-faint group-hover:text-ink"
                 }`}
               />
 
@@ -125,8 +125,8 @@ export function SideNav() {
                 <span
                   className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase tracking-wider ${
                     isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-[#EDF2F7] text-[#4A5568]"
+                      ? "bg-accent-fg/20 text-accent-fg"
+                      : "bg-subtle-2 text-muted"
                   }`}
                 >
                   {item.badge}
@@ -135,7 +135,7 @@ export function SideNav() {
 
               {/* Active Indicator Bar */}
               {isActive && isMini && (
-                <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[#333E50] rounded-r-full" />
+                <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-accent rounded-r-full" />
               )}
             </button>
           );
@@ -148,10 +148,10 @@ export function SideNav() {
                   <Tooltip.Content
                     side="right"
                     sideOffset={10}
-                    className="z-50 px-2.5 py-1 text-xs font-medium bg-[#1A202C] text-white rounded-md shadow-lg"
+                    className="z-50 px-2.5 py-1 text-xs font-medium bg-ink text-accent-fg rounded-md shadow-lg"
                   >
                     {item.label}
-                    <Tooltip.Arrow className="fill-[#1A202C]" />
+                    <Tooltip.Arrow className="fill-ink" />
                   </Tooltip.Content>
                 </Tooltip.Portal>
               </Tooltip.Root>
@@ -163,24 +163,24 @@ export function SideNav() {
       </div>
 
       {/* User / Profile Status Footer */}
-      <div className="p-2.5 border-t border-[#ECEAE4]/60 bg-[#FAFAFA]">
+      <div className="p-2.5 border-t border-line/60 bg-subtle">
         <div
-          className={`flex items-center gap-3 p-2 rounded-lg bg-white border border-[#E2E8F0] shadow-2xs ${
+          className={`flex items-center gap-3 p-2 rounded-lg bg-surface-2 border border-line shadow-2xs ${
             isMini ? "justify-center" : ""
           }`}
         >
           <div className="relative shrink-0">
-            <div className="w-7 h-7 rounded-full bg-[#333E50] text-white flex items-center justify-center text-xs font-bold font-mono">
+            <div className="w-7 h-7 rounded-full bg-accent text-accent-fg flex items-center justify-center text-xs font-bold font-mono">
               AG
             </div>
-            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-surface-2" />
           </div>
           {!isMini && (
             <div className="overflow-hidden leading-tight flex-1">
-              <span className="block text-xs font-semibold text-[#1A202C] truncate">
+              <span className="block text-xs font-semibold text-ink truncate">
                 Ahmed (Mosha)
               </span>
-              <span className="block text-[10px] font-mono text-[#718096] truncate">
+              <span className="block text-[10px] font-mono text-faint truncate">
                 Precision Focus
               </span>
             </div>
