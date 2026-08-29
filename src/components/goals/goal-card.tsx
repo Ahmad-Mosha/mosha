@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, ChevronRight, Check } from "lucide-react";
+import { Calendar, ChevronRight } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -22,6 +22,41 @@ export function formatGoalIcon(icon: string | undefined): string {
       return "🏆";
     default:
       return icon;
+  }
+}
+
+export function getStatusBadge(status: string) {
+  switch (status) {
+    case "completed":
+      return (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+          Done 🏆
+        </span>
+      );
+    case "planning":
+      return (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+          Planning 🧭
+        </span>
+      );
+    case "vision":
+      return (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+          Vision 🔭
+        </span>
+      );
+    case "on_hold":
+      return (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+          On Hold ⏸️
+        </span>
+      );
+    default:
+      return (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#EDF2F7] text-[#333E50] border border-[#E2E8F0]">
+          In Progress ⚡
+        </span>
+      );
   }
 }
 
@@ -87,15 +122,9 @@ export function GoalCard({ goal, onSelect }: GoalProps) {
             </div>
           </div>
 
-          <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold shrink-0 select-none ${
-              goal.status === "completed"
-                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                : "bg-[#EDF2F7] text-[#333E50]"
-            }`}
-          >
-            {goal.status === "completed" ? "Done 🏆" : "Active"}
-          </span>
+          <div className="shrink-0 select-none">
+            {getStatusBadge(goal.status)}
+          </div>
         </div>
 
         {/* Short Description */}

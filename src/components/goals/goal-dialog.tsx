@@ -5,7 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useMoshaStore } from "@/lib/store";
-import { X, Plus, Trash2, Calendar, Smile } from "lucide-react";
+import { X, Plus, Trash2, Calendar } from "lucide-react";
 
 const EMOJI_OPTIONS = [
   "🎖️", "💼", "❤️", "🎯", "🚀", "💡", "🏋️", "📚",
@@ -86,7 +86,7 @@ export function GoalDialog() {
       icon: icon || "🎯",
       milestones,
       progress: computedProgress,
-      phase: "Active", // Safe default for compatibility with cloud validator
+      phase: "Active",
       order: editingGoalId && existingGoal ? existingGoal.order : goals.length + 1,
     };
 
@@ -207,8 +207,11 @@ export function GoalDialog() {
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-xs text-[#1A202C] bg-white cursor-pointer"
                 >
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
+                  <option value="in_progress">In Progress ⚡</option>
+                  <option value="planning">Planning 🧭</option>
+                  <option value="vision">Vision 🔭</option>
+                  <option value="on_hold">On Hold ⏸️</option>
+                  <option value="completed">Completed 🏆</option>
                 </select>
               </div>
             </div>

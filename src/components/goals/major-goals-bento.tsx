@@ -12,21 +12,33 @@ import { Plus, Target } from "lucide-react";
 export function MajorGoalsBento() {
   const { setGoalDialogOpen, setEditingGoalId } = useMoshaStore();
 
-  const goals = useQuery(api.goals.list);
+  const goals = useQuery(api.goals.list) || [];
 
-  const [activeFilter, setActiveFilter] = useState<"all" | "in_progress" | "completed">("all");
-  const [selectedGoal, setSelectedGoal] = useState<any | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
 
-  const allGoals = goals || [];
-  const inProgressGoals = allGoals.filter((g: any) => g.status !== "completed");
-  const completedGoals = allGoals.filter((g: any) => g.status === "completed");
+  // Live-reactive goal selection
+  const selectedGoal = goals.find((g: any) => g._id === selectedGoalId) || null;
+
+  const inProgressGoals = goals.filter((g: any) => g.status === "in_progress");
+  const planningGoals = goals.filter((g: any) => g.status === "planning");
+  const visionGoals = goals.filter((g: any) => g.status === "vision");
+  const onHoldGoals = goals.filter((g: any) => g.status === "on_hold");
+  const completedGoals = goals.filter((g: any) => g.status === "completed");
 
   const displayedGoals =
-    activeFilter === "in_progress"
-      ? inProgressGoals
-      : activeFilter === "completed"
-      ? completedGoals
-      : allGoals;
+    activeFilter === "all"
+      ? goals
+      : goals.filter((g: any) => g.status === activeFilter);
+
+  const filters = [
+    { id: "all", label: `All Goals (${goals.length})` },
+    { id: "in_progress", label: `In Progress (${inProgressGoals.length})` },
+    { id: "planning", label: `Planning (${planningGoals.length})` },
+    { id: "vision", label: `Vision (${visionGoals.length})` },
+    { id: "on_hold", label: `On Hold (${onHoldGoals.length})` },
+    { id: "completed", label: `Completed (${completedGoals.length})` },
+  ];
 
   return (
     <div className="space-y-5 animate-in fade-in duration-200">
@@ -35,40 +47,23 @@ export function MajorGoalsBento() {
         <QuoteRotator />
       </div>
 
-      {/* 2. Compact Control Bar (+ Add Major Goal & Filter Pills) */}
+      {/* 2. Control Bar (+ Add Major Goal & Filter Pills) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-b border-[#ECEAE4] pb-3">
-        {/* Left: Filter Tabs */}
-        <div className="flex items-center space-x-1.5 text-xs">
-          <button
-            onClick={() => setActiveFilter("all")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeFilter === "all"
-                ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
-            }`}
-          >
-            All Goals ({allGoals.length})
-          </button>
-          <button
-            onClick={() => setActiveFilter("in_progress")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeFilter === "in_progress"
-                ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
-            }`}
-          >
-            In Progress ({inProgressGoals.length})
-          </button>
-          <button
-            onClick={() => setActiveFilter("completed")}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-              activeFilter === "completed"
-                ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
-            }`}
-          >
-            Completed ({completedGoals.length})
-          </button>
+        {/* Left: Dynamic Status Filter Pills */}
+        <div className="flex items-center space-x-1.5 text-xs overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          {filters.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setActiveFilter(f.id)}
+              className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                activeFilter === f.id
+                  ? "bg-[#333E50] text-white font-semibold shadow-2xs"
+                  : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
 
         {/* Right: Actions */}
@@ -77,7 +72,7 @@ export function MajorGoalsBento() {
             setEditingGoalId(null);
             setGoalDialogOpen(true);
           }}
-          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto"
+          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Major Goal</span>
@@ -89,10 +84,10 @@ export function MajorGoalsBento() {
         <div className="bento-card rounded-xl p-10 text-center space-y-3">
           <Target className="w-8 h-8 text-[#CBD5E1] mx-auto" />
           <h3 className="font-serif text-lg font-bold text-[#1A202C]">
-            No major goals in this view
+            No goals found in this view
           </h3>
           <p className="text-xs text-[#718096] max-w-sm mx-auto">
-            Click &ldquo;Add Major Goal&rdquo; above to create your next life milestone.
+            Click &ldquo;Add Major Goal&rdquo; above to create a new milestone.
           </p>
         </div>
       ) : (
@@ -101,17 +96,17 @@ export function MajorGoalsBento() {
             <GoalCard
               key={goal._id}
               goal={goal}
-              onSelect={(g) => setSelectedGoal(g)}
+              onSelect={(g) => setSelectedGoalId(g._id)}
             />
           ))}
         </div>
       )}
 
-      {/* 4. Goal Details Modal Drawer (Opens on card click) */}
+      {/* 4. Goal Details Modal Drawer (Reactive via selectedGoalId) */}
       <GoalDetailsDialog
         goal={selectedGoal}
-        isOpen={Boolean(selectedGoal)}
-        onClose={() => setSelectedGoal(null)}
+        isOpen={Boolean(selectedGoalId)}
+        onClose={() => setSelectedGoalId(null)}
       />
     </div>
   );

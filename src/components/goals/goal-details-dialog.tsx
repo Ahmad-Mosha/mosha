@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useMoshaStore } from "@/lib/store";
-import { X, Check, Edit2, Calendar, Trash2, CheckCircle2 } from "lucide-react";
+import { X, Check, Edit2, Calendar, Trash2 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { formatGoalIcon } from "./goal-card";
+import { formatGoalIcon, getStatusBadge } from "./goal-card";
 
 interface GoalDetailsProps {
   goal: any | null;
@@ -21,35 +21,56 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
   const updateGoal = useMutation(api.goals.update);
   const removeGoal = useMutation(api.goals.remove);
 
+  // Local optimistic state for instant UI update
+  const [localMilestones, setLocalMilestones] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (goal?.milestones) {
+      setLocalMilestones(goal.milestones);
+    }
+  }, [goal?.milestones]);
+
   if (!goal) return null;
 
   const handleToggle = async (milestoneId: string) => {
+    // 1. Instant 0ms optimistic visual update
+    const updated = localMilestones.map((m: any) =>
+      m.id === milestoneId ? { ...m, completed: !m.completed } : m
+    );
+    setLocalMilestones(updated);
+
+    const completedCount = updated.filter((m: any) => m.completed).length;
+    const progress = Math.round((completedCount / updated.length) * 100);
+
+    if (progress === 100) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    }
+
+    // 2. Sync to Convex backend
     try {
-      const res = await toggleMilestone({
+      await toggleMilestone({
         goalId: goal._id,
         milestoneId,
       });
-      if (res && res.progress === 100) {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
-      }
     } catch (err) {
       console.error("Failed to toggle milestone:", err);
+      // Revert if mutation fails
+      setLocalMilestones(goal.milestones || []);
     }
   };
 
-  const handleToggleStatus = async () => {
-    const nextStatus = goal.status === "completed" ? "in_progress" : "completed";
+  const handleStatusChange = async (newStatus: string) => {
     await updateGoal({
       id: goal._id,
-      status: nextStatus,
-      progress: nextStatus === "completed" ? 100 : goal.progress,
-      completedAt: nextStatus === "completed" ? new Date().toISOString() : undefined,
+      status: newStatus,
+      progress: newStatus === "completed" ? 100 : goal.progress,
+      completedAt: newStatus === "completed" ? new Date().toISOString() : undefined,
     });
-    if (nextStatus === "completed") {
+    if (newStatus === "completed") {
       confetti({
         particleCount: 120,
         spread: 80,
@@ -63,8 +84,12 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
     onClose();
   };
 
-  const completedCount = goal.milestones?.filter((m: any) => m.completed).length || 0;
-  const totalMilestones = goal.milestones?.length || 0;
+  const completedCount = localMilestones.filter((m: any) => m.completed).length;
+  const totalMilestones = localMilestones.length;
+  const computedProgress =
+    totalMilestones > 0
+      ? Math.round((completedCount / totalMilestones) * 100)
+      : goal.progress;
   const displayedIcon = formatGoalIcon(goal.icon);
 
   return (
@@ -74,15 +99,15 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E8F0] animate-in zoom-in-95 max-h-[90vh] overflow-y-auto space-y-5">
           {/* Header */}
           <div className="flex items-start justify-between border-b border-[#ECEAE4] pb-4">
-            <div className="flex items-center space-x-3.5">
+            <div className="flex items-center space-x-3.5 min-w-0 flex-1 pr-4">
               <div className="w-12 h-12 rounded-xl bg-[#F8F9FA] border border-[#E2E8F0] flex items-center justify-center text-2xl shadow-2xs shrink-0 select-none">
                 {displayedIcon}
               </div>
-              <div>
-                <Dialog.Title className="font-serif text-2xl font-bold text-[#1A202C]">
+              <div className="min-w-0 flex-1">
+                <Dialog.Title className="font-serif text-2xl font-bold text-[#1A202C] truncate">
                   {goal.title}
                 </Dialog.Title>
-                <div className="flex items-center space-x-3 text-xs text-[#718096] mt-0.5 font-mono">
+                <div className="flex items-center space-x-3 text-xs text-[#718096] mt-1 font-mono">
                   {goal.targetDate && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
@@ -90,18 +115,12 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
                     </span>
                   )}
                   <span>•</span>
-                  <span
-                    className={`font-semibold ${
-                      goal.status === "completed" ? "text-emerald-700" : "text-amber-700"
-                    }`}
-                  >
-                    {goal.status === "completed" ? "Completed 🏆" : "In Progress"}
-                  </span>
+                  <div className="inline-flex">{getStatusBadge(goal.status)}</div>
                 </div>
               </div>
             </div>
 
-            <Dialog.Close className="p-1.5 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] cursor-pointer">
+            <Dialog.Close className="p-1.5 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] cursor-pointer shrink-0">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -119,19 +138,21 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
               <span className="text-[#718096] uppercase tracking-wider font-semibold">
                 Overall Progress
               </span>
-              <strong className="text-[#1A202C] text-sm">{goal.progress}%</strong>
+              <strong className="text-[#1A202C] text-sm">{computedProgress}%</strong>
             </div>
 
             <div className="w-full bg-[#E2E8F0] h-2.5 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all duration-500 ease-out ${
-                  goal.progress === 100
+                className={`h-full rounded-full transition-all duration-300 ease-out ${
+                  computedProgress === 100
                     ? "bg-emerald-600"
-                    : goal.progress >= 70
+                    : computedProgress >= 70
                     ? "bg-blue-600"
+                    : computedProgress >= 40
+                    ? "bg-amber-600"
                     : "bg-[#333E50]"
                 }`}
-                style={{ width: `${goal.progress}%` }}
+                style={{ width: `${computedProgress}%` }}
               />
             </div>
           </div>
@@ -143,23 +164,23 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
                 Interactive Milestones ({completedCount}/{totalMilestones})
               </span>
               <span className="text-[10px] text-[#A0AEC0] font-mono">
-                Click checkbox to complete
+                Click checkbox to toggle immediately
               </span>
             </div>
 
-            <div className="space-y-1.5 max-h-56 overflow-y-auto">
-              {goal.milestones?.map((m: any) => (
+            <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+              {localMilestones.map((m: any) => (
                 <div
                   key={m.id}
                   onClick={() => handleToggle(m.id)}
                   className={`flex items-center gap-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
                     m.completed
-                      ? "bg-[#F8F9FA] border-[#E2E8F0] opacity-75"
+                      ? "bg-[#F8F9FA] border-[#E2E8F0] opacity-80"
                       : "bg-white border-[#E2E8F0] hover:border-[#CBD5E1]"
                   }`}
                 >
                   <div
-                    className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
+                    className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
                       m.completed
                         ? "bg-[#333E50] border-[#333E50] text-white"
                         : "border-[#CBD5E1] bg-white hover:border-[#718096]"
@@ -181,8 +202,26 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
             </div>
           </div>
 
+          {/* Status Quick Switcher */}
+          <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl flex items-center justify-between text-xs">
+            <span className="font-mono text-[11px] font-semibold text-[#718096] uppercase">
+              Change Status
+            </span>
+            <select
+              value={goal.status}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] bg-white font-mono text-xs text-[#1A202C] focus:outline-none cursor-pointer"
+            >
+              <option value="in_progress">In Progress ⚡</option>
+              <option value="planning">Planning 🧭</option>
+              <option value="vision">Vision 🔭</option>
+              <option value="on_hold">On Hold ⏸️</option>
+              <option value="completed">Completed 🏆</option>
+            </select>
+          </div>
+
           {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-[#ECEAE4] text-xs">
+          <div className="flex items-center justify-between pt-3 border-t border-[#ECEAE4] text-xs">
             <button
               onClick={handleDelete}
               className="text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer"
@@ -192,26 +231,14 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
 
             <div className="flex items-center space-x-2">
               <button
-                onClick={handleToggleStatus}
-                className={`px-3 py-1.5 rounded-lg font-semibold border transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  goal.status === "completed"
-                    ? "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-                    : "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {goal.status === "completed" ? "Mark In Progress" : "Mark Completed"}
-              </button>
-
-              <button
                 onClick={() => {
                   setEditingGoalId(goal._id);
                   setGoalDialogOpen(true);
                   onClose();
                 }}
-                className="px-3.5 py-1.5 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <Edit2 className="w-3.5 h-3.5" /> Edit
+                <Edit2 className="w-3.5 h-3.5" /> Edit Full Goal
               </button>
             </div>
           </div>
