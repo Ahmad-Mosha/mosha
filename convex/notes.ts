@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 
 // Query: List all folders
 export const listFolders = query({
@@ -48,37 +49,41 @@ export const updateFolder = mutation({
 });
 
 // Mutation: Remove Folder (and all subfolders and notes unlinked)
+/**
+ * Deleting a folder deletes the folder, never the writing inside it. Notes are
+ * unlinked to General so they stay reachable.
+ *
+ * The previous version deleted every note in the folder, and only walked one
+ * level of subfolders — so notes nested two deep kept a folderId pointing at a
+ * row that no longer existed and vanished from the tree while still occupying
+ * the database.
+ */
 export const removeFolder = mutation({
   args: { id: v.id("folders") },
   handler: async (ctx, args) => {
-    // 1. Unlink or delete notes in this folder
-    const notesInFolder = await ctx.db
-      .query("notes")
-      .withIndex("by_folder", (q) => q.eq("folderId", args.id))
-      .collect();
-
-    for (const note of notesInFolder) {
-      await ctx.db.delete(note._id);
-    }
-
-    // 2. Also recursively delete any subfolders and their notes
-    const subfolders = await ctx.db
-      .query("folders")
-      .withIndex("by_parent", (q) => q.eq("parentId", args.id))
-      .collect();
-
-    for (const sub of subfolders) {
-      const subNotes = await ctx.db
+    const unlinkNotes = async (folderId: Id<"folders">) => {
+      const notes = await ctx.db
         .query("notes")
-        .withIndex("by_folder", (q) => q.eq("folderId", sub._id))
+        .withIndex("by_folder", (q) => q.eq("folderId", folderId))
         .collect();
-      for (const sn of subNotes) {
-        await ctx.db.delete(sn._id);
+      for (const note of notes) {
+        await ctx.db.patch(note._id, { folderId: undefined });
       }
-      await ctx.db.delete(sub._id);
-    }
+    };
 
-    await ctx.db.delete(args.id);
+    const removeTree = async (folderId: Id<"folders">) => {
+      const subfolders = await ctx.db
+        .query("folders")
+        .withIndex("by_parent", (q) => q.eq("parentId", folderId))
+        .collect();
+      for (const sub of subfolders) {
+        await removeTree(sub._id);
+      }
+      await unlinkNotes(folderId);
+      await ctx.db.delete(folderId);
+    };
+
+    await removeTree(args.id);
   },
 });
 
