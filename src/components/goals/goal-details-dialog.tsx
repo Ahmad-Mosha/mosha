@@ -96,18 +96,18 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs animate-in fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl border border-[#E2E8F0] animate-in zoom-in-95 max-h-[90vh] overflow-y-auto space-y-5">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-2 p-6 shadow-2xl border border-line animate-in zoom-in-95 max-h-[90vh] overflow-y-auto space-y-5">
           {/* Header */}
-          <div className="flex items-start justify-between border-b border-[#ECEAE4] pb-4">
+          <div className="flex items-start justify-between border-b border-line pb-4">
             <div className="flex items-center space-x-3.5 min-w-0 flex-1 pr-4">
-              <div className="w-12 h-12 rounded-xl bg-[#F8F9FA] border border-[#E2E8F0] flex items-center justify-center text-2xl shadow-2xs shrink-0 select-none">
+              <div className="w-12 h-12 rounded-xl bg-subtle border border-line flex items-center justify-center text-2xl shadow-2xs shrink-0 select-none">
                 {displayedIcon}
               </div>
               <div className="min-w-0 flex-1">
-                <Dialog.Title className="font-serif text-2xl font-bold text-[#1A202C] truncate">
+                <Dialog.Title className="font-serif text-2xl font-bold text-ink truncate">
                   {goal.title}
                 </Dialog.Title>
-                <div className="flex items-center space-x-3 text-xs text-[#718096] mt-1 font-mono">
+                <div className="flex items-center space-x-3 text-xs text-faint mt-1 font-mono">
                   {goal.targetDate && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
@@ -120,14 +120,14 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
               </div>
             </div>
 
-            <Dialog.Close className="p-1.5 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] cursor-pointer shrink-0">
+            <Dialog.Close className="p-1.5 rounded-md text-faint hover:text-ink hover:bg-subtle-2 cursor-pointer shrink-0">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
 
           {/* Description */}
           {goal.description && (
-            <div className="p-3.5 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl text-xs sm:text-sm text-[#4A5568] leading-relaxed">
+            <div className="p-3.5 bg-subtle border border-line rounded-xl text-xs sm:text-sm text-muted leading-relaxed">
               {goal.description}
             </div>
           )}
@@ -135,13 +135,13 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           {/* Progress Bar & Readiness */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-[#718096] uppercase tracking-wider font-semibold">
+              <span className="text-faint uppercase tracking-wider font-semibold">
                 Overall Progress
               </span>
-              <strong className="text-[#1A202C] text-sm">{computedProgress}%</strong>
+              <strong className="text-ink text-sm">{computedProgress}%</strong>
             </div>
 
-            <div className="w-full bg-[#E2E8F0] h-2.5 rounded-full overflow-hidden">
+            <div className="w-full bg-line h-2.5 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-300 ease-out ${
                   computedProgress === 100
@@ -150,7 +150,7 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
                     ? "bg-blue-600"
                     : computedProgress >= 40
                     ? "bg-amber-600"
-                    : "bg-[#333E50]"
+                    : "bg-accent"
                 }`}
                 style={{ width: `${computedProgress}%` }}
               />
@@ -158,12 +158,12 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           </div>
 
           {/* Milestones Checklist */}
-          <div className="space-y-2.5 pt-2 border-t border-[#ECEAE4]">
+          <div className="space-y-2.5 pt-2 border-t border-line">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#718096]">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-faint">
                 Interactive Milestones ({completedCount}/{totalMilestones})
               </span>
-              <span className="text-[10px] text-[#A0AEC0] font-mono">
+              <span className="text-[10px] text-ghost font-mono">
                 Click checkbox to toggle immediately
               </span>
             </div>
@@ -175,15 +175,15 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
                   onClick={() => handleToggle(m.id)}
                   className={`flex items-center gap-3 p-2.5 rounded-lg border transition-all cursor-pointer select-none ${
                     m.completed
-                      ? "bg-[#F8F9FA] border-[#E2E8F0] opacity-80"
-                      : "bg-white border-[#E2E8F0] hover:border-[#CBD5E1]"
+                      ? "bg-subtle border-line opacity-80"
+                      : "bg-surface-2 border-line hover:border-line-2"
                   }`}
                 >
                   <div
                     className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
                       m.completed
-                        ? "bg-[#333E50] border-[#333E50] text-white"
-                        : "border-[#CBD5E1] bg-white hover:border-[#718096]"
+                        ? "bg-accent border-accent text-accent-fg"
+                        : "border-line-2 bg-surface-2 hover:border-faint"
                     }`}
                   >
                     {m.completed && <Check className="w-3 h-3 stroke-[3]" />}
@@ -191,8 +191,8 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
                   <span
                     className={`flex-1 text-xs ${
                       m.completed
-                        ? "line-through text-[#A0AEC0]"
-                        : "text-[#1A202C] font-medium"
+                        ? "line-through text-ghost"
+                        : "text-ink font-medium"
                     }`}
                   >
                     {m.title}
@@ -203,14 +203,14 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           </div>
 
           {/* Status Quick Switcher */}
-          <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-xl flex items-center justify-between text-xs">
-            <span className="font-mono text-[11px] font-semibold text-[#718096] uppercase">
+          <div className="p-3 bg-subtle border border-line rounded-xl flex items-center justify-between text-xs">
+            <span className="font-mono text-[11px] font-semibold text-faint uppercase">
               Change Status
             </span>
             <select
               value={goal.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="px-2.5 py-1 rounded-lg border border-[#E2E8F0] bg-white font-mono text-xs text-[#1A202C] focus:outline-none cursor-pointer"
+              className="px-2.5 py-1 rounded-lg border border-line bg-surface-2 font-mono text-xs text-ink focus:outline-none cursor-pointer"
             >
               <option value="in_progress">In Progress ⚡</option>
               <option value="planning">Planning 🧭</option>
@@ -221,7 +221,7 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-[#ECEAE4] text-xs">
+          <div className="flex items-center justify-between pt-3 border-t border-line text-xs">
             <button
               onClick={handleDelete}
               className="text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer"
@@ -236,7 +236,7 @@ export function GoalDetailsDialog({ goal, isOpen, onClose }: GoalDetailsProps) {
                   setGoalDialogOpen(true);
                   onClose();
                 }}
-                className="px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <Edit2 className="w-3.5 h-3.5" /> Edit Full Goal
               </button>

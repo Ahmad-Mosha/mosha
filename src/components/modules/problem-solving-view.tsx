@@ -94,21 +94,21 @@ export function ProblemSolvingView() {
         <div>
           <div className="flex items-center space-x-2 text-xs">
             <Code2 className="w-4 h-4 text-blue-700" />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
               Algorithmic Mastery Hub
             </span>
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A202C] mt-1">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink mt-1">
             Problem Solving & Patterns
           </h1>
-          <p className="text-xs sm:text-sm text-[#4A5568] max-w-xl leading-relaxed mt-1">
+          <p className="text-xs sm:text-sm text-muted max-w-xl leading-relaxed mt-1">
             Track, review, and achieve <strong>100% Mastery</strong> (the ability to solve alone on a blank whiteboard every time).
           </p>
         </div>
 
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+          className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-2xs transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Log Solved Problem</span>
@@ -119,16 +119,16 @@ export function ProblemSolvingView() {
       {isAdding && (
         <form
           onSubmit={handleCreate}
-          className="bento-card rounded-xl p-5 space-y-4 bg-white border-2 border-[#333E50]/20 animate-in fade-in"
+          className="bento-card rounded-xl p-5 space-y-4 bg-surface-2 border-2 border-accent/20 animate-in fade-in"
         >
-          <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-2">
-            <h3 className="font-serif text-base font-bold text-[#1A202C]">
+          <div className="flex items-center justify-between border-b border-line pb-2">
+            <h3 className="font-serif text-base font-bold text-ink">
               Log New Solved Problem
             </h3>
             <button
               type="button"
               onClick={() => setIsAdding(false)}
-              className="text-xs text-[#718096] hover:text-[#1A202C] cursor-pointer"
+              className="text-xs text-faint hover:text-ink cursor-pointer"
             >
               Cancel
             </button>
@@ -136,7 +136,7 @@ export function ProblemSolvingView() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="sm:col-span-2 space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Problem Name *
               </label>
               <input
@@ -145,12 +145,12 @@ export function ProblemSolvingView() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Trapping Rain Water"
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:outline-none focus:border-[#333E50]"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:outline-none focus:border-accent"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 LeetCode / Platform URL
               </label>
               <input
@@ -158,14 +158,14 @@ export function ProblemSolvingView() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://leetcode.com/problems/..."
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:outline-none focus:border-[#333E50]"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:outline-none focus:border-accent"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Pattern / Algorithm
               </label>
               <input
@@ -173,18 +173,18 @@ export function ProblemSolvingView() {
                 value={pattern}
                 onChange={(e) => setPattern(e.target.value)}
                 placeholder="Two Pointers, DP, BFS..."
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:outline-none"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Difficulty
               </label>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 cursor-pointer"
               >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
@@ -193,25 +193,25 @@ export function ProblemSolvingView() {
             </div>
 
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Time Spent (mins)
               </label>
               <input
                 type="number"
                 value={timeMins}
                 onChange={(e) => setTimeMins(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0]"
+                className="w-full px-3 py-2 rounded-lg border border-line"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Mastery Level (%)
               </label>
               <select
                 value={masteryLevel}
                 onChange={(e) => setMasteryLevel(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] bg-white font-semibold text-emerald-800 cursor-pointer"
+                className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 font-semibold text-emerald-800 cursor-pointer"
               >
                 <option value={100}>100% (Can solve alone effortlessly)</option>
                 <option value={85}>85% (Clean solution, minor doubt)</option>
@@ -223,7 +223,7 @@ export function ProblemSolvingView() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Mistakes / Traps to Remember
               </label>
               <textarea
@@ -231,12 +231,12 @@ export function ProblemSolvingView() {
                 value={mistakes}
                 onChange={(e) => setMistakes(e.target.value)}
                 placeholder="What edge cases or traps did you face?"
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0]"
+                className="w-full px-3 py-2 rounded-lg border border-line"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Key Invariant / Solution Notes
               </label>
               <textarea
@@ -244,7 +244,7 @@ export function ProblemSolvingView() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Core intuition and algorithmic invariant..."
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0]"
+                className="w-full px-3 py-2 rounded-lg border border-line"
               />
             </div>
           </div>
@@ -252,7 +252,7 @@ export function ProblemSolvingView() {
           <div className="flex justify-end pt-2">
             <button
               type="submit"
-              className="px-5 py-2 rounded-lg bg-[#333E50] text-white font-semibold text-xs shadow-2xs hover:bg-[#252E3B] transition-colors cursor-pointer"
+              className="px-5 py-2 rounded-lg bg-accent text-accent-fg font-semibold text-xs shadow-2xs hover:bg-accent-hover transition-colors cursor-pointer"
             >
               Save Problem Record
             </button>
@@ -263,26 +263,26 @@ export function ProblemSolvingView() {
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#A0AEC0]" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-ghost" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search problem name, pattern..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-[#E2E8F0] text-xs text-[#1A202C] focus:outline-none focus:border-[#333E50]"
+            className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-line text-xs text-ink focus:outline-none focus:border-accent"
           />
         </div>
 
         <div className="flex items-center space-x-2 text-xs">
-          <span className="text-[#718096] font-mono text-[11px]">Difficulty:</span>
+          <span className="text-faint font-mono text-[11px]">Difficulty:</span>
           {["all", "easy", "medium", "hard"].map((d) => (
             <button
               key={d}
               onClick={() => setDifficultyFilter(d)}
               className={`px-2.5 py-1 rounded-md capitalize font-mono text-[11px] transition-colors cursor-pointer ${
                 difficultyFilter === d
-                  ? "bg-[#333E50] text-white font-semibold"
-                  : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
+                  ? "bg-accent text-accent-fg font-semibold"
+                  : "bg-surface-2 border border-line text-faint hover:text-ink"
               }`}
             >
               {d}
@@ -295,7 +295,7 @@ export function ProblemSolvingView() {
       <div className="bento-card rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#F8F9FA] border-b border-[#E2E8F0] text-[#718096] font-mono text-[11px] uppercase">
+            <thead className="bg-subtle border-b border-line text-faint font-mono text-[11px] uppercase">
               <tr>
                 <th className="py-3 px-5">Problem Name</th>
                 <th className="py-3 px-5">Pattern / Algorithm</th>
@@ -306,10 +306,10 @@ export function ProblemSolvingView() {
                 <th className="py-3 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#ECEAE4] text-[#1A202C]">
+            <tbody className="divide-y divide-line text-ink">
               {filteredProblems.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[#A0AEC0]">
+                  <td colSpan={7} className="py-8 text-center text-ghost">
                     No problem records logged yet. Click &ldquo;Log Solved Problem&rdquo; above!
                   </td>
                 </tr>
@@ -317,7 +317,7 @@ export function ProblemSolvingView() {
                 filteredProblems.map((problem: any) => (
                   <tr
                     key={problem._id}
-                    className="hover:bg-[#F8F9FA] transition-colors group"
+                    className="hover:bg-subtle transition-colors group"
                   >
                     <td className="py-3.5 px-5 font-semibold">
                       <div className="flex items-center gap-2">
@@ -327,20 +327,20 @@ export function ProblemSolvingView() {
                             href={problem.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[#A0AEC0] hover:text-blue-700"
+                            className="text-ghost hover:text-blue-700"
                           >
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
                       </div>
                     </td>
-                    <td className="py-3.5 px-5 font-mono text-[11px] text-[#4A5568]">
+                    <td className="py-3.5 px-5 font-mono text-[11px] text-muted">
                       {problem.pattern}
                     </td>
                     <td className="py-3.5 px-5">
                       {getDifficultyBadge(problem.difficulty)}
                     </td>
-                    <td className="py-3.5 px-5 font-mono text-[#718096]">
+                    <td className="py-3.5 px-5 font-mono text-faint">
                       {Math.round((problem.solveTimeSeconds || 600) / 60)} mins
                     </td>
                     <td className="py-3.5 px-5">
@@ -356,18 +356,18 @@ export function ProblemSolvingView() {
                         >
                           {problem.masteryLevel}%
                         </span>
-                        <span className="text-[10px] text-[#A0AEC0] font-mono">
+                        <span className="text-[10px] text-ghost font-mono">
                           {problem.masteryLevel >= 100 ? "(100% Mastered)" : "(In Review)"}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-5 font-mono text-[#718096] text-[11px]">
+                    <td className="py-3.5 px-5 font-mono text-faint text-[11px]">
                       {problem.nextReviewDate || "Queued"}
                     </td>
                     <td className="py-3.5 px-5 text-right font-mono">
                       <button
                         onClick={() => setSelectedProblem(problem)}
-                        className="text-xs text-[#333E50] hover:underline font-semibold cursor-pointer"
+                        className="text-xs text-accent hover:underline font-semibold cursor-pointer"
                       >
                         View Notes
                       </button>
@@ -383,14 +383,14 @@ export function ProblemSolvingView() {
       {/* Problem Notes Drawer / Modal */}
       {selectedProblem && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-xl bg-white border border-[#E2E8F0] rounded-xl p-6 shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-3">
-              <h3 className="font-serif text-lg font-bold text-[#1A202C]">
+          <div className="w-full max-w-xl bg-surface-2 border border-line rounded-xl p-6 shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="font-serif text-lg font-bold text-ink">
                 {selectedProblem.title}
               </h3>
               <button
                 onClick={() => setSelectedProblem(null)}
-                className="text-xs text-[#718096] hover:text-[#1A202C] cursor-pointer"
+                className="text-xs text-faint hover:text-ink cursor-pointer"
               >
                 Close
               </button>
@@ -407,28 +407,28 @@ export function ProblemSolvingView() {
               )}
 
               {selectedProblem.notes && (
-                <div className="p-3 bg-[#F8F9FA] border border-[#E2E8F0] rounded-lg">
-                  <span className="font-bold block text-[11px] font-mono uppercase text-[#718096]">
+                <div className="p-3 bg-subtle border border-line rounded-lg">
+                  <span className="font-bold block text-[11px] font-mono uppercase text-faint">
                     Core Invariant & Insights:
                   </span>
-                  <p className="mt-1 text-[#1A202C]">{selectedProblem.notes}</p>
+                  <p className="mt-1 text-ink">{selectedProblem.notes}</p>
                 </div>
               )}
 
               {selectedProblem.code && (
                 <div className="space-y-1">
-                  <span className="font-bold block text-[11px] font-mono uppercase text-[#718096]">
+                  <span className="font-bold block text-[11px] font-mono uppercase text-faint">
                     Solution Code ({selectedProblem.language}):
                   </span>
-                  <pre className="p-3 bg-[#1A202C] text-emerald-300 font-mono text-[11px] rounded-lg overflow-x-auto">
+                  <pre className="p-3 bg-ink text-emerald-300 font-mono text-[11px] rounded-lg overflow-x-auto">
                     {selectedProblem.code}
                   </pre>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-[#ECEAE4]">
-              <span className="text-xs text-[#718096]">
+            <div className="flex items-center justify-between pt-3 border-t border-line">
+              <span className="text-xs text-faint">
                 Current Mastery: <strong>{selectedProblem.masteryLevel}%</strong>
               </span>
               <button

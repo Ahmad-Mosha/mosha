@@ -37,7 +37,7 @@ export function GenericModuleView({ moduleId }: GenericModuleProps) {
       title: "Projects & Engineering Builds",
       subtitle: "Production architectures, microservices, open-source repositories, and build milestones.",
       icon: Layers,
-      color: "text-[#333E50]",
+      color: "text-accent",
       items: [
         { title: "Distributed Key-Value Store with Raft Consensus", stack: "Go • Raft • gRPC • WAL", status: "Active Build (v0.4)" },
         { title: "High-Throughput Task Queue & Worker Engine", stack: "Node.js • Redis • TypeScript", status: "Architecture RFC Ready" },
@@ -92,7 +92,7 @@ export function GenericModuleView({ moduleId }: GenericModuleProps) {
     title: "System Module",
     subtitle: "Personal workspace section.",
     icon: Sparkles,
-    color: "text-[#333E50]",
+    color: "text-accent",
     items: [],
   };
 
@@ -105,14 +105,14 @@ export function GenericModuleView({ moduleId }: GenericModuleProps) {
         <div className="space-y-1">
           <div className="flex items-center space-x-2 text-xs">
             <Icon className={`w-4 h-4 ${current.color}`} />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
               MOSHA Module
             </span>
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A202C]">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink">
             {current.title}
           </h1>
-          <p className="text-xs sm:text-sm text-[#4A5568] max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted max-w-xl leading-relaxed">
             {current.subtitle}
           </p>
         </div>
@@ -126,18 +126,18 @@ export function GenericModuleView({ moduleId }: GenericModuleProps) {
             className="bento-card rounded-xl p-5 flex flex-col justify-between space-y-3"
           >
             <div className="space-y-1.5">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#718096]">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-faint">
                 {item.company || item.stack || item.category || item.type || "Record"}
               </span>
-              <h3 className="font-serif text-base font-bold text-[#1A202C]">
+              <h3 className="font-serif text-base font-bold text-ink">
                 {item.title}
               </h3>
               {item.notes && (
-                <p className="text-xs text-[#4A5568]">{item.notes}</p>
+                <p className="text-xs text-muted">{item.notes}</p>
               )}
             </div>
 
-            <div className="pt-3 border-t border-[#ECEAE4] flex items-center justify-between text-xs font-mono">
+            <div className="pt-3 border-t border-line flex items-center justify-between text-xs font-mono">
               <span className="text-emerald-700 font-semibold">
                 {item.status || item.value || item.level || "Active"}
               </span>

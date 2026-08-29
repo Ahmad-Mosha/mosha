@@ -101,7 +101,7 @@ export function TipTapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-slate max-w-none focus:outline-none min-h-[500px] text-sm text-[#1A202C] leading-relaxed p-6",
+          "prose prose-slate max-w-none focus:outline-none min-h-[500px] text-sm text-ink leading-relaxed p-6",
       },
     },
   });
@@ -140,9 +140,9 @@ export function TipTapEditor({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-2 rounded-2xl border border-line shadow-xs overflow-hidden">
       {/* 1. Ultra-Fast Rich Text Formatting Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-1 px-4 py-2.5 bg-[#FBFBFA] border-b border-[#ECEAE4] text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-1 px-4 py-2.5 bg-surface border-b border-line text-xs">
         <div className="flex flex-wrap items-center gap-0.5">
           {/* Headings */}
           <button
@@ -151,10 +151,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleHeading({ level: 1 }).run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("heading", { level: 1 })
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Heading 1"
           >
@@ -167,10 +167,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleHeading({ level: 2 }).run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("heading", { level: 2 })
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Heading 2"
           >
@@ -183,17 +183,17 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleHeading({ level: 3 }).run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("heading", { level: 3 })
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Heading 3"
           >
             <Heading3 className="w-4 h-4" />
           </button>
 
-          <div className="w-[1px] h-4 bg-[#E2E8F0] mx-1" />
+          <div className="w-[1px] h-4 bg-line mx-1" />
 
           {/* Inline Formats */}
           <button
@@ -202,10 +202,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleBold().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("bold")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Bold (⌘B)"
           >
@@ -218,10 +218,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleItalic().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("italic")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Italic (⌘I)"
           >
@@ -234,10 +234,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleUnderline().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("underline")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Underline (⌘U)"
           >
@@ -250,10 +250,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleStrike().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("strike")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Strikethrough"
           >
@@ -266,10 +266,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleCode().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("code")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Inline Code"
           >
@@ -284,10 +284,10 @@ export function TipTapEditor({
                 e.preventDefault();
                 setShowHighlights(!showHighlights);
               }}
-              className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors flex items-center gap-0.5 ${
+              className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors flex items-center gap-0.5 ${
                 editor.isActive("highlight")
                   ? "bg-amber-100 text-amber-900"
-                  : "text-[#4A5568]"
+                  : "text-muted"
               }`}
               title="Highlight Text"
             >
@@ -295,7 +295,7 @@ export function TipTapEditor({
             </button>
 
             {showHighlights && (
-              <div className="absolute top-9 left-0 z-50 p-2 bg-white border border-[#E2E8F0] rounded-xl shadow-lg flex items-center gap-1.5 animate-in fade-in">
+              <div className="absolute top-9 left-0 z-50 p-2 bg-surface-2 border border-line rounded-xl shadow-lg flex items-center gap-1.5 animate-in fade-in">
                 {HIGHLIGHT_COLORS.map((h) => (
                   <button
                     key={h.name}
@@ -321,7 +321,7 @@ export function TipTapEditor({
                     editor.chain().focus().unsetHighlight().run();
                     setShowHighlights(false);
                   }}
-                  className="text-[10px] text-[#718096] hover:text-black px-1 cursor-pointer"
+                  className="text-[10px] text-faint hover:text-black px-1 cursor-pointer"
                 >
                   Clear
                 </button>
@@ -329,7 +329,7 @@ export function TipTapEditor({
             )}
           </div>
 
-          <div className="w-[1px] h-4 bg-[#E2E8F0] mx-1" />
+          <div className="w-[1px] h-4 bg-line mx-1" />
 
           {/* Lists & Tasks */}
           <button
@@ -338,10 +338,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleBulletList().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("bulletList")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Bulleted List"
           >
@@ -354,10 +354,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleOrderedList().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("orderedList")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Numbered List"
           >
@@ -370,17 +370,17 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleTaskList().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("taskList")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Task Checklist"
           >
             <CheckSquare className="w-4 h-4" />
           </button>
 
-          <div className="w-[1px] h-4 bg-[#E2E8F0] mx-1" />
+          <div className="w-[1px] h-4 bg-line mx-1" />
 
           {/* Blocks */}
           <button
@@ -389,10 +389,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleBlockquote().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("blockquote")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Blockquote"
           >
@@ -405,10 +405,10 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().toggleCodeBlock().run();
             }}
-            className={`p-1.5 rounded-lg hover:bg-[#EDF2F7] cursor-pointer transition-colors ${
+            className={`p-1.5 rounded-lg hover:bg-subtle-2 cursor-pointer transition-colors ${
               editor.isActive("codeBlock")
-                ? "bg-[#333E50] text-white"
-                : "text-[#4A5568]"
+                ? "bg-accent text-accent-fg"
+                : "text-muted"
             }`}
             title="Code Block"
           >
@@ -421,7 +421,7 @@ export function TipTapEditor({
               e.preventDefault();
               editor.chain().focus().setHorizontalRule().run();
             }}
-            className="p-1.5 rounded-lg hover:bg-[#EDF2F7] text-[#4A5568] cursor-pointer transition-colors"
+            className="p-1.5 rounded-lg hover:bg-subtle-2 text-muted cursor-pointer transition-colors"
             title="Divider Line"
           >
             <Minus className="w-4 h-4" />
@@ -431,8 +431,8 @@ export function TipTapEditor({
         {/* Right Tools: Quick Callouts, Symbols & Copy */}
         <div className="flex items-center space-x-1.5">
           {/* Quick Insert Callout */}
-          <div className="flex items-center space-x-1 border border-[#E2E8F0] bg-white rounded-lg px-2 py-0.5 text-[11px]">
-            <span className="text-[#718096] text-[10px] uppercase font-mono">
+          <div className="flex items-center space-x-1 border border-line bg-surface-2 rounded-lg px-2 py-0.5 text-[11px]">
+            <span className="text-faint text-[10px] uppercase font-mono">
               Callout:
             </span>
             <button
@@ -441,7 +441,7 @@ export function TipTapEditor({
                 e.preventDefault();
                 insertCallout("tip");
               }}
-              className="hover:bg-[#F1F3F5] px-1 rounded cursor-pointer"
+              className="hover:bg-subtle-2 px-1 rounded cursor-pointer"
               title="Insert Tip Callout"
             >
               💡
@@ -452,7 +452,7 @@ export function TipTapEditor({
                 e.preventDefault();
                 insertCallout("note");
               }}
-              className="hover:bg-[#F1F3F5] px-1 rounded cursor-pointer"
+              className="hover:bg-subtle-2 px-1 rounded cursor-pointer"
               title="Insert Note Callout"
             >
               📌
@@ -463,7 +463,7 @@ export function TipTapEditor({
                 e.preventDefault();
                 insertCallout("warning");
               }}
-              className="hover:bg-[#F1F3F5] px-1 rounded cursor-pointer"
+              className="hover:bg-subtle-2 px-1 rounded cursor-pointer"
               title="Insert Warning Callout"
             >
               ⚠️
@@ -471,14 +471,14 @@ export function TipTapEditor({
           </div>
 
           {/* Quick Arrow Symbols */}
-          <div className="hidden sm:flex items-center space-x-1 border border-[#E2E8F0] bg-white rounded-lg px-2 py-0.5 text-[11px] font-mono">
+          <div className="hidden sm:flex items-center space-x-1 border border-line bg-surface-2 rounded-lg px-2 py-0.5 text-[11px] font-mono">
             <button
               type="button"
               onMouseDown={(e) => {
                 e.preventDefault();
                 insertSymbol("→");
               }}
-              className="hover:bg-[#F1F3F5] px-1 rounded cursor-pointer"
+              className="hover:bg-subtle-2 px-1 rounded cursor-pointer"
               title="Arrow Right"
             >
               →
@@ -489,7 +489,7 @@ export function TipTapEditor({
                 e.preventDefault();
                 insertSymbol("⇒");
               }}
-              className="hover:bg-[#F1F3F5] px-1 rounded cursor-pointer"
+              className="hover:bg-subtle-2 px-1 rounded cursor-pointer"
               title="Double Arrow"
             >
               ⇒
@@ -500,7 +500,7 @@ export function TipTapEditor({
                 e.preventDefault();
                 insertSymbol("✓");
               }}
-              className="hover:bg-[#F1F3F5] px-1 rounded cursor-pointer"
+              className="hover:bg-subtle-2 px-1 rounded cursor-pointer"
               title="Checkmark"
             >
               ✓
@@ -511,7 +511,7 @@ export function TipTapEditor({
           <button
             type="button"
             onClick={handleCopy}
-            className="p-1.5 rounded-lg hover:bg-[#EDF2F7] text-[#4A5568] hover:text-[#1A202C] cursor-pointer transition-colors flex items-center gap-1 text-[11px]"
+            className="p-1.5 rounded-lg hover:bg-subtle-2 text-muted hover:text-ink cursor-pointer transition-colors flex items-center gap-1 text-[11px]"
             title="Copy Text"
           >
             {copied ? (
@@ -529,14 +529,14 @@ export function TipTapEditor({
       </div>
 
       {/* 3. Editor Status Bar */}
-      <div className="px-5 py-2.5 border-t border-[#ECEAE4] bg-[#FBFBFA] flex items-center justify-between text-[11px] font-mono text-[#718096]">
+      <div className="px-5 py-2.5 border-t border-line bg-surface flex items-center justify-between text-[11px] font-mono text-faint">
         <span>
           {editor.getText().trim()
             ? editor.getText().trim().split(/\s+/).length
             : 0}{" "}
           words • {editor.getText().length} characters
         </span>
-        <span className="text-[10px] text-[#A0AEC0]">
+        <span className="text-[10px] text-ghost">
           Auto-saves in real-time
         </span>
       </div>

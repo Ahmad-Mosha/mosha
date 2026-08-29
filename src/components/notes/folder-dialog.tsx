@@ -66,12 +66,12 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs animate-in fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-5 shadow-2xl border border-[#E2E8F0] animate-in zoom-in-95 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-3">
-            <Dialog.Title className="font-serif text-lg font-bold text-[#1A202C]">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-2 p-5 shadow-2xl border border-line animate-in zoom-in-95 space-y-4">
+          <div className="flex items-center justify-between border-b border-line pb-3">
+            <Dialog.Title className="font-serif text-lg font-bold text-ink">
               {editingFolder ? "Rename Folder" : "Create Folder"}
             </Dialog.Title>
-            <Dialog.Close className="p-1 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] cursor-pointer">
+            <Dialog.Close className="p-1 rounded-md text-faint hover:text-ink hover:bg-subtle-2 cursor-pointer">
               <X className="w-4 h-4" />
             </Dialog.Close>
           </div>
@@ -79,17 +79,17 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
             {/* Folder Emoji Picker */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                 Select Icon
               </label>
-              <div className="grid grid-cols-6 gap-1.5 p-2 bg-[#F8F9FA] rounded-xl border border-[#E2E8F0]">
+              <div className="grid grid-cols-6 gap-1.5 p-2 bg-subtle rounded-xl border border-line">
                 {FOLDER_EMOJIS.map((emoji) => (
                   <button
                     key={emoji}
                     type="button"
                     onClick={() => setIcon(emoji)}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-base hover:bg-white cursor-pointer transition-colors ${
-                      icon === emoji ? "bg-white border border-[#333E50] shadow-xs" : ""
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-base hover:bg-surface-2 cursor-pointer transition-colors ${
+                      icon === emoji ? "bg-surface-2 border border-accent shadow-xs" : ""
                     }`}
                   >
                     {emoji}
@@ -100,7 +100,7 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
 
             {/* Folder Name */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#718096] font-semibold">
+              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                 Folder Name *
               </label>
               <input
@@ -110,22 +110,22 @@ export function FolderDialog({ isOpen, onClose, editingFolder }: FolderDialogPro
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Distributed Systems, LeetCode..."
-                className="w-full px-3 py-2 rounded-lg border border-[#E2E8F0] focus:border-[#333E50] focus:outline-none text-xs text-[#1A202C]"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink"
               />
             </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-[#ECEAE4]">
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-line">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 py-1.5 rounded-lg text-[#718096] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-lg text-faint hover:bg-subtle-2 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!name.trim() || isSubmitting}
-                className="px-4 py-1.5 rounded-lg bg-[#333E50] hover:bg-[#252E3B] disabled:opacity-50 text-white font-semibold shadow-xs transition-colors cursor-pointer"
+                className="px-4 py-1.5 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-fg font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 {editingFolder ? "Save" : "Create"}
               </button>

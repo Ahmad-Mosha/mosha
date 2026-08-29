@@ -98,16 +98,16 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
           return (
             <div
               key={col.id}
-              className="bg-[#FBFBFA] border border-[#E2E8F0] rounded-2xl p-3 flex flex-col max-h-[calc(100vh-250px)] shadow-2xs"
+              className="bg-surface border border-line rounded-2xl p-3 flex flex-col max-h-[calc(100vh-250px)] shadow-2xs"
             >
               {/* Column Header */}
               <div className="flex justify-between items-center px-2 py-1.5 mb-2">
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${col.id === 'done' ? 'bg-emerald-500' : col.id === 'in_progress' ? 'bg-amber-500' : col.id === 'in_review' ? 'bg-blue-500' : 'bg-slate-400'}`} />
-                  <h3 className="font-semibold text-xs text-[#1A202C]">
+                  <h3 className="font-semibold text-xs text-ink">
                     {col.title}
                   </h3>
-                  <span className="px-1.5 py-0.2 rounded-full bg-white border border-[#E2E8F0] font-mono text-[10px] text-[#718096]">
+                  <span className="px-1.5 py-0.2 rounded-full bg-surface-2 border border-line font-mono text-[10px] text-faint">
                     {colTasks.length}
                   </span>
                 </div>
@@ -117,7 +117,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                     setNewTaskColumn(col.id);
                     setNewTaskTitle("");
                   }}
-                  className="p-1 hover:bg-[#F1F3F5] rounded-md text-[#718096] hover:text-[#1A202C] transition-colors cursor-pointer"
+                  className="p-1 hover:bg-subtle-2 rounded-md text-faint hover:text-ink transition-colors cursor-pointer"
                   title="Add Task"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -128,7 +128,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
               <div className="flex-1 overflow-y-auto space-y-2 pr-1">
                 {/* Inline Add Task Form */}
                 {newTaskColumn === col.id && (
-                  <div className="p-3 bg-white border border-[#333E50] rounded-xl shadow-xs space-y-2 animate-in fade-in zoom-in-95">
+                  <div className="p-3 bg-surface-2 border border-accent rounded-xl shadow-xs space-y-2 animate-in fade-in zoom-in-95">
                     <textarea
                       autoFocus
                       rows={2}
@@ -141,14 +141,14 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                         }
                       }}
                       placeholder="Task description or issue..."
-                      className="w-full text-xs text-[#1A202C] focus:outline-none resize-none bg-transparent placeholder:text-[#A0AEC0]"
+                      className="w-full text-xs text-ink focus:outline-none resize-none bg-transparent placeholder:text-ghost"
                     />
 
-                    <div className="flex items-center justify-between pt-1 border-t border-[#ECEAE4]">
+                    <div className="flex items-center justify-between pt-1 border-t border-line">
                       <select
                         value={newTaskPriority}
                         onChange={(e) => setNewTaskPriority(e.target.value)}
-                        className="bg-[#F8F9FA] px-2 py-0.5 rounded text-[10px] font-mono border border-[#E2E8F0] text-[#4A5568]"
+                        className="bg-subtle px-2 py-0.5 rounded text-[10px] font-mono border border-line text-muted"
                       >
                         <option value="p1_urgent">🔴 Urgent</option>
                         <option value="p2_medium">🟡 Medium</option>
@@ -159,14 +159,14 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                         <button
                           type="button"
                           onClick={() => setNewTaskColumn(null)}
-                          className="px-2 py-1 text-[11px] text-[#718096] hover:text-black"
+                          className="px-2 py-1 text-[11px] text-faint hover:text-black"
                         >
                           Cancel
                         </button>
                         <button
                           type="button"
                           onClick={() => handleCreateTask(col.id)}
-                          className="px-2.5 py-1 rounded bg-[#333E50] text-white text-[11px] font-semibold"
+                          className="px-2.5 py-1 rounded bg-accent text-accent-fg text-[11px] font-semibold"
                         >
                           Add
                         </button>
@@ -181,9 +181,9 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                       setNewTaskColumn(col.id);
                       setNewTaskTitle("");
                     }}
-                    className="py-6 border-2 border-dashed border-[#E2E8F0] rounded-xl text-center cursor-pointer hover:border-[#333E50] transition-colors"
+                    className="py-6 border-2 border-dashed border-line rounded-xl text-center cursor-pointer hover:border-accent transition-colors"
                   >
-                    <span className="text-[11px] text-[#A0AEC0] font-mono">
+                    <span className="text-[11px] text-ghost font-mono">
                       + Add task
                     </span>
                   </div>
@@ -194,7 +194,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                   return (
                     <div
                       key={task._id}
-                      className="p-3 bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl shadow-2xs space-y-2 group transition-all"
+                      className="p-3 bg-surface-2 border border-line hover:border-line-2 rounded-xl shadow-2xs space-y-2 group transition-all"
                     >
                       {/* Title & Checkbox */}
                       <div className="flex items-start gap-2">
@@ -202,7 +202,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                           onClick={() =>
                             handleStatusChange(task._id, isDone ? "todo" : "done")
                           }
-                          className="mt-0.5 text-[#A0AEC0] hover:text-emerald-600 transition-colors cursor-pointer shrink-0"
+                          className="mt-0.5 text-ghost hover:text-emerald-600 transition-colors cursor-pointer shrink-0"
                         >
                           {isDone ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -214,8 +214,8 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                         <span
                           className={`text-xs font-medium leading-relaxed flex-1 ${
                             isDone
-                              ? "line-through text-[#A0AEC0]"
-                              : "text-[#1A202C]"
+                              ? "line-through text-ghost"
+                              : "text-ink"
                           }`}
                         >
                           {task.title}
@@ -227,16 +227,16 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                             asChild
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <button className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-[#F1F3F5] rounded text-[#718096] transition-opacity cursor-pointer">
+                            <button className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-subtle-2 rounded text-faint transition-opacity cursor-pointer">
                               <MoreVertical className="w-3.5 h-3.5" />
                             </button>
                           </DropdownMenu.Trigger>
                           <DropdownMenu.Portal>
                             <DropdownMenu.Content
-                              className="z-50 bg-white border border-[#E2E8F0] rounded-xl shadow-lg p-1 text-xs min-w-[140px]"
+                              className="z-50 bg-surface-2 border border-line rounded-xl shadow-lg p-1 text-xs min-w-[140px]"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <DropdownMenu.Label className="px-2 py-1 text-[10px] font-mono text-[#A0AEC0] uppercase">
+                              <DropdownMenu.Label className="px-2 py-1 text-[10px] font-mono text-ghost uppercase">
                                 Move to Status
                               </DropdownMenu.Label>
                               {COLUMNS.map((c) => (
@@ -247,15 +247,15 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                                   }
                                   className={`px-3 py-1 rounded-lg cursor-pointer flex items-center justify-between ${
                                     task.status === c.id
-                                      ? "bg-[#F1F3F5] font-semibold"
-                                      : "hover:bg-[#F8F9FA]"
+                                      ? "bg-subtle-2 font-semibold"
+                                      : "hover:bg-subtle"
                                   }`}
                                 >
                                   <span>{c.title}</span>
                                   {task.status === c.id && <span>✓</span>}
                                 </DropdownMenu.Item>
                               ))}
-                              <DropdownMenu.Separator className="h-[1px] bg-[#ECEAE4] my-1" />
+                              <DropdownMenu.Separator className="h-[1px] bg-line my-1" />
                               <DropdownMenu.Item
                                 onClick={() => removeTask({ id: task._id })}
                                 className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
@@ -269,7 +269,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                       </div>
 
                       {/* Footer: Priority & Move Arrows */}
-                      <div className="flex items-center justify-between pt-1 border-t border-[#ECEAE4]/60 text-[10px]">
+                      <div className="flex items-center justify-between pt-1 border-t border-line/60 text-[10px]">
                         <div>{getPriorityBadge(task.priority)}</div>
 
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -286,7 +286,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                                   );
                                 }
                               }}
-                              className="px-1.5 py-0.5 rounded bg-[#F1F3F5] hover:bg-[#E2E8F0] text-[#333E50] font-mono font-medium flex items-center gap-0.5 cursor-pointer"
+                              className="px-1.5 py-0.5 rounded bg-subtle-2 hover:bg-line text-accent font-mono font-medium flex items-center gap-0.5 cursor-pointer"
                               title="Advance to next status"
                             >
                               <span>Next</span>

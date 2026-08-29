@@ -133,30 +133,30 @@ export function TasksScreen() {
   return (
     <div className="space-y-5 animate-in fade-in duration-200">
       {/* 1. Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#ECEAE4] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4">
         <div>
           <div className="flex items-center space-x-2.5">
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A202C]">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ink">
               Tasks
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-[#EDF2F7] text-[#333E50]">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-subtle-2 text-accent">
               {completedCount}/{tasks.length} Done
             </span>
           </div>
-          <p className="text-xs text-[#718096] mt-0.5">
+          <p className="text-xs text-faint mt-0.5">
             Daily execution, recurring habits, and actionable roadmap.
           </p>
         </div>
 
         <div className="flex items-center space-x-2">
           {/* View Mode Toggle: List vs Kanban */}
-          <div className="flex items-center rounded-lg border border-[#E2E8F0] bg-white p-0.5">
+          <div className="flex items-center rounded-lg border border-line bg-surface-2 p-0.5">
             <button
               onClick={() => setViewMode("list")}
               className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                 viewMode === "list"
-                  ? "bg-[#333E50] text-white shadow-2xs"
-                  : "text-[#718096] hover:text-[#1A202C]"
+                  ? "bg-accent text-accent-fg shadow-2xs"
+                  : "text-faint hover:text-ink"
               }`}
               title="List View"
             >
@@ -166,8 +166,8 @@ export function TasksScreen() {
               onClick={() => setViewMode("kanban")}
               className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                 viewMode === "kanban"
-                  ? "bg-[#333E50] text-white shadow-2xs"
-                  : "text-[#718096] hover:text-[#1A202C]"
+                  ? "bg-accent text-accent-fg shadow-2xs"
+                  : "text-faint hover:text-ink"
               }`}
               title="Sprint / Kanban Board"
             >
@@ -179,7 +179,7 @@ export function TasksScreen() {
             <button
               onClick={() => clearCompleted()}
               title="Clear all completed tasks"
-              className="px-3 py-2 rounded-lg bg-white border border-[#E2E8F0] hover:bg-rose-50 text-[#718096] hover:text-rose-600 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-2 rounded-lg bg-surface-2 border border-line hover:bg-rose-50 text-faint hover:text-rose-600 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear Done</span>
@@ -191,7 +191,7 @@ export function TasksScreen() {
               setEditingTask(null);
               setIsDialogOpen(true);
             }}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+            className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-2xs transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Task</span>
@@ -202,16 +202,16 @@ export function TasksScreen() {
       {/* 2. Fast Inline Quick Add Row */}
       <form
         onSubmit={handleInlineAdd}
-        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 rounded-xl bg-white border border-[#E2E8F0] shadow-2xs hover:border-[#CBD5E1] transition-all"
+        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 rounded-xl bg-surface-2 border border-line shadow-2xs hover:border-line-2 transition-all"
       >
         <div className="flex items-center flex-1">
-          <Plus className="w-4 h-4 text-[#A0AEC0] ml-2 shrink-0" />
+          <Plus className="w-4 h-4 text-ghost ml-2 shrink-0" />
           <input
             type="text"
             value={inlineTitle}
             onChange={(e) => setInlineTitle(e.target.value)}
             placeholder="Add a task or daily habit... (Press Enter to save)"
-            className="w-full bg-transparent px-2 py-1 text-xs text-[#1A202C] focus:outline-none placeholder:text-[#A0AEC0]"
+            className="w-full bg-transparent px-2 py-1 text-xs text-ink focus:outline-none placeholder:text-ghost"
           />
         </div>
 
@@ -221,7 +221,7 @@ export function TasksScreen() {
             className={`px-2 py-1 rounded-md text-[11px] font-mono flex items-center gap-1 cursor-pointer select-none transition-colors border ${
               inlineIsDaily
                 ? "bg-blue-100 text-blue-800 border-blue-300 font-semibold"
-                : "bg-[#F8F9FA] text-[#718096] border-[#E2E8F0] hover:text-[#1A202C]"
+                : "bg-subtle text-faint border-line hover:text-ink"
             }`}
           >
             <input
@@ -237,7 +237,7 @@ export function TasksScreen() {
           <select
             value={inlineModule}
             onChange={(e) => setInlineModule(e.target.value)}
-            className="text-[11px] font-mono px-2 py-1 rounded bg-[#F8F9FA] border border-[#E2E8F0] text-[#4A5568] focus:outline-none cursor-pointer"
+            className="text-[11px] font-mono px-2 py-1 rounded bg-subtle border border-line text-muted focus:outline-none cursor-pointer"
           >
             <option value="general">📋 General</option>
             <option value="problems">🧩 LeetCode</option>
@@ -252,7 +252,7 @@ export function TasksScreen() {
           <select
             value={inlinePriority}
             onChange={(e) => setInlinePriority(e.target.value)}
-            className="text-[11px] font-mono px-2 py-1 rounded bg-[#F8F9FA] border border-[#E2E8F0] text-[#4A5568] focus:outline-none cursor-pointer"
+            className="text-[11px] font-mono px-2 py-1 rounded bg-subtle border border-line text-muted focus:outline-none cursor-pointer"
           >
             <option value="p1_urgent">🔥 High</option>
             <option value="p2_medium">⚡ Medium</option>
@@ -262,7 +262,7 @@ export function TasksScreen() {
           <button
             type="submit"
             disabled={!inlineTitle.trim() || isInlineSubmitting}
-            className="px-3 py-1 rounded-lg bg-[#333E50] hover:bg-[#252E3B] disabled:opacity-40 text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="px-3 py-1 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-40 text-accent-fg text-xs font-semibold transition-colors cursor-pointer"
           >
             {isInlineSubmitting ? "Adding..." : "Add"}
           </button>
@@ -285,8 +285,8 @@ export function TasksScreen() {
               onClick={() => setActiveTab(tab.id)}
               className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
                 activeTab === tab.id
-                  ? "bg-[#333E50] text-white font-semibold shadow-2xs"
-                  : "bg-white border border-[#E2E8F0] text-[#718096] hover:text-[#1A202C]"
+                  ? "bg-accent text-accent-fg font-semibold shadow-2xs"
+                  : "bg-surface-2 border border-line text-faint hover:text-ink"
               }`}
             >
               {tab.label}
@@ -297,20 +297,20 @@ export function TasksScreen() {
         {/* Right: Search & Dropdowns */}
         <div className="flex items-center space-x-2 text-xs">
           <div className="relative w-44">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#A0AEC0]" />
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-ghost" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-xs text-[#1A202C] focus:outline-none focus:border-[#333E50]"
+              className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border border-line bg-surface-2 text-xs text-ink focus:outline-none focus:border-accent"
             />
           </div>
 
           <select
             value={moduleFilter}
             onChange={(e) => setModuleFilter(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-xs text-[#4A5568] focus:outline-none cursor-pointer"
+            className="px-2.5 py-1.5 rounded-lg border border-line bg-surface-2 text-xs text-muted focus:outline-none cursor-pointer"
           >
             <option value="all">All Domains</option>
             <option value="problems">🧩 LeetCode</option>
@@ -331,7 +331,7 @@ export function TasksScreen() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-16 bg-[#E2E8F0] rounded-xl w-full"
+              className="h-16 bg-line rounded-xl w-full"
             />
           ))}
         </div>
@@ -349,11 +349,11 @@ export function TasksScreen() {
         />
       ) : filteredTasks.length === 0 ? (
         <div className="bento-card rounded-2xl p-12 text-center space-y-3">
-          <CheckCircle2 className="w-10 h-10 text-[#CBD5E1] mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-[#1A202C]">
+          <CheckCircle2 className="w-10 h-10 text-line-2 mx-auto" />
+          <h3 className="font-serif text-lg font-bold text-ink">
             No tasks found
           </h3>
-          <p className="text-xs text-[#718096] max-w-sm mx-auto">
+          <p className="text-xs text-faint max-w-sm mx-auto">
             All clear in this view. Use the quick add input above to capture your next task or daily habit.
           </p>
         </div>

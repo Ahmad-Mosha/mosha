@@ -57,7 +57,7 @@ export default function Home() {
   const isEdgeToEdge = activeModule === "notes" || activeModule === "projects";
 
   return (
-    <div className="min-h-screen bg-[#F9F9F9] flex flex-row antialiased text-[#1A202C]">
+    <div className="min-h-screen bg-canvas flex flex-row antialiased text-ink">
       {/* Collapsible Sidebar with Mini Variant */}
       <SideNav />
 

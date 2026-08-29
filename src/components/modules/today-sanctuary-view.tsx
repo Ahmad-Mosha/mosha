@@ -41,7 +41,7 @@ export function TodaySanctuaryView() {
   return (
     <div className="space-y-6">
       {/* Morning Ritual & Focus Hero */}
-      <div className="bento-card rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-white via-white to-[#F8F9FA]">
+      <div className="bento-card rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-white via-white to-subtle">
         <div className="space-y-2">
           <div className="flex items-center space-x-2 text-xs font-mono text-amber-700">
             <Sparkles className="w-4 h-4" />
@@ -49,10 +49,10 @@ export function TodaySanctuaryView() {
               Morning Ritual & Focus
             </span>
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A202C]">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink">
             Good day, Ahmed.
           </h1>
-          <p className="text-xs sm:text-sm text-[#4A5568] max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-muted max-w-xl leading-relaxed">
             &ldquo;Excellence is not an act, but a habit.&rdquo; Lock in on your daily execution, complete your workout, and advance your engineering craft.
           </p>
         </div>
@@ -60,7 +60,7 @@ export function TodaySanctuaryView() {
         <div className="flex items-center space-x-3 shrink-0">
           <button
             onClick={() => startFocus(50)}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-[#333E50] hover:bg-[#252E3B] text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-sm transition-colors cursor-pointer"
           >
             <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
             <span>Start 50m Deep Work</span>
@@ -73,19 +73,19 @@ export function TodaySanctuaryView() {
         {/* LeetCode Mastery Block */}
         <div
           onClick={() => setActiveModule("problems")}
-          className="bento-card rounded-xl p-5 cursor-pointer hover:border-[#333E50]/40 transition-all group space-y-3"
+          className="bento-card rounded-xl p-5 cursor-pointer hover:border-accent/40 transition-all group space-y-3"
         >
           <div className="flex items-center justify-between">
             <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
               <Code2 className="w-4 h-4" />
             </div>
-            <ArrowRight className="w-4 h-4 text-[#A0AEC0] group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-ghost group-hover:translate-x-1 transition-transform" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-bold text-[#1A202C]">
+            <h3 className="font-serif text-base font-bold text-ink">
               Problem Solving
             </h3>
-            <p className="text-xs text-[#718096]">
+            <p className="text-xs text-faint">
               Master algorithmic patterns with 100% mastery engine.
             </p>
           </div>
@@ -94,19 +94,19 @@ export function TodaySanctuaryView() {
         {/* CS Learning Block */}
         <div
           onClick={() => setActiveModule("learning")}
-          className="bento-card rounded-xl p-5 cursor-pointer hover:border-[#333E50]/40 transition-all group space-y-3"
+          className="bento-card rounded-xl p-5 cursor-pointer hover:border-accent/40 transition-all group space-y-3"
         >
           <div className="flex items-center justify-between">
             <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
               <BookOpen className="w-4 h-4" />
             </div>
-            <ArrowRight className="w-4 h-4 text-[#A0AEC0] group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-ghost group-hover:translate-x-1 transition-transform" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-bold text-[#1A202C]">
+            <h3 className="font-serif text-base font-bold text-ink">
               CS & Systems
             </h3>
-            <p className="text-xs text-[#718096]">
+            <p className="text-xs text-faint">
               Operating Systems, Databases, Go, Node.js roadmaps.
             </p>
           </div>
@@ -115,19 +115,19 @@ export function TodaySanctuaryView() {
         {/* Iron Journal Block */}
         <div
           onClick={() => setActiveModule("gym")}
-          className="bento-card rounded-xl p-5 cursor-pointer hover:border-[#333E50]/40 transition-all group space-y-3"
+          className="bento-card rounded-xl p-5 cursor-pointer hover:border-accent/40 transition-all group space-y-3"
         >
           <div className="flex items-center justify-between">
             <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center">
               <Dumbbell className="w-4 h-4" />
             </div>
-            <ArrowRight className="w-4 h-4 text-[#A0AEC0] group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-ghost group-hover:translate-x-1 transition-transform" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-bold text-[#1A202C]">
+            <h3 className="font-serif text-base font-bold text-ink">
               Iron Journal
             </h3>
-            <p className="text-xs text-[#718096]">
+            <p className="text-xs text-faint">
               Push / Pull / Legs tracking, progressive overload & PRs.
             </p>
           </div>
@@ -136,19 +136,19 @@ export function TodaySanctuaryView() {
 
       {/* Today's Tasks Minimalist Checklist */}
       <div className="bento-card rounded-xl p-5 space-y-4">
-        <div className="flex items-center justify-between border-b border-[#ECEAE4] pb-3">
+        <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center space-x-2">
-            <h2 className="font-serif text-lg font-bold text-[#1A202C]">
+            <h2 className="font-serif text-lg font-bold text-ink">
               Quick Action Checklist
             </h2>
-            <span className="text-xs font-mono text-[#718096]">
+            <span className="text-xs font-mono text-faint">
               ({completedCount}/{tasks.length} Completed)
             </span>
           </div>
 
           <button
             onClick={() => setActiveModule("tasks")}
-            className="text-xs text-[#333E50] hover:underline font-medium flex items-center gap-1"
+            className="text-xs text-accent hover:underline font-medium flex items-center gap-1"
           >
             <span>Open Full Tasks Screen</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -162,11 +162,11 @@ export function TodaySanctuaryView() {
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             placeholder="Add task to today's list..."
-            className="flex-1 px-3 py-2 rounded-lg border border-[#E2E8F0] text-xs text-[#1A202C] focus:outline-none focus:border-[#333E50]"
+            className="flex-1 px-3 py-2 rounded-lg border border-line text-xs text-ink focus:outline-none focus:border-accent"
           />
           <button
             type="submit"
-            className="px-4 py-2 rounded-lg bg-[#333E50] text-white text-xs font-semibold transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-accent text-accent-fg text-xs font-semibold transition-colors cursor-pointer"
           >
             Add
           </button>
@@ -175,7 +175,7 @@ export function TodaySanctuaryView() {
         {/* Tasks List */}
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {tasks.length === 0 ? (
-            <div className="text-center py-6 text-xs text-[#A0AEC0] font-mono">
+            <div className="text-center py-6 text-xs text-ghost font-mono">
               No tasks for today.
             </div>
           ) : (
@@ -185,20 +185,20 @@ export function TodaySanctuaryView() {
                 onClick={() => toggleTask({ id: task._id })}
                 className={`flex items-center space-x-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${
                   task.status === "done"
-                    ? "bg-[#F8F9FA] border-[#E2E8F0] opacity-60"
-                    : "bg-white border-[#E2E8F0] hover:border-[#CBD5E1]"
+                    ? "bg-subtle border-line opacity-60"
+                    : "bg-surface-2 border-line hover:border-line-2"
                 }`}
               >
                 {task.status === "done" ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
-                  <Circle className="w-4 h-4 text-[#CBD5E1] shrink-0" />
+                  <Circle className="w-4 h-4 text-line-2 shrink-0" />
                 )}
                 <span
                   className={`text-xs flex-1 ${
                     task.status === "done"
-                      ? "line-through text-[#A0AEC0]"
-                      : "text-[#1A202C] font-medium"
+                      ? "line-through text-ghost"
+                      : "text-ink font-medium"
                   }`}
                 >
                   {task.title}

@@ -41,7 +41,7 @@ export function ProjectDetailView({
 
   if (!project) {
     return (
-      <div className="flex-1 flex items-center justify-center p-12 text-xs text-[#A0AEC0] animate-pulse">
+      <div className="flex-1 flex items-center justify-center p-12 text-xs text-ghost animate-pulse">
         Loading project workspace...
       </div>
     );
@@ -113,25 +113,25 @@ export function ProjectDetailView({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white overflow-hidden animate-in fade-in duration-150">
+    <div className="flex-1 flex flex-col h-full bg-surface-2 overflow-hidden animate-in fade-in duration-150">
       {/* 1. Project Master Header */}
-      <div className="px-6 py-4 border-b border-[#ECEAE4] bg-[#FCFCFB] flex flex-wrap justify-between items-center gap-4 shrink-0">
+      <div className="px-6 py-4 border-b border-line bg-surface flex flex-wrap justify-between items-center gap-4 shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-1.5 rounded-lg border border-[#E2E8F0] hover:bg-white text-[#4A5568] hover:text-[#1A202C] transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+            className="p-1.5 rounded-lg border border-line hover:bg-surface-2 text-muted hover:text-ink transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Projects</span>
           </button>
 
           <div className="flex items-center gap-2">
-            <h1 className="font-serif text-xl md:text-2xl font-bold text-[#1A202C]">
+            <h1 className="font-serif text-xl md:text-2xl font-bold text-ink">
               {project.name}
             </h1>
             {getStatusBadge(project.status)}
             {project.version && (
-              <span className="px-2 py-0.5 rounded bg-[#EDF2F7] font-mono text-[10px] text-[#4A5568] font-semibold">
+              <span className="px-2 py-0.5 rounded bg-subtle-2 font-mono text-[10px] text-muted font-semibold">
                 {project.version}
               </span>
             )}
@@ -141,8 +141,8 @@ export function ProjectDetailView({
         {/* Action Controls & External Links */}
         <div className="flex items-center space-x-2 text-xs">
           {project.branch && (
-            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-[#E2E8F0] font-mono text-[11px] text-[#4A5568]">
-              <GitBranch className="w-3.5 h-3.5 text-[#718096]" />
+            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-2 border border-line font-mono text-[11px] text-muted">
+              <GitBranch className="w-3.5 h-3.5 text-faint" />
               <span>{project.branch}</span>
             </div>
           )}
@@ -152,7 +152,7 @@ export function ProjectDetailView({
               href={project.githubUrl}
               target="_blank"
               rel="noreferrer"
-              className="p-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8F9FA] text-[#4A5568] hover:text-[#1A202C] transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-subtle text-muted hover:text-ink transition-colors cursor-pointer"
               title="Open GitHub Repository"
             >
               <Github className="w-4 h-4" />
@@ -164,7 +164,7 @@ export function ProjectDetailView({
               href={project.liveUrl}
               target="_blank"
               rel="noreferrer"
-              className="p-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8F9FA] text-[#4A5568] hover:text-[#1A202C] transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-subtle text-muted hover:text-ink transition-colors cursor-pointer"
               title="Open Live Deployment"
             >
               <Globe className="w-4 h-4" />
@@ -173,7 +173,7 @@ export function ProjectDetailView({
 
           <button
             onClick={() => onEdit(project)}
-            className="p-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8F9FA] text-[#4A5568] hover:text-[#1A202C] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-subtle text-muted hover:text-ink transition-colors cursor-pointer"
             title="Edit Project"
           >
             <Edit2 className="w-4 h-4" />
@@ -181,7 +181,7 @@ export function ProjectDetailView({
 
           <button
             onClick={handleDelete}
-            className="p-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-rose-50 text-[#718096] hover:text-rose-600 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-rose-50 text-faint hover:text-rose-600 transition-colors cursor-pointer"
             title="Delete Project"
           >
             <Trash2 className="w-4 h-4" />
@@ -190,10 +190,10 @@ export function ProjectDetailView({
       </div>
 
       {/* 2. Sub-Header: Description, Tech Stack & Navigation Tabs */}
-      <div className="px-6 pt-3 border-b border-[#ECEAE4] bg-white flex flex-wrap justify-between items-end gap-3 shrink-0">
+      <div className="px-6 pt-3 border-b border-line bg-surface-2 flex flex-wrap justify-between items-end gap-3 shrink-0">
         <div className="space-y-2 pb-3 max-w-2xl">
           {project.description && (
-            <p className="text-xs text-[#4A5568] leading-relaxed font-normal">
+            <p className="text-xs text-muted leading-relaxed font-normal">
               {project.description}
             </p>
           )}
@@ -203,7 +203,7 @@ export function ProjectDetailView({
             {(project.techStack || []).map((t: string) => (
               <span
                 key={t}
-                className="px-2 py-0.5 rounded bg-[#F8F9FA] border border-[#E2E8F0] font-mono text-[10px] text-[#333E50] font-medium shadow-2xs"
+                className="px-2 py-0.5 rounded bg-subtle border border-line font-mono text-[10px] text-accent font-medium shadow-2xs"
               >
                 {t}
               </span>
@@ -217,13 +217,13 @@ export function ProjectDetailView({
             onClick={() => setActiveTab("kanban")}
             className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "kanban"
-                ? "border-[#333E50] text-[#1A202C]"
-                : "border-transparent text-[#718096] hover:text-[#1A202C]"
+                ? "border-accent text-ink"
+                : "border-transparent text-faint hover:text-ink"
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Sprint Kanban</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-[#F1F3F5] text-[10px] font-mono">
+            <span className="px-1.5 py-0.2 rounded-full bg-subtle-2 text-[10px] font-mono">
               {tasks.length}
             </span>
           </button>
@@ -232,8 +232,8 @@ export function ProjectDetailView({
             onClick={() => setActiveTab("notes")}
             className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "notes"
-                ? "border-[#333E50] text-[#1A202C]"
-                : "border-transparent text-[#718096] hover:text-[#1A202C]"
+                ? "border-accent text-ink"
+                : "border-transparent text-faint hover:text-ink"
             }`}
           >
             <FileCode className="w-3.5 h-3.5" />
@@ -244,8 +244,8 @@ export function ProjectDetailView({
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
               activeTab === "overview"
-                ? "border-[#333E50] text-[#1A202C]"
-                : "border-transparent text-[#718096] hover:text-[#1A202C]"
+                ? "border-accent text-ink"
+                : "border-transparent text-faint hover:text-ink"
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -255,23 +255,23 @@ export function ProjectDetailView({
       </div>
 
       {/* 3. Tab Content Panes */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-[#FDFDFD]">
+      <div className="flex-1 overflow-hidden flex flex-col bg-surface">
         {activeTab === "kanban" && (
           <ProjectKanban projectId={project._id} />
         )}
 
         {activeTab === "notes" && (
           <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-5xl w-full mx-auto space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#ECEAE4]">
+            <div className="flex items-center justify-between pb-2 border-b border-line">
               <div>
-                <h3 className="font-serif text-lg font-bold text-[#1A202C]">
+                <h3 className="font-serif text-lg font-bold text-ink">
                   Technical Specs & Architecture RFC
                 </h3>
-                <p className="text-xs text-[#718096]">
+                <p className="text-xs text-faint">
                   Document system boundaries, data contracts, and deployment runbooks.
                 </p>
               </div>
-              <span className="text-[10px] font-mono text-[#A0AEC0]">
+              <span className="text-[10px] font-mono text-ghost">
                 Auto-saves in real-time
               </span>
             </div>
@@ -288,63 +288,63 @@ export function ProjectDetailView({
         {activeTab === "overview" && (
           <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-4xl w-full mx-auto space-y-6">
             {/* Progress Card */}
-            <div className="p-6 bg-white border border-[#E2E8F0] rounded-2xl shadow-xs space-y-4">
+            <div className="p-6 bg-surface-2 border border-line rounded-2xl shadow-xs space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="font-serif text-base font-bold text-[#1A202C]">
+                <h3 className="font-serif text-base font-bold text-ink">
                   Sprint Completion Rate
                 </h3>
-                <span className="font-mono text-base font-bold text-[#333E50]">
+                <span className="font-mono text-base font-bold text-accent">
                   {progress}% Complete
                 </span>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full bg-[#EDF2F7] h-3 rounded-full overflow-hidden">
+              <div className="w-full bg-subtle-2 h-3 rounded-full overflow-hidden">
                 <div
-                  className="bg-[#333E50] h-full rounded-full transition-all duration-500"
+                  className="bg-accent h-full rounded-full transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-4 pt-2 text-center text-xs">
-                <div className="p-3 bg-[#F8F9FA] rounded-xl border border-[#E2E8F0]">
-                  <span className="font-mono text-lg font-bold text-[#1A202C]">
+                <div className="p-3 bg-subtle rounded-xl border border-line">
+                  <span className="font-mono text-lg font-bold text-ink">
                     {tasks.length}
                   </span>
-                  <p className="text-[#718096] text-[11px] mt-0.5">Total Tasks</p>
+                  <p className="text-faint text-[11px] mt-0.5">Total Tasks</p>
                 </div>
-                <div className="p-3 bg-[#F8F9FA] rounded-xl border border-[#E2E8F0]">
+                <div className="p-3 bg-subtle rounded-xl border border-line">
                   <span className="font-mono text-lg font-bold text-emerald-600">
                     {doneTasks}
                   </span>
-                  <p className="text-[#718096] text-[11px] mt-0.5">Done Tasks</p>
+                  <p className="text-faint text-[11px] mt-0.5">Done Tasks</p>
                 </div>
-                <div className="p-3 bg-[#F8F9FA] rounded-xl border border-[#E2E8F0]">
+                <div className="p-3 bg-subtle rounded-xl border border-line">
                   <span className="font-mono text-lg font-bold text-amber-600">
                     {tasks.length - doneTasks}
                   </span>
-                  <p className="text-[#718096] text-[11px] mt-0.5">Pending Issues</p>
+                  <p className="text-faint text-[11px] mt-0.5">Pending Issues</p>
                 </div>
               </div>
             </div>
 
             {/* Quick Repository Overview */}
-            <div className="p-6 bg-white border border-[#E2E8F0] rounded-2xl shadow-xs space-y-3 text-xs">
-              <h4 className="font-mono uppercase tracking-wider text-[11px] font-bold text-[#4A5568]">
+            <div className="p-6 bg-surface-2 border border-line rounded-2xl shadow-xs space-y-3 text-xs">
+              <h4 className="font-mono uppercase tracking-wider text-[11px] font-bold text-muted">
                 Repository Metadata
               </h4>
-              <div className="space-y-2 text-[#4A5568]">
-                <div className="flex justify-between py-1.5 border-b border-[#ECEAE4]">
-                  <span className="text-[#718096]">Branch</span>
-                  <span className="font-mono font-medium text-[#1A202C]">{project.branch || "main"}</span>
+              <div className="space-y-2 text-muted">
+                <div className="flex justify-between py-1.5 border-b border-line">
+                  <span className="text-faint">Branch</span>
+                  <span className="font-mono font-medium text-ink">{project.branch || "main"}</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-[#ECEAE4]">
-                  <span className="text-[#718096]">Version</span>
-                  <span className="font-mono font-medium text-[#1A202C]">{project.version || "v1.0.0"}</span>
+                <div className="flex justify-between py-1.5 border-b border-line">
+                  <span className="text-faint">Version</span>
+                  <span className="font-mono font-medium text-ink">{project.version || "v1.0.0"}</span>
                 </div>
-                <div className="flex justify-between py-1.5 border-b border-[#ECEAE4]">
-                  <span className="text-[#718096]">Created At</span>
-                  <span className="font-mono font-medium text-[#1A202C]">
+                <div className="flex justify-between py-1.5 border-b border-line">
+                  <span className="text-faint">Created At</span>
+                  <span className="font-mono font-medium text-ink">
                     {new Date(project.createdAt).toLocaleDateString([], {
                       month: "short",
                       day: "numeric",
