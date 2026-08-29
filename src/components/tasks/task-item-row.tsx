@@ -127,6 +127,11 @@ export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
               {task.isDaily && (
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1">
                   <RotateCcw className="w-2.5 h-2.5" /> Daily
+                  {(task.streakCount || 0) > 0 && (
+                    <span className="text-amber-700 font-bold ml-0.5">
+                      🔥 {task.streakCount}d
+                    </span>
+                  )}
                 </span>
               )}
               {getPriorityBadge(task.priority)}

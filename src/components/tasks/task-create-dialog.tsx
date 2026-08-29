@@ -101,7 +101,6 @@ export function TaskCreateDialog({
       priority,
       module,
       isDaily,
-      isBigRock: false,
     };
 
     if (description.trim()) payload.description = description.trim();

@@ -7,7 +7,7 @@ export default defineSchema({
     title: v.string(),
     description: v.string(),
     icon: v.string(),
-    status: v.string(),
+    status: v.string(), // "in_progress" | "planning" | "vision" | "on_hold" | "completed"
     targetDate: v.optional(v.string()),
     progress: v.number(),
     milestones: v.array(
@@ -18,9 +18,6 @@ export default defineSchema({
         completedAt: v.optional(v.string()),
       })
     ),
-    phase: v.optional(v.string()),
-    meaning: v.optional(v.string()),
-    notes: v.optional(v.string()),
     order: v.number(),
     completedAt: v.optional(v.string()),
     createdAt: v.string(),
@@ -28,17 +25,19 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_status", ["status"]),
 
-  // 2. Tasks & Daily Recurring Habits
+  // 2. Tasks & Daily Habits System (Pure & Clean)
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
     status: v.string(), // "todo" | "in_progress" | "done"
     priority: v.string(), // "p1_urgent" | "p2_medium" | "p3_low"
-    module: v.string(), // "general" | "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
+    module: v.string(), // "general" | "problems" | "learning" | "gym" | "career" | "goals" | "finance" | "personal"
     dueDate: v.optional(v.string()), // YYYY-MM-DD
     dueTime: v.optional(v.string()),
-    isDaily: v.optional(v.boolean()), // Daily recurring habit
-    lastCompletedDate: v.optional(v.string()), // YYYY-MM-DD for daily habits
+    isDaily: v.boolean(), // Daily recurring habit
+    streakCount: v.optional(v.number()), // Streak for daily habits (e.g. 5 days)
+    lastCompletedDate: v.optional(v.string()), // YYYY-MM-DD
+    goalId: v.optional(v.id("major_life_goals")), // Link to Major Life Goal
     subtasks: v.optional(
       v.array(
         v.object({
@@ -48,11 +47,6 @@ export default defineSchema({
         })
       )
     ),
-    tags: v.optional(v.array(v.string())),
-    isBigRock: v.optional(v.boolean()),
-    durationMinutes: v.optional(v.number()),
-    estimatedMinutes: v.optional(v.number()),
-    goalId: v.optional(v.id("major_life_goals")),
     order: v.optional(v.number()),
     completedAt: v.optional(v.string()),
     createdAt: v.string(),

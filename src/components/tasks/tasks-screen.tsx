@@ -114,7 +114,6 @@ export function TasksScreen() {
         module: inlineModule,
         dueDate: inlineIsDaily ? undefined : todayStr,
         isDaily: inlineIsDaily,
-        isBigRock: false,
       });
       setInlineTitle("");
       setInlineIsDaily(false);
