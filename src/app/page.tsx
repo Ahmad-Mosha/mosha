@@ -5,9 +5,10 @@ import { useMoshaStore } from "@/lib/store";
 import { SideNav } from "@/components/shell/side-nav";
 import { TopHeader } from "@/components/shell/top-header";
 import { CommandMenu } from "@/components/shell/command-menu";
+import { TasksScreen } from "@/components/tasks/tasks-screen";
+import { TaskCreateDialog } from "@/components/tasks/task-create-dialog";
 import { MajorGoalsBento } from "@/components/goals/major-goals-bento";
 import { GoalDialog } from "@/components/goals/goal-dialog";
-import { TodaySanctuaryView } from "@/components/modules/today-sanctuary-view";
 import { ProblemSolvingView } from "@/components/modules/problem-solving-view";
 import { GymFitnessView } from "@/components/modules/gym-fitness-view";
 import { FinanceView } from "@/components/modules/finance-view";
@@ -16,16 +17,22 @@ import { EngineeringJournalView } from "@/components/modules/engineering-journal
 import { GenericModuleView } from "@/components/modules/generic-module-view";
 
 export default function Home() {
-  const { sidebarVariant, activeModule } = useMoshaStore();
+  const {
+    sidebarVariant,
+    activeModule,
+    isTaskDialogOpen,
+    setTaskDialogOpen,
+  } = useMoshaStore();
 
   const isMini = sidebarVariant === "mini";
 
   const renderModuleContent = () => {
     switch (activeModule) {
+      case "tasks":
+      case "today":
+        return <TasksScreen />;
       case "goals":
         return <MajorGoalsBento />;
-      case "today":
-        return <TodaySanctuaryView />;
       case "problems":
         return <ProblemSolvingView />;
       case "gym":
@@ -63,6 +70,10 @@ export default function Home() {
 
       {/* Global Modals */}
       <GoalDialog />
+      <TaskCreateDialog
+        isOpen={isTaskDialogOpen}
+        onClose={() => setTaskDialogOpen(false)}
+      />
       <CommandMenu />
     </div>
   );

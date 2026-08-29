@@ -7,7 +7,7 @@ export default defineSchema({
     title: v.string(),
     description: v.string(),
     icon: v.string(),
-    status: v.string(), // "in_progress" | "completed"
+    status: v.string(),
     targetDate: v.optional(v.string()),
     progress: v.number(),
     milestones: v.array(
@@ -28,19 +28,40 @@ export default defineSchema({
     .index("by_order", ["order"])
     .index("by_status", ["status"]),
 
-  // 2. Tasks & 3 Big Rocks
+  // 2. Tasks & Daily Recurring Habits
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
-    isBigRock: v.boolean(),
-    status: v.string(),
-    priority: v.string(),
-    module: v.string(),
-    dueDate: v.optional(v.string()),
+    status: v.string(), // "todo" | "in_progress" | "done"
+    priority: v.string(), // "p1_urgent" | "p2_medium" | "p3_low"
+    module: v.string(), // "general" | "goals" | "problems" | "learning" | "gym" | "career" | "finance" | "personal"
+    dueDate: v.optional(v.string()), // YYYY-MM-DD
+    dueTime: v.optional(v.string()),
+    isDaily: v.optional(v.boolean()), // Daily recurring habit
+    lastCompletedDate: v.optional(v.string()), // YYYY-MM-DD for daily habits
+    subtasks: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          title: v.string(),
+          completed: v.boolean(),
+        })
+      )
+    ),
+    tags: v.optional(v.array(v.string())),
+    isBigRock: v.optional(v.boolean()),
     durationMinutes: v.optional(v.number()),
+    estimatedMinutes: v.optional(v.number()),
+    goalId: v.optional(v.id("major_life_goals")),
+    order: v.optional(v.number()),
     completedAt: v.optional(v.string()),
     createdAt: v.string(),
-  }).index("by_status", ["status"]),
+  })
+    .index("by_status", ["status"])
+    .index("by_due_date", ["dueDate"])
+    .index("by_priority", ["priority"])
+    .index("by_module", ["module"])
+    .index("by_daily", ["isDaily"]),
 
   // 3. Problem Solving & Algorithmic Mastery Hub
   problems: defineTable({
