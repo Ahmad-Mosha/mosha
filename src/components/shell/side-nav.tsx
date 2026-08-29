@@ -3,8 +3,8 @@
 import React from "react";
 import { useMoshaStore, ModuleId } from "@/lib/store";
 import {
+  CheckSquare,
   Target,
-  Sparkles,
   Code2,
   BookOpen,
   Briefcase,
@@ -18,7 +18,6 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
-  User,
 } from "lucide-react";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
@@ -30,8 +29,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { id: "tasks", label: "Tasks & Focus", icon: CheckSquare, badge: "Home" },
   { id: "goals", label: "Major Life Goals", icon: Target, badge: "Pillars" },
-  { id: "today", label: "Today's Sanctuary", icon: Sparkles },
   { id: "problems", label: "Problem Solving", icon: Code2, badge: "100%" },
   { id: "learning", label: "Learning & CS", icon: BookOpen },
   { id: "career", label: "Engineering Career", icon: Briefcase },
@@ -60,7 +59,7 @@ export function SideNav() {
       {/* Top Brand Header */}
       <div className="flex items-center justify-between px-3.5 py-4 border-b border-[#ECEAE4]/60">
         <div
-          onClick={() => setActiveModule("goals")}
+          onClick={() => setActiveModule("tasks")}
           className="flex items-center space-x-3 cursor-pointer overflow-hidden select-none"
         >
           <div className="w-8 h-8 rounded-lg bg-[#333E50] text-white flex items-center justify-center font-serif font-bold text-base shadow-sm shrink-0">
@@ -82,7 +81,7 @@ export function SideNav() {
         <button
           onClick={toggleSidebar}
           title={isMini ? "Expand Sidebar" : "Collapse to Mini"}
-          className="p-1 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] transition-colors"
+          className="p-1 rounded-md text-[#718096] hover:text-[#1A202C] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
         >
           {isMini ? (
             <ChevronRight className="w-4 h-4" />
@@ -102,7 +101,7 @@ export function SideNav() {
             <button
               key={item.id}
               onClick={() => setActiveModule(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group relative ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group relative cursor-pointer ${
                 isActive
                   ? "bg-[#333E50] text-white shadow-xs font-semibold"
                   : "text-[#4A5568] hover:bg-[#F4F5F7] hover:text-[#1A202C]"
@@ -180,7 +179,7 @@ export function SideNav() {
                 Ahmed (Mosha)
               </span>
               <span className="block text-[10px] font-mono text-[#718096] truncate">
-                Focus Mode Active
+                Precision Focus
               </span>
             </div>
           )}

@@ -1,0 +1,257 @@
+"use client";
+
+import React from "react";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { useMoshaStore } from "@/lib/store";
+import {
+  Check,
+  Flame,
+  Calendar,
+  Clock,
+  Play,
+  Edit2,
+  Trash2,
+  Tag,
+  Target,
+  CheckCircle2,
+  Circle,
+  MoreVertical,
+} from "lucide-react";
+import confetti from "canvas-confetti";
+
+interface TaskItemProps {
+  task: any;
+  onEdit: (task: any) => void;
+  goalTitle?: string;
+}
+
+export function TaskItemRow({ task, onEdit, goalTitle }: TaskItemProps) {
+  const toggleTask = useMutation(api.tasks.toggle);
+  const removeTask = useMutation(api.tasks.remove);
+  const toggleSubtask = useMutation(api.tasks.toggleSubtask);
+  const { startFocus } = useMoshaStore();
+
+  const isDone = task.status === "done";
+
+  const handleToggle = async () => {
+    const nextStatus = isDone ? "todo" : "done";
+    if (nextStatus === "done") {
+      confetti({
+        particleCount: task.isBigRock ? 80 : 40,
+        spread: 60,
+        origin: { y: 0.7 },
+      });
+    }
+    await toggleTask({ id: task._id });
+  };
+
+  const getPriorityBadge = (p: string) => {
+    switch (p) {
+      case "p1_urgent":
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-100 text-rose-800 border border-rose-200">
+            🔥 P1
+          </span>
+        );
+      case "p3_low":
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            P3
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+            P2
+          </span>
+        );
+    }
+  };
+
+  const getModuleBadge = (mod: string) => {
+    const map: Record<string, { label: string; icon: string }> = {
+      goals: { label: "Goal Pillar", icon: "🎯" },
+      problems: { label: "LeetCode", icon: "🧩" },
+      learning: { label: "CS Learning", icon: "📚" },
+      gym: { label: "Gym", icon: "🏋️" },
+      career: { label: "Career", icon: "💼" },
+      finance: { label: "Finance", icon: "💰" },
+      personal: { label: "Personal", icon: "🌱" },
+      general: { label: "General", icon: "📋" },
+    };
+    const item = map[mod] || { label: "General", icon: "📋" };
+    return (
+      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#EDF2F7] text-[#333E50] border border-[#E2E8F0] flex items-center gap-1">
+        <span>{item.icon}</span>
+        <span>{item.label}</span>
+      </span>
+    );
+  };
+
+  const subtasks = task.subtasks || [];
+  const completedSubtasks = subtasks.filter((s: any) => s.completed).length;
+
+  return (
+    <article
+      className={`group rounded-xl border p-3.5 sm:p-4 transition-all ${
+        isDone
+          ? "bg-[#F8F9FA]/80 border-[#E2E8F0] opacity-60"
+          : task.isBigRock
+          ? "bg-gradient-to-r from-[#FFFBEB]/60 via-white to-white border-amber-300 shadow-2xs hover:border-amber-400"
+          : "bg-white border-[#E2E8F0] hover:border-[#CBD5E1] shadow-2xs"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        {/* Checkbox */}
+        <button
+          type="button"
+          onClick={handleToggle}
+          className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
+            isDone
+              ? "bg-emerald-600 border-emerald-600 text-white"
+              : task.isBigRock
+              ? "border-amber-400 hover:border-amber-600 bg-white"
+              : "border-[#CBD5E1] hover:border-[#718096] bg-white"
+          }`}
+        >
+          {isDone && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+        </button>
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {task.isBigRock && (
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1">
+                <Flame className="w-3 h-3 text-amber-600 fill-amber-600" />
+                Big Rock
+              </span>
+            )}
+            {getPriorityBadge(task.priority)}
+            {getModuleBadge(task.module)}
+            {goalTitle && (
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-50 text-purple-800 border border-purple-200 flex items-center gap-1">
+                <Target className="w-3 h-3" />
+                {goalTitle}
+              </span>
+            )}
+          </div>
+
+          <h4
+            className={`text-sm font-medium leading-snug ${
+              isDone ? "line-through text-[#A0AEC0]" : "text-[#1A202C]"
+            }`}
+          >
+            {task.title}
+          </h4>
+
+          {task.description && (
+            <p className="text-xs text-[#718096] line-clamp-2 leading-relaxed">
+              {task.description}
+            </p>
+          )}
+
+          {/* Subtasks inline preview */}
+          {subtasks.length > 0 && (
+            <div className="space-y-1 pt-1">
+              <div className="text-[10px] font-mono text-[#718096] flex items-center gap-2">
+                <span>
+                  Checklist: {completedSubtasks}/{subtasks.length}
+                </span>
+                <div className="w-24 bg-[#E2E8F0] h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="bg-[#333E50] h-full rounded-full"
+                    style={{
+                      width: `${(completedSubtasks / subtasks.length) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {subtasks.map((st: any) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() =>
+                      toggleSubtask({ taskId: task._id, subtaskId: st.id })
+                    }
+                    className={`text-[11px] flex items-center gap-1.5 px-2 py-0.5 rounded border transition-colors cursor-pointer ${
+                      st.completed
+                        ? "bg-[#F1F3F5] text-[#A0AEC0] line-through border-transparent"
+                        : "bg-white text-[#4A5568] border-[#E2E8F0] hover:border-[#CBD5E1]"
+                    }`}
+                  >
+                    <span
+                      className={`w-3 h-3 rounded-xs border flex items-center justify-center text-[9px] ${
+                        st.completed
+                          ? "bg-[#333E50] border-[#333E50] text-white"
+                          : "border-[#CBD5E1]"
+                      }`}
+                    >
+                      {st.completed && "✓"}
+                    </span>
+                    {st.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Footer Metadata & Tags */}
+          <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] font-mono text-[#718096]">
+            {task.dueDate && (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {task.dueDate} {task.dueTime ? `@ ${task.dueTime}` : ""}
+              </span>
+            )}
+            {task.estimatedMinutes && (
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {task.estimatedMinutes}m
+              </span>
+            )}
+            {task.tags?.map((t: string) => (
+              <span key={t} className="text-[#A0AEC0]">
+                #{t}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Actions Dropdown / Quick Buttons */}
+        <div className="flex items-center space-x-1 opacity-80 group-hover:opacity-100 transition-opacity shrink-0">
+          {!isDone && (
+            <button
+              type="button"
+              onClick={() => startFocus(task.estimatedMinutes || 50)}
+              title="Start Deep Work focus timer on this task"
+              className="p-1.5 rounded-lg bg-[#F1F3F5] hover:bg-[#333E50] hover:text-white text-[#4A5568] transition-colors cursor-pointer"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onEdit(task)}
+            title="Edit task"
+            className="p-1.5 rounded-lg hover:bg-[#F1F3F5] text-[#718096] hover:text-[#1A202C] transition-colors cursor-pointer"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => removeTask({ id: task._id })}
+            title="Delete task"
+            className="p-1.5 rounded-lg hover:bg-rose-50 text-[#718096] hover:text-rose-600 transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}

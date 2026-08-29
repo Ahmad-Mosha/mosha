@@ -3,9 +3,9 @@ import { create } from "zustand";
 export type SidebarVariant = "full" | "mini";
 
 export type ModuleId =
+  | "tasks"
   | "goals"
   | "today"
-  | "tasks"
   | "projects"
   | "learning"
   | "problems"
@@ -27,13 +27,19 @@ interface MoshaState {
   toggleSidebar: () => void;
   setSidebarVariant: (variant: SidebarVariant) => void;
 
-  // Active Module / Navigation
+  // Active Module / Navigation (Defaults to Home / Tasks)
   activeModule: ModuleId;
   setActiveModule: (mod: ModuleId) => void;
 
   // Command Menu (⌘K)
   isCommandMenuOpen: boolean;
   setCommandMenuOpen: (open: boolean) => void;
+
+  // Task Dialog (Create/Edit)
+  isTaskDialogOpen: boolean;
+  setTaskDialogOpen: (open: boolean) => void;
+  editingTaskId: string | null;
+  setEditingTaskId: (id: string | null) => void;
 
   // Goal Dialog (Create/Edit)
   isGoalDialogOpen: boolean;
@@ -56,7 +62,6 @@ interface MoshaState {
 }
 
 export const useMoshaStore = create<MoshaState>((set) => ({
-  // Sidebar starts as full, can toggle to mini seamlessly
   sidebarVariant: "full",
   toggleSidebar: () =>
     set((state) => ({
@@ -64,13 +69,19 @@ export const useMoshaStore = create<MoshaState>((set) => ({
     })),
   setSidebarVariant: (variant) => set({ sidebarVariant: variant }),
 
-  // Active navigation
-  activeModule: "goals",
+  // Default to tasks as the primary Home screen
+  activeModule: "tasks",
   setActiveModule: (mod) => set({ activeModule: mod }),
 
   // Command Menu
   isCommandMenuOpen: false,
   setCommandMenuOpen: (open) => set({ isCommandMenuOpen: open }),
+
+  // Task Dialog
+  isTaskDialogOpen: false,
+  setTaskDialogOpen: (open) => set({ isTaskDialogOpen: open }),
+  editingTaskId: null,
+  setEditingTaskId: (id) => set({ editingTaskId: id }),
 
   // Goal Dialog
   isGoalDialogOpen: false,
