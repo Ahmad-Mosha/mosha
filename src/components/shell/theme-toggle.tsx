@@ -18,7 +18,9 @@ export function ThemeToggle() {
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="relative p-2 rounded-lg text-faint hover:text-ink hover:bg-subtle-2 transition-colors cursor-pointer"
-      title={isDark ? "Switch to light" : "Switch to dark"}
+      // The server cannot know the theme, so the title must stay absent until
+      // mount or React reports a hydration mismatch on this attribute.
+      title={mounted ? (isDark ? "Switch to light" : "Switch to dark") : undefined}
       aria-label="Toggle colour theme"
     >
       <span className="block w-4 h-4">

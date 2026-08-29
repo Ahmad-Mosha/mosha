@@ -31,16 +31,16 @@ export function GymFitnessView() {
       {/* Header */}
       <div className="bento-card rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs">
-            <Dumbbell className="w-4 h-4 text-rose-600" />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+          <div className="flex items-center space-x-2 text-label">
+            <Dumbbell className="w-4 h-4 text-danger" />
+            <span className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
               Iron Journal
             </span>
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink mt-1">
+          <h1 className="font-serif text-display font-bold tracking-tight text-ink mt-1">
             Gym & Fitness Progress
           </h1>
-          <p className="text-xs sm:text-sm text-muted max-w-xl leading-relaxed mt-1">
+          <p className="text-label sm:text-body text-muted max-w-xl leading-relaxed mt-1">
             Physical strength, progressive overload tracking, and disciplined longevity.
           </p>
         </div>
@@ -49,36 +49,36 @@ export function GymFitnessView() {
       {/* PR Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bento-card rounded-xl p-5 space-y-2">
-          <div className="flex items-center justify-between text-xs text-faint font-mono">
+          <div className="flex items-center justify-between text-label text-faint font-mono">
             <span>Deadlift (1RM Target)</span>
-            <Award className="w-4 h-4 text-amber-600" />
+            <Award className="w-4 h-4 text-warn" />
           </div>
-          <div className="text-2xl font-serif font-bold text-ink">
-            160 kg <span className="text-xs font-mono font-normal text-emerald-700">(PR Hit 🏆)</span>
+          <div className="text-title font-serif font-bold text-ink">
+            160 kg <span className="text-label font-mono font-normal text-success">(PR Hit 🏆)</span>
           </div>
-          <div className="text-[11px] text-faint font-mono">Target: 180 kg by Q4</div>
+          <div className="text-meta text-faint font-mono">Target: 180 kg by Q4</div>
         </div>
 
         <div className="bento-card rounded-xl p-5 space-y-2">
-          <div className="flex items-center justify-between text-xs text-faint font-mono">
+          <div className="flex items-center justify-between text-label text-faint font-mono">
             <span>Weighted Pull-Up</span>
-            <Award className="w-4 h-4 text-blue-600" />
+            <Award className="w-4 h-4 text-info" />
           </div>
-          <div className="text-2xl font-serif font-bold text-ink">
-            +30 kg <span className="text-xs font-mono font-normal text-faint">(x 5 reps)</span>
+          <div className="text-title font-serif font-bold text-ink">
+            +30 kg <span className="text-label font-mono font-normal text-faint">(x 5 reps)</span>
           </div>
-          <div className="text-[11px] text-faint font-mono">Target: +40 kg</div>
+          <div className="text-meta text-faint font-mono">Target: +40 kg</div>
         </div>
 
         <div className="bento-card rounded-xl p-5 space-y-2">
-          <div className="flex items-center justify-between text-xs text-faint font-mono">
+          <div className="flex items-center justify-between text-label text-faint font-mono">
             <span>Barbell Overhead Press</span>
-            <Award className="w-4 h-4 text-rose-600" />
+            <Award className="w-4 h-4 text-danger" />
           </div>
-          <div className="text-2xl font-serif font-bold text-ink">
-            72.5 kg <span className="text-xs font-mono font-normal text-faint">(x 4 reps)</span>
+          <div className="text-title font-serif font-bold text-ink">
+            72.5 kg <span className="text-label font-mono font-normal text-faint">(x 4 reps)</span>
           </div>
-          <div className="text-[11px] text-faint font-mono">Target: 80 kg</div>
+          <div className="text-meta text-faint font-mono">Target: 80 kg</div>
         </div>
       </div>
 
@@ -87,10 +87,10 @@ export function GymFitnessView() {
         {/* Weekly Volume Chart (Recharts) */}
         <div className="lg:col-span-6 bento-card rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-line pb-2">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-faint">
+            <span className="font-mono text-label font-bold uppercase tracking-wider text-faint">
               Weekly Tonnage (kg)
             </span>
-            <span className="text-xs font-mono text-emerald-700 font-semibold">
+            <span className="text-label font-mono text-success font-semibold">
               ▲ +8% over last week
             </span>
           </div>
@@ -118,17 +118,17 @@ export function GymFitnessView() {
         {/* Recent Workout Sessions */}
         <div className="lg:col-span-6 bento-card rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-line pb-2">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-faint">
+            <span className="font-mono text-label font-bold uppercase tracking-wider text-faint">
               Workout History
             </span>
-            <span className="text-xs font-mono text-faint">
+            <span className="text-label font-mono text-faint">
               {sessions.length} Logged
             </span>
           </div>
 
           <div className="space-y-3">
             {sessions.length === 0 ? (
-              <p className="text-xs text-ghost py-6 text-center">
+              <p className="text-label text-ghost py-6 text-center">
                 No workouts logged yet.
               </p>
             ) : (
@@ -138,19 +138,19 @@ export function GymFitnessView() {
                   className="p-4 rounded-lg bg-subtle border border-line space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="font-serif font-bold text-sm text-ink">
+                    <div className="font-serif font-bold text-body text-ink">
                       {session.title}
                     </div>
-                    <span className="text-[10px] font-mono text-faint">
+                    <span className="text-meta font-mono text-faint">
                       {session.date} • {session.durationMinutes} mins
                     </span>
                   </div>
-                  <p className="text-xs text-muted">{session.notes}</p>
+                  <p className="text-label text-muted">{session.notes}</p>
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {session.exercises?.map((ex: any, idx: number) => (
                       <span
                         key={idx}
-                        className="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-2 border border-line text-ink"
+                        className="px-2 py-0.5 rounded text-meta font-mono bg-surface-2 border border-line text-ink"
                       >
                         {ex.name}: {ex.weightKg}kg x {ex.reps}
                       </span>

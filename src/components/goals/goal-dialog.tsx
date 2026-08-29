@@ -119,10 +119,10 @@ export function GoalDialog() {
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-surface-2 p-6 shadow-2xl border border-line animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between border-b border-line pb-3 mb-4">
             <div>
-              <Dialog.Title className="font-serif text-xl font-bold text-ink">
+              <Dialog.Title className="font-serif text-title font-bold text-ink">
                 {editingGoalId ? "Edit Major Goal" : "Add Major Life Goal"}
               </Dialog.Title>
-              <Dialog.Description className="text-xs text-faint">
+              <Dialog.Description className="text-label text-faint">
                 Set a monumental life milestone with actionable sub-milestones.
               </Dialog.Description>
             </div>
@@ -131,18 +131,18 @@ export function GoalDialog() {
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-4 text-xs">
+          <form onSubmit={handleSave} className="space-y-4 text-label">
             {/* Emblem Icon + Title Row */}
             <div className="flex items-start gap-3">
               {/* Emoji Emblem Picker */}
               <div className="relative">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold block mb-1">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold block mb-1">
                   Emblem
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="w-12 h-10 rounded-lg border border-line hover:border-accent bg-subtle flex items-center justify-center text-xl cursor-pointer transition-colors"
+                  className="w-12 h-10 rounded-lg border border-line hover:border-accent bg-subtle flex items-center justify-center text-title cursor-pointer transition-colors"
                 >
                   {icon}
                 </button>
@@ -157,7 +157,7 @@ export function GoalDialog() {
                           setIcon(emoji);
                           setShowEmojiPicker(false);
                         }}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center text-base hover:bg-subtle-2 cursor-pointer transition-colors ${
+                        className={`w-8 h-8 rounded-md flex items-center justify-center text-heading hover:bg-subtle-2 cursor-pointer transition-colors ${
                           icon === emoji ? "bg-accent/10 border border-accent" : ""
                         }`}
                       >
@@ -170,7 +170,7 @@ export function GoalDialog() {
 
               {/* Title */}
               <div className="flex-1 space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Goal Title *
                 </label>
                 <input
@@ -179,7 +179,7 @@ export function GoalDialog() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Finish Military Service, Get First Job..."
-                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-sm text-ink"
+                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-body text-ink"
                 />
               </div>
             </div>
@@ -187,7 +187,7 @@ export function GoalDialog() {
             {/* Target Date (Calendar Component) & Status */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold flex items-center gap-1">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-faint" />
                   Target Date
                 </label>
@@ -195,12 +195,12 @@ export function GoalDialog() {
                   type="date"
                   value={targetDate}
                   onChange={(e) => setTargetDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink bg-surface-2 cursor-pointer"
+                  className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-label text-ink bg-surface-2 cursor-pointer"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Status
                 </label>
                 <Select
@@ -220,7 +220,7 @@ export function GoalDialog() {
 
             {/* Core Mission & Description */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+              <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                 Core Mission & Description
               </label>
               <textarea
@@ -228,17 +228,17 @@ export function GoalDialog() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What is the core purpose and mission of this goal?"
-                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs text-ink"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-label text-ink"
               />
             </div>
 
             {/* Sub-Milestones Checklist Builder */}
             <div className="space-y-2 pt-2 border-t border-line">
               <div className="flex items-center justify-between">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Milestones ({milestones.length})
                 </label>
-                <span className="text-[10px] text-ghost font-mono">
+                <span className="text-meta text-ghost font-mono">
                   Checking items recalculates progress
                 </span>
               </div>
@@ -267,12 +267,12 @@ export function GoalDialog() {
                         updated[idx].title = e.target.value;
                         setMilestones(updated);
                       }}
-                      className="flex-1 bg-transparent text-xs text-ink focus:outline-none"
+                      className="flex-1 bg-transparent text-label text-ink focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveMilestone(m.id)}
-                      className="text-ghost hover:text-rose-600 p-1 cursor-pointer"
+                      className="text-ghost hover:text-danger p-1 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -293,12 +293,12 @@ export function GoalDialog() {
                     }
                   }}
                   placeholder="Add next sub-milestone..."
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-line text-xs text-ink focus:outline-none"
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-line text-label text-ink focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddMilestone}
-                  className="px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg font-semibold text-label transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add
                 </button>
@@ -311,7 +311,7 @@ export function GoalDialog() {
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 font-semibold transition-colors flex items-center gap-1 cursor-pointer text-xs"
+                  className="px-3 py-2 rounded-lg text-danger hover:bg-danger-tint font-semibold transition-colors flex items-center gap-1 cursor-pointer text-label"
                 >
                   <Trash2 className="w-3.5 h-3.5" /> Delete
                 </button>
@@ -323,13 +323,13 @@ export function GoalDialog() {
                 <button
                   type="button"
                   onClick={() => setGoalDialogOpen(false)}
-                  className="px-4 py-2 rounded-lg text-faint hover:bg-subtle-2 font-medium transition-colors cursor-pointer text-xs"
+                  className="px-4 py-2 rounded-lg text-faint hover:bg-subtle-2 font-medium transition-colors cursor-pointer text-label"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg font-semibold shadow-xs transition-colors cursor-pointer text-xs"
+                  className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg font-semibold shadow-xs transition-colors cursor-pointer text-label"
                 >
                   {editingGoalId ? "Save Changes" : "Create Goal"}
                 </button>

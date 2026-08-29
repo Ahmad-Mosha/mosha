@@ -139,14 +139,14 @@ export function TasksScreen() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4">
         <div>
           <div className="flex items-center space-x-2.5">
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-ink">
+            <h1 className="font-serif text-title sm:text-display font-bold text-ink">
               Tasks
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-subtle-2 text-accent">
+            <span className="px-2.5 py-0.5 rounded-full text-label font-mono font-semibold bg-subtle-2 text-accent">
               {completedCount}/{tasks.length} Done
             </span>
           </div>
-          <p className="text-xs text-faint mt-0.5">
+          <p className="text-label text-faint mt-0.5">
             Daily execution, recurring habits, and actionable roadmap.
           </p>
         </div>
@@ -156,7 +156,7 @@ export function TasksScreen() {
           <div className="flex items-center rounded-lg border border-line bg-surface-2 p-0.5">
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-md text-label transition-colors cursor-pointer ${
                 viewMode === "list"
                   ? "bg-accent text-accent-fg shadow-2xs"
                   : "text-faint hover:text-ink"
@@ -167,7 +167,7 @@ export function TasksScreen() {
             </button>
             <button
               onClick={() => setViewMode("kanban")}
-              className={`p-1.5 rounded-md text-xs transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-md text-label transition-colors cursor-pointer ${
                 viewMode === "kanban"
                   ? "bg-accent text-accent-fg shadow-2xs"
                   : "text-faint hover:text-ink"
@@ -182,7 +182,7 @@ export function TasksScreen() {
             <button
               onClick={() => clearCompleted()}
               title="Clear all completed tasks"
-              className="px-3 py-2 rounded-lg bg-surface-2 border border-line hover:bg-rose-50 text-faint hover:text-rose-600 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-2 rounded-lg bg-surface-2 border border-line hover:bg-danger-tint text-faint hover:text-danger text-label font-medium transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear Done</span>
@@ -194,7 +194,7 @@ export function TasksScreen() {
               setEditingTask(null);
               setIsDialogOpen(true);
             }}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+            className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-2xs transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Task</span>
@@ -214,16 +214,16 @@ export function TasksScreen() {
             value={inlineTitle}
             onChange={(e) => setInlineTitle(e.target.value)}
             placeholder="Add a task or daily habit... (Press Enter to save)"
-            className="w-full bg-transparent px-2 py-1 text-xs text-ink focus:outline-none placeholder:text-ghost"
+            className="w-full bg-transparent px-2 py-1 text-label text-ink focus:outline-none placeholder:text-ghost"
           />
         </div>
 
         <div className="flex items-center space-x-1.5 shrink-0 justify-end">
           {/* Daily toggle button */}
           <label
-            className={`px-2 py-1 rounded-md text-[11px] font-mono flex items-center gap-1 cursor-pointer select-none transition-colors border ${
+            className={`px-2 py-1 rounded-md text-meta font-mono flex items-center gap-1 cursor-pointer select-none transition-colors border ${
               inlineIsDaily
-                ? "bg-blue-100 text-blue-800 border-blue-300 font-semibold"
+                ? "bg-info-tint text-info border-info/35 font-semibold"
                 : "bg-subtle text-faint border-line hover:text-ink"
             }`}
           >
@@ -269,7 +269,7 @@ export function TasksScreen() {
           <button
             type="submit"
             disabled={!inlineTitle.trim() || isInlineSubmitting}
-            className="px-3 py-1 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-40 text-accent-fg text-xs font-semibold transition-colors cursor-pointer"
+            className="px-3 py-1 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-40 text-accent-fg text-label font-semibold transition-colors cursor-pointer"
           >
             {isInlineSubmitting ? "Adding..." : "Add"}
           </button>
@@ -279,7 +279,7 @@ export function TasksScreen() {
       {/* 3. Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
         {/* Left: View Tabs */}
-        <div className="flex items-center space-x-1.5 text-xs overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="flex items-center space-x-1.5 text-label overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {[
             { id: "all", label: `All (${tasks.length})` },
             { id: "today", label: `Today (${todayTasks.length})` },
@@ -302,7 +302,7 @@ export function TasksScreen() {
         </div>
 
         {/* Right: Search & Dropdowns */}
-        <div className="flex items-center space-x-2 text-xs">
+        <div className="flex items-center space-x-2 text-label">
           <div className="relative w-44">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-ghost" />
             <input
@@ -310,7 +310,7 @@ export function TasksScreen() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border border-line bg-surface-2 text-xs text-ink focus:outline-none focus:border-accent"
+              className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border border-line bg-surface-2 text-label text-ink focus:outline-none focus:border-accent"
             />
           </div>
 
@@ -357,10 +357,10 @@ export function TasksScreen() {
       ) : filteredTasks.length === 0 ? (
         <div className="bento-card rounded-2xl p-12 text-center space-y-3">
           <CheckCircle2 className="w-10 h-10 text-line-2 mx-auto" />
-          <h3 className="font-serif text-lg font-bold text-ink">
+          <h3 className="font-serif text-heading font-bold text-ink">
             No tasks found
           </h3>
-          <p className="text-xs text-faint max-w-sm mx-auto">
+          <p className="text-label text-faint max-w-sm mx-auto">
             All clear in this view. Use the quick add input above to capture your next task or daily habit.
           </p>
         </div>

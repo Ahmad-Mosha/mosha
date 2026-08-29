@@ -132,10 +132,10 @@ export function ProjectDialog({
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl bg-surface-2 border border-line rounded-2xl shadow-xl p-6 z-50 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
           <div className="flex justify-between items-center pb-4 border-b border-line">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-accent text-accent-fg flex items-center justify-center font-bold text-sm">
+              <div className="w-8 h-8 rounded-lg bg-accent text-accent-fg flex items-center justify-center font-bold text-body">
                 <Terminal className="w-4 h-4" />
               </div>
-              <Dialog.Title className="font-serif text-lg font-bold text-ink">
+              <Dialog.Title className="font-serif text-heading font-bold text-ink">
                 {editingProject ? "Edit Project" : "New Engineering Project"}
               </Dialog.Title>
             </div>
@@ -146,10 +146,10 @@ export function ProjectDialog({
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 pt-4 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4 text-label">
             {/* Project Name */}
             <div className="space-y-1">
-              <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted">
+              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
                 Project / Repository Name *
               </label>
               <input
@@ -158,13 +158,13 @@ export function ProjectDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Nexus API Gateway, Core Auth Service..."
-                className="w-full bg-subtle border border-line rounded-xl px-3.5 py-2.5 text-xs text-ink focus:outline-none focus:border-accent focus:bg-surface-2 transition-all font-medium"
+                className="w-full bg-subtle border border-line rounded-xl px-3.5 py-2.5 text-label text-ink focus:outline-none focus:border-accent focus:bg-surface-2 transition-all font-medium"
               />
             </div>
 
             {/* Description */}
             <div className="space-y-1">
-              <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted">
+              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
                 Description & Purpose
               </label>
               <textarea
@@ -172,14 +172,14 @@ export function ProjectDialog({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="High-level architectural overview or objective..."
-                className="w-full bg-subtle border border-line rounded-xl px-3.5 py-2 text-xs text-ink focus:outline-none focus:border-accent focus:bg-surface-2 transition-all leading-relaxed"
+                className="w-full bg-subtle border border-line rounded-xl px-3.5 py-2 text-label text-ink focus:outline-none focus:border-accent focus:bg-surface-2 transition-all leading-relaxed"
               />
             </div>
 
             {/* Status & Version */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted">
+                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
                   Status
                 </label>
                 <Select
@@ -198,7 +198,7 @@ export function ProjectDialog({
               </div>
 
               <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted">
+                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
                   Release Version
                 </label>
                 <input
@@ -206,27 +206,27 @@ export function ProjectDialog({
                   value={version}
                   onChange={(e) => setVersion(e.target.value)}
                   placeholder="v1.0.0"
-                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-xs font-mono text-ink focus:outline-none"
+                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-label font-mono text-ink focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Tech Stack Tags */}
             <div className="space-y-1.5">
-              <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted">
+              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
                 Tech Stack
               </label>
               <div className="flex flex-wrap gap-1.5 p-2 bg-subtle border border-line rounded-xl min-h-[38px] items-center">
                 {techStack.map((tech) => (
                   <span
                     key={tech}
-                    className="bg-surface-2 border border-line px-2 py-0.5 rounded-md font-mono text-[11px] text-accent font-medium flex items-center gap-1 shadow-2xs"
+                    className="bg-surface-2 border border-line px-2 py-0.5 rounded-md font-mono text-meta text-accent font-medium flex items-center gap-1 shadow-2xs"
                   >
                     <span>{tech}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveTech(tech)}
-                      className="text-ghost hover:text-rose-600 cursor-pointer ml-0.5"
+                      className="text-ghost hover:text-danger cursor-pointer ml-0.5"
                     >
                       ×
                     </button>
@@ -243,7 +243,7 @@ export function ProjectDialog({
                     }
                   }}
                   placeholder="+ Add tech (Enter)..."
-                  className="bg-transparent text-xs font-mono focus:outline-none flex-1 min-w-[100px] px-1"
+                  className="bg-transparent text-label font-mono focus:outline-none flex-1 min-w-[100px] px-1"
                 />
               </div>
 
@@ -254,7 +254,7 @@ export function ProjectDialog({
                     key={t}
                     type="button"
                     onClick={() => handleAddTech(t)}
-                    className={`px-1.5 py-0.5 rounded border text-[10px] font-mono transition-colors cursor-pointer ${
+                    className={`px-1.5 py-0.5 rounded border text-meta font-mono transition-colors cursor-pointer ${
                       techStack.includes(t)
                         ? "bg-accent text-accent-fg border-accent"
                         : "bg-surface-2 border-line text-faint hover:bg-subtle-2"
@@ -269,7 +269,7 @@ export function ProjectDialog({
             {/* Git Branch & URLs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted flex items-center gap-1">
+                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted flex items-center gap-1">
                   <GitBranch className="w-3.5 h-3.5" />
                   <span>Working Branch</span>
                 </label>
@@ -278,12 +278,12 @@ export function ProjectDialog({
                   value={branch}
                   onChange={(e) => setBranch(e.target.value)}
                   placeholder="main, feature/grpc..."
-                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-xs font-mono text-ink focus:outline-none"
+                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-label font-mono text-ink focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted flex items-center gap-1">
+                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted flex items-center gap-1">
                   <Github className="w-3.5 h-3.5" />
                   <span>GitHub Repo URL</span>
                 </label>
@@ -292,14 +292,14 @@ export function ProjectDialog({
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
                   placeholder="https://github.com/..."
-                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-xs text-ink focus:outline-none"
+                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-label text-ink focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Linked Life Goal */}
             <div className="space-y-1 pt-1">
-              <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted flex items-center gap-1">
+              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted flex items-center gap-1">
                 <Layers className="w-3.5 h-3.5" />
                 <span>Link to Major Life Goal</span>
               </label>
@@ -322,14 +322,14 @@ export function ProjectDialog({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl border border-line hover:bg-subtle text-muted text-xs font-semibold transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-line hover:bg-subtle text-muted text-label font-semibold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 {isSubmitting
                   ? "Saving..."

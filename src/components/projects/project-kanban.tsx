@@ -22,10 +22,10 @@ interface ProjectKanbanProps {
 }
 
 const COLUMNS = [
-  { id: "todo", title: "Backlog / To Do", color: "border-slate-300", badge: "bg-slate-100 text-slate-700" },
-  { id: "in_progress", title: "In Progress", color: "border-amber-400", badge: "bg-amber-50 text-amber-800" },
-  { id: "in_review", title: "In Review", color: "border-blue-400", badge: "bg-blue-50 text-blue-800" },
-  { id: "done", title: "Completed", color: "border-emerald-400", badge: "bg-emerald-50 text-emerald-800" },
+  { id: "todo", title: "Backlog / To Do", color: "border-line", badge: "bg-subtle text-muted" },
+  { id: "in_progress", title: "In Progress", color: "border-warn/35", badge: "bg-warn-tint text-warn" },
+  { id: "in_review", title: "In Review", color: "border-info/35", badge: "bg-info-tint text-info" },
+  { id: "done", title: "Completed", color: "border-success/35", badge: "bg-success-tint text-success" },
 ];
 
 export function ProjectKanban({ projectId }: ProjectKanbanProps) {
@@ -68,19 +68,19 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
     switch (priority) {
       case "p1_urgent":
         return (
-          <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-mono text-[9px] font-semibold uppercase">
+          <span className="px-1.5 py-0.5 rounded bg-danger-tint text-danger border border-danger/35 font-mono text-meta font-semibold uppercase">
             Urgent
           </span>
         );
       case "p2_medium":
         return (
-          <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-mono text-[9px] font-semibold uppercase">
+          <span className="px-1.5 py-0.5 rounded bg-warn-tint text-warn border border-warn/35 font-mono text-meta font-semibold uppercase">
             Medium
           </span>
         );
       default:
         return (
-          <span className="px-1.5 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200 font-mono text-[9px] font-semibold uppercase">
+          <span className="px-1.5 py-0.5 rounded bg-subtle text-muted border border-line font-mono text-meta font-semibold uppercase">
             Low
           </span>
         );
@@ -104,11 +104,11 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
               {/* Column Header */}
               <div className="flex justify-between items-center px-2 py-1.5 mb-2">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${col.id === 'done' ? 'bg-emerald-500' : col.id === 'in_progress' ? 'bg-amber-500' : col.id === 'in_review' ? 'bg-blue-500' : 'bg-slate-400'}`} />
-                  <h3 className="font-semibold text-xs text-ink">
+                  <span className={`w-2 h-2 rounded-full ${col.id === 'done' ? 'bg-success' : col.id === 'in_progress' ? 'bg-warn' : col.id === 'in_review' ? 'bg-info' : 'bg-ghost'}`} />
+                  <h3 className="font-semibold text-label text-ink">
                     {col.title}
                   </h3>
-                  <span className="px-1.5 py-0.2 rounded-full bg-surface-2 border border-line font-mono text-[10px] text-faint">
+                  <span className="px-1.5 py-0.2 rounded-full bg-surface-2 border border-line font-mono text-meta text-faint">
                     {colTasks.length}
                   </span>
                 </div>
@@ -142,7 +142,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                         }
                       }}
                       placeholder="Task description or issue..."
-                      className="w-full text-xs text-ink focus:outline-none resize-none bg-transparent placeholder:text-ghost"
+                      className="w-full text-label text-ink focus:outline-none resize-none bg-transparent placeholder:text-ghost"
                     />
 
                     <div className="flex items-center justify-between pt-1 border-t border-line">
@@ -162,14 +162,14 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                         <button
                           type="button"
                           onClick={() => setNewTaskColumn(null)}
-                          className="px-2 py-1 text-[11px] text-faint hover:text-black"
+                          className="px-2 py-1 text-meta text-faint hover:text-black"
                         >
                           Cancel
                         </button>
                         <button
                           type="button"
                           onClick={() => handleCreateTask(col.id)}
-                          className="px-2.5 py-1 rounded bg-accent text-accent-fg text-[11px] font-semibold"
+                          className="px-2.5 py-1 rounded bg-accent text-accent-fg text-meta font-semibold"
                         >
                           Add
                         </button>
@@ -186,7 +186,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                     }}
                     className="py-6 border-2 border-dashed border-line rounded-xl text-center cursor-pointer hover:border-accent transition-colors"
                   >
-                    <span className="text-[11px] text-ghost font-mono">
+                    <span className="text-meta text-ghost font-mono">
                       + Add task
                     </span>
                   </div>
@@ -205,17 +205,17 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                           onClick={() =>
                             handleStatusChange(task._id, isDone ? "todo" : "done")
                           }
-                          className="mt-0.5 text-ghost hover:text-emerald-600 transition-colors cursor-pointer shrink-0"
+                          className="mt-0.5 text-ghost hover:text-success transition-colors cursor-pointer shrink-0"
                         >
                           {isDone ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <CheckCircle2 className="w-4 h-4 text-success" />
                           ) : (
                             <Circle className="w-4 h-4" />
                           )}
                         </button>
 
                         <span
-                          className={`text-xs font-medium leading-relaxed flex-1 ${
+                          className={`text-label font-medium leading-relaxed flex-1 ${
                             isDone
                               ? "line-through text-ghost"
                               : "text-ink"
@@ -236,10 +236,10 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                           </DropdownMenu.Trigger>
                           <DropdownMenu.Portal>
                             <DropdownMenu.Content
-                              className="z-50 bg-surface-2 border border-line rounded-xl shadow-lg p-1 text-xs min-w-[140px]"
+                              className="z-50 bg-surface-2 border border-line rounded-xl shadow-lg p-1 text-label min-w-[140px]"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <DropdownMenu.Label className="px-2 py-1 text-[10px] font-mono text-ghost uppercase">
+                              <DropdownMenu.Label className="px-2 py-1 text-meta font-mono text-ghost uppercase">
                                 Move to Status
                               </DropdownMenu.Label>
                               {COLUMNS.map((c) => (
@@ -261,7 +261,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                               <DropdownMenu.Separator className="h-[1px] bg-line my-1" />
                               <DropdownMenu.Item
                                 onClick={() => removeTask({ id: task._id })}
-                                className="px-3 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 cursor-pointer flex items-center gap-2"
+                                className="px-3 py-1.5 rounded-lg hover:bg-danger-tint text-danger cursor-pointer flex items-center gap-2"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 <span>Delete Task</span>
@@ -272,7 +272,7 @@ export function ProjectKanban({ projectId }: ProjectKanbanProps) {
                       </div>
 
                       {/* Footer: Priority & Move Arrows */}
-                      <div className="flex items-center justify-between pt-1 border-t border-line/60 text-[10px]">
+                      <div className="flex items-center justify-between pt-1 border-t border-line/60 text-meta">
                         <div>{getPriorityBadge(task.priority)}</div>
 
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

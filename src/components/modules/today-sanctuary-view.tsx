@@ -41,18 +41,18 @@ export function TodaySanctuaryView() {
   return (
     <div className="space-y-6">
       {/* Morning Ritual & Focus Hero */}
-      <div className="bento-card rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-white via-white to-subtle">
+      <div className="bento-card rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-surface-2 via-surface-2 to-subtle">
         <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-xs font-mono text-amber-700">
+          <div className="flex items-center space-x-2 text-label font-mono text-warn">
             <Sparkles className="w-4 h-4" />
             <span className="uppercase tracking-wider font-semibold">
               Morning Ritual & Focus
             </span>
           </div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink">
+          <h1 className="font-serif text-display font-bold tracking-tight text-ink">
             Good day, Ahmed.
           </h1>
-          <p className="text-xs sm:text-sm text-muted max-w-xl leading-relaxed">
+          <p className="text-label sm:text-body text-muted max-w-xl leading-relaxed">
             &ldquo;Excellence is not an act, but a habit.&rdquo; Lock in on your daily execution, complete your workout, and advance your engineering craft.
           </p>
         </div>
@@ -60,9 +60,9 @@ export function TodaySanctuaryView() {
         <div className="flex items-center space-x-3 shrink-0">
           <button
             onClick={() => startFocus(50)}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-sm transition-colors cursor-pointer"
           >
-            <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <Flame className="w-4 h-4 text-warn fill-warn" />
             <span>Start 50m Deep Work</span>
           </button>
         </div>
@@ -76,16 +76,16 @@ export function TodaySanctuaryView() {
           className="bento-card rounded-xl p-5 cursor-pointer hover:border-accent/40 transition-all group space-y-3"
         >
           <div className="flex items-center justify-between">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-info-tint text-info flex items-center justify-center">
               <Code2 className="w-4 h-4" />
             </div>
             <ArrowRight className="w-4 h-4 text-ghost group-hover:translate-x-1 transition-transform" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-bold text-ink">
+            <h3 className="font-serif text-heading font-bold text-ink">
               Problem Solving
             </h3>
-            <p className="text-xs text-faint">
+            <p className="text-label text-faint">
               Master algorithmic patterns with 100% mastery engine.
             </p>
           </div>
@@ -97,16 +97,16 @@ export function TodaySanctuaryView() {
           className="bento-card rounded-xl p-5 cursor-pointer hover:border-accent/40 transition-all group space-y-3"
         >
           <div className="flex items-center justify-between">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-success-tint text-success flex items-center justify-center">
               <BookOpen className="w-4 h-4" />
             </div>
             <ArrowRight className="w-4 h-4 text-ghost group-hover:translate-x-1 transition-transform" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-bold text-ink">
+            <h3 className="font-serif text-heading font-bold text-ink">
               CS & Systems
             </h3>
-            <p className="text-xs text-faint">
+            <p className="text-label text-faint">
               Operating Systems, Databases, Go, Node.js roadmaps.
             </p>
           </div>
@@ -118,16 +118,16 @@ export function TodaySanctuaryView() {
           className="bento-card rounded-xl p-5 cursor-pointer hover:border-accent/40 transition-all group space-y-3"
         >
           <div className="flex items-center justify-between">
-            <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-danger-tint text-danger flex items-center justify-center">
               <Dumbbell className="w-4 h-4" />
             </div>
             <ArrowRight className="w-4 h-4 text-ghost group-hover:translate-x-1 transition-transform" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-bold text-ink">
+            <h3 className="font-serif text-heading font-bold text-ink">
               Iron Journal
             </h3>
-            <p className="text-xs text-faint">
+            <p className="text-label text-faint">
               Push / Pull / Legs tracking, progressive overload & PRs.
             </p>
           </div>
@@ -138,17 +138,17 @@ export function TodaySanctuaryView() {
       <div className="bento-card rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center space-x-2">
-            <h2 className="font-serif text-lg font-bold text-ink">
+            <h2 className="font-serif text-heading font-bold text-ink">
               Quick Action Checklist
             </h2>
-            <span className="text-xs font-mono text-faint">
+            <span className="text-label font-mono text-faint">
               ({completedCount}/{tasks.length} Completed)
             </span>
           </div>
 
           <button
             onClick={() => setActiveModule("tasks")}
-            className="text-xs text-accent hover:underline font-medium flex items-center gap-1"
+            className="text-label text-accent hover:underline font-medium flex items-center gap-1"
           >
             <span>Open Full Tasks Screen</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -162,11 +162,11 @@ export function TodaySanctuaryView() {
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             placeholder="Add task to today's list..."
-            className="flex-1 px-3 py-2 rounded-lg border border-line text-xs text-ink focus:outline-none focus:border-accent"
+            className="flex-1 px-3 py-2 rounded-lg border border-line text-label text-ink focus:outline-none focus:border-accent"
           />
           <button
             type="submit"
-            className="px-4 py-2 rounded-lg bg-accent text-accent-fg text-xs font-semibold transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-accent text-accent-fg text-label font-semibold transition-colors cursor-pointer"
           >
             Add
           </button>
@@ -175,7 +175,7 @@ export function TodaySanctuaryView() {
         {/* Tasks List */}
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {tasks.length === 0 ? (
-            <div className="text-center py-6 text-xs text-ghost font-mono">
+            <div className="text-center py-6 text-label text-ghost font-mono">
               No tasks for today.
             </div>
           ) : (
@@ -190,12 +190,12 @@ export function TodaySanctuaryView() {
                 }`}
               >
                 {task.status === "done" ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
                 ) : (
                   <Circle className="w-4 h-4 text-line-2 shrink-0" />
                 )}
                 <span
-                  className={`text-xs flex-1 ${
+                  className={`text-label flex-1 ${
                     task.status === "done"
                       ? "line-through text-ghost"
                       : "text-ink font-medium"
@@ -204,7 +204,7 @@ export function TodaySanctuaryView() {
                   {task.title}
                 </span>
                 {task.isDaily && (
-                  <span className="text-[10px] font-mono text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                  <span className="text-meta font-mono text-info bg-info-tint px-1.5 py-0.5 rounded">
                     Daily
                   </span>
                 )}

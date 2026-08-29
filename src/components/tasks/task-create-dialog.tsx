@@ -146,7 +146,7 @@ export function TaskCreateDialog({
           {/* Header */}
           <div className="flex items-center justify-between border-b border-line pb-3">
             <div>
-              <Dialog.Title className="font-serif text-xl font-bold text-ink">
+              <Dialog.Title className="font-serif text-title font-bold text-ink">
                 {editingTask ? "Edit Task" : "New Task"}
               </Dialog.Title>
             </div>
@@ -156,16 +156,16 @@ export function TaskCreateDialog({
           </div>
 
           {errorMsg && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-danger-tint border border-danger/35 text-danger text-label flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-4 text-label">
             {/* Title Input */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+              <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                 Task Title *
               </label>
               <input
@@ -175,7 +175,7 @@ export function TaskCreateDialog({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Solve 1 LeetCode Graph problem..."
-                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-sm text-ink"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-body text-ink"
               />
             </div>
 
@@ -184,7 +184,7 @@ export function TaskCreateDialog({
               onClick={() => setIsDaily(!isDaily)}
               className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                 isDaily
-                  ? "bg-blue-50/80 border-blue-300 shadow-2xs"
+                  ? "bg-info-tint/80 border-info/35 shadow-2xs"
                   : "bg-subtle border-line hover:border-line-2"
               }`}
             >
@@ -192,17 +192,17 @@ export function TaskCreateDialog({
                 <div
                   className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                     isDaily
-                      ? "bg-blue-600 text-white"
+                      ? "bg-info text-white"
                       : "bg-line text-faint"
                   }`}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <div className="font-serif font-bold text-xs text-ink">
+                  <div className="font-serif font-bold text-label text-ink">
                     Daily Recurring Task
                   </div>
-                  <div className="text-[10px] text-faint">
+                  <div className="text-meta text-faint">
                     Repeats every single day (e.g. daily problem solving, workout, reading).
                   </div>
                 </div>
@@ -212,14 +212,14 @@ export function TaskCreateDialog({
                 type="checkbox"
                 checked={isDaily}
                 onChange={(e) => setIsDaily(e.target.checked)}
-                className="rounded border-line-2 text-blue-600 focus:ring-0 cursor-pointer w-4 h-4"
+                className="rounded border-line-2 text-info focus:ring-0 cursor-pointer w-4 h-4"
               />
             </div>
 
             {/* Category / Domain & Priority */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Category
                 </label>
                 <Select
@@ -234,7 +234,7 @@ export function TaskCreateDialog({
               </div>
 
               <div className="space-y-1">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Priority
                 </label>
                 <Select
@@ -254,20 +254,20 @@ export function TaskCreateDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {!isDaily && (
                 <div className="space-y-1">
-                  <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold flex items-center gap-1">
+                  <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-faint" /> Due Date
                   </label>
                   <input
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer text-xs"
+                    className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer text-label"
                   />
                 </div>
               )}
 
               <div className={`space-y-1 ${isDaily ? "sm:col-span-2" : ""}`}>
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Linked Life Goal (Optional)
                 </label>
                 <Select
@@ -287,7 +287,7 @@ export function TaskCreateDialog({
 
             {/* Notes / Description */}
             <div className="space-y-1">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+              <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                 Notes & Details
               </label>
               <textarea
@@ -295,14 +295,14 @@ export function TaskCreateDialog({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Additional notes or links..."
-                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-xs"
+                className="w-full px-3 py-2 rounded-lg border border-line focus:border-accent focus:outline-none text-label"
               />
             </div>
 
             {/* Subtasks / Checklist Builder */}
             <div className="space-y-2 pt-2 border-t border-line">
               <div className="flex items-center justify-between">
-                <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
+                <label className="font-mono text-meta uppercase tracking-wider text-faint font-semibold">
                   Checklist ({subtasks.length})
                 </label>
               </div>
@@ -331,12 +331,12 @@ export function TaskCreateDialog({
                         updated[idx].title = e.target.value;
                         setSubtasks(updated);
                       }}
-                      className="flex-1 bg-transparent text-xs text-ink focus:outline-none"
+                      className="flex-1 bg-transparent text-label text-ink focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveSubtask(st.id)}
-                      className="text-ghost hover:text-rose-600 p-1 cursor-pointer"
+                      className="text-ghost hover:text-danger p-1 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -356,12 +356,12 @@ export function TaskCreateDialog({
                     }
                   }}
                   placeholder="Add item..."
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-line text-xs focus:outline-none"
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-line text-label focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddSubtask}
-                  className="px-3 py-1.5 rounded-lg bg-subtle-2 hover:bg-line text-ink font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-subtle-2 hover:bg-line text-ink font-semibold text-label transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add
                 </button>
@@ -374,7 +374,7 @@ export function TaskCreateDialog({
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer text-xs"
+                  className="text-danger hover:bg-danger-tint px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1 cursor-pointer text-label"
                 >
                   <Trash2 className="w-3.5 h-3.5" /> Delete
                 </button>
@@ -386,14 +386,14 @@ export function TaskCreateDialog({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg text-faint hover:bg-subtle-2 font-medium transition-colors cursor-pointer text-xs"
+                  className="px-4 py-2 rounded-lg text-faint hover:bg-subtle-2 font-medium transition-colors cursor-pointer text-label"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-fg font-semibold shadow-xs transition-colors cursor-pointer text-xs"
+                  className="px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-fg font-semibold shadow-xs transition-colors cursor-pointer text-label"
                 >
                   {isSubmitting ? "Saving..." : editingTask ? "Save" : "Create Task"}
                 </button>
