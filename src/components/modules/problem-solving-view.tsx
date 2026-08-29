@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { Select } from "@/components/ui/select";
 import {
   Code2,
   Plus,
@@ -181,15 +182,16 @@ export function ProblemSolvingView() {
               <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Difficulty
               </label>
-              <select
+              <Select
                 value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 cursor-pointer"
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
+                onValueChange={setDifficulty}
+                className="w-full"
+                options={[
+                  { value: "easy", label: "Easy" },
+                  { value: "medium", label: "Medium" },
+                  { value: "hard", label: "Hard" }
+                ]}
+              />
             </div>
 
             <div className="space-y-1">
@@ -208,16 +210,17 @@ export function ProblemSolvingView() {
               <label className="font-mono text-[11px] uppercase text-faint font-semibold">
                 Mastery Level (%)
               </label>
-              <select
-                value={masteryLevel}
-                onChange={(e) => setMasteryLevel(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 font-semibold text-emerald-800 cursor-pointer"
-              >
-                <option value={100}>100% (Can solve alone effortlessly)</option>
-                <option value={85}>85% (Clean solution, minor doubt)</option>
-                <option value={50}>50% (Needed small hint / edge cases)</option>
-                <option value={20}>20% (Needed full editorial)</option>
-              </select>
+              <Select
+                value={String(masteryLevel)}
+                onValueChange={(v) => setMasteryLevel(Number(v))}
+                className="w-full font-semibold"
+                options={[
+                  { value: "100", label: "100% (Can solve alone effortlessly)" },
+                  { value: "85", label: "85% (Clean solution, minor doubt)" },
+                  { value: "50", label: "50% (Needed small hint / edge cases)" },
+                  { value: "20", label: "20% (Needed full editorial)" }
+                ]}
+              />
             </div>
           </div>
 

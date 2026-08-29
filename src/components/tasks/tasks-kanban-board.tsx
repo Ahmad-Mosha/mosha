@@ -5,6 +5,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { RotateCcw, Plus } from "lucide-react";
 import confetti from "canvas-confetti";
+import { Select } from "@/components/ui/select";
 
 interface KanbanProps {
   tasks: any[];
@@ -113,15 +114,15 @@ export function TasksKanbanBoard({
                       >
                         <div>{getPriorityBadge(t.priority)}</div>
 
-                        <select
+                        <Select
                           value={t.status || "todo"}
-                          onChange={(e) => handleMove(t._id, e.target.value)}
-                          className="bg-subtle px-1.5 py-0.5 rounded border border-line text-muted focus:outline-none cursor-pointer"
-                        >
-                          <option value="todo">To Do</option>
-                          <option value="in_progress">In Progress</option>
-                          <option value="done">Done</option>
-                        </select>
+                          onValueChange={(v) => handleMove(t._id, v)}
+                          options={[
+                            { value: "todo", label: "To Do" },
+                            { value: "in_progress", label: "In Progress" },
+                            { value: "done", label: "Done" }
+                          ]}
+                        />
                       </div>
                     </div>
                   ))

@@ -5,6 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { X, Plus, Trash2, Calendar, AlertCircle, RotateCcw } from "lucide-react";
+import { Select, NONE } from "@/components/ui/select";
 
 interface TaskDialogProps {
   isOpen: boolean;
@@ -221,32 +222,31 @@ export function TaskCreateDialog({
                 <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Category
                 </label>
-                <select
+                <Select
                   value={module}
-                  onChange={(e) => setModule(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer"
-                >
-                  {MODULE_OPTIONS.map((opt) => (
-                    <option key={opt.id} value={opt.id}>
-                      {opt.icon} {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={setModule}
+                  className="w-full"
+                  options={MODULE_OPTIONS.map((opt) => ({
+                    value: opt.id,
+                    label: `${opt.icon} ${opt.label}`,
+                  }))}
+                />
               </div>
 
               <div className="space-y-1">
                 <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Priority
                 </label>
-                <select
+                <Select
                   value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer"
-                >
-                  <option value="p1_urgent">🔥 High (P1)</option>
-                  <option value="p2_medium">⚡ Medium (P2)</option>
-                  <option value="p3_low">🌱 Low (P3)</option>
-                </select>
+                  onValueChange={setPriority}
+                  className="w-full"
+                  options={[
+                    { value: "p1_urgent", label: "🔥 High (P1)" },
+                    { value: "p2_medium", label: "⚡ Medium (P2)" },
+                    { value: "p3_low", label: "🌱 Low (P3)" }
+                  ]}
+                />
               </div>
             </div>
 
@@ -270,18 +270,18 @@ export function TaskCreateDialog({
                 <label className="font-mono text-[11px] uppercase tracking-wider text-faint font-semibold">
                   Linked Life Goal (Optional)
                 </label>
-                <select
-                  value={goalId}
-                  onChange={(e) => setGoalId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-line bg-surface-2 focus:border-accent focus:outline-none cursor-pointer"
-                >
-                  <option value="">None</option>
-                  {goals.map((g: any) => (
-                    <option key={g._id} value={g._id}>
-                      {g.icon || "🎯"} {g.title}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={goalId || NONE}
+                  onValueChange={(v) => setGoalId(v === NONE ? "" : v)}
+                  className="w-full"
+                  options={[
+                    { value: NONE, label: "None" },
+                    ...goals.map((g: any) => ({
+                      value: g._id,
+                      label: `${g.icon || "🎯"} ${g.title}`,
+                    })),
+                  ]}
+                />
               </div>
             </div>
 

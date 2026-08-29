@@ -23,6 +23,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Select, NONE } from "@/components/ui/select";
 
 export function NotesScreen() {
   const folders = useQuery(api.notes.listFolders) || [];
@@ -580,44 +581,41 @@ export function NotesScreen() {
               {/* Metadata & Actions */}
               <div className="flex items-center space-x-1.5">
                 {/* Folder Dropdown */}
-                <select
-                  value={activeNote.folderId || ""}
-                  onChange={async (e) => {
-                    const val = e.target.value || undefined;
+                <Select
+                  value={activeNote.folderId || NONE}
+                  onValueChange={async (v) => {
                     await updateNote({
                       id: activeNote._id,
-                      folderId: val as any,
+                      folderId: (v === NONE ? undefined : v) as any,
                     });
                   }}
-                  className="bg-surface-2 px-2.5 py-1 rounded-lg border border-line text-xs text-ink focus:outline-none cursor-pointer"
-                >
-                  <option value="">📁 General (No Folder)</option>
-                  {folders.map((f: any) => (
-                    <option key={f._id} value={f._id}>
-                      📁 {f.name}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: NONE, label: "📁 General (No Folder)" },
+                    ...folders.map((f: any) => ({
+                      value: f._id,
+                      label: `📁 ${f.name}`,
+                    })),
+                  ]}
+                />
 
                 {/* Linked Life Goal */}
-                <select
-                  value={activeNote.goalId || ""}
-                  onChange={async (e) => {
-                    const val = e.target.value || undefined;
+                <Select
+                  value={activeNote.goalId || NONE}
+                  onValueChange={async (v) => {
                     await updateNote({
                       id: activeNote._id,
-                      goalId: val as any,
+                      goalId: (v === NONE ? undefined : v) as any,
                     });
                   }}
-                  className="hidden xl:block bg-surface-2 px-2.5 py-1 rounded-lg border border-line text-xs text-ink focus:outline-none cursor-pointer"
-                >
-                  <option value="">No Linked Goal</option>
-                  {goals.map((g: any) => (
-                    <option key={g._id} value={g._id}>
-                      {g.icon || "🎯"} {g.title}
-                    </option>
-                  ))}
-                </select>
+                  className="hidden xl:inline-flex"
+                  options={[
+                    { value: NONE, label: "No Linked Goal" },
+                    ...goals.map((g: any) => ({
+                      value: g._id,
+                      label: `${g.icon || "🎯"} ${g.title}`,
+                    })),
+                  ]}
+                />
 
                 <button
                   onClick={() => togglePinned({ id: activeNote._id })}

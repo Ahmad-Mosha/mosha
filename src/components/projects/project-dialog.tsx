@@ -5,6 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { X, Plus, Terminal, Github, Globe, GitBranch, Layers } from "lucide-react";
+import { Select, NONE } from "@/components/ui/select";
 
 interface ProjectDialogProps {
   isOpen: boolean;
@@ -181,18 +182,19 @@ export function ProjectDialog({
                 <label className="font-mono uppercase tracking-wider text-[11px] font-semibold text-muted">
                   Status
                 </label>
-                <select
+                <Select
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-xs text-ink focus:outline-none cursor-pointer"
-                >
-                  <option value="active">🟢 Active Development</option>
-                  <option value="in_progress">🟡 In Progress</option>
-                  <option value="in_review">🔵 In Review</option>
-                  <option value="planning">⚪ Planning / Spec</option>
-                  <option value="completed">🟣 Completed / Shipped</option>
-                  <option value="on_hold">🔴 Maintenance / Paused</option>
-                </select>
+                  onValueChange={setStatus}
+                  className="w-full"
+                  options={[
+                    { value: "active", label: "🟢 Active Development" },
+                    { value: "in_progress", label: "🟡 In Progress" },
+                    { value: "in_review", label: "🔵 In Review" },
+                    { value: "planning", label: "⚪ Planning / Spec" },
+                    { value: "completed", label: "🟣 Completed / Shipped" },
+                    { value: "on_hold", label: "🔴 Maintenance / Paused" }
+                  ]}
+                />
               </div>
 
               <div className="space-y-1">
@@ -301,18 +303,18 @@ export function ProjectDialog({
                 <Layers className="w-3.5 h-3.5" />
                 <span>Link to Major Life Goal</span>
               </label>
-              <select
-                value={goalId}
-                onChange={(e) => setGoalId(e.target.value)}
-                className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-xs text-ink focus:outline-none cursor-pointer"
-              >
-                <option value="">No linked life goal</option>
-                {goals.map((g: any) => (
-                  <option key={g._id} value={g._id}>
-                    {g.icon || "🎯"} {g.title}
-                  </option>
-                ))}
-              </select>
+              <Select
+                value={goalId || NONE}
+                onValueChange={(v) => setGoalId(v === NONE ? "" : v)}
+                className="w-full"
+                options={[
+                  { value: NONE, label: "No linked life goal" },
+                  ...goals.map((g: any) => ({
+                    value: g._id,
+                    label: `${g.icon || "🎯"} ${g.title}`,
+                  })),
+                ]}
+              />
             </div>
 
             {/* Action Buttons */}
