@@ -7,6 +7,8 @@ import { TaskCreateDialog } from "./task-create-dialog";
 import { TaskItemRow } from "./task-item-row";
 import { TasksKanbanBoard } from "./tasks-kanban-board";
 import { Select } from "@/components/ui/select";
+import { AnimatePresence, motion } from "framer-motion";
+import { listContainer, listItem } from "@/lib/motion";
 import {
   Plus,
   CheckCircle2,
@@ -363,19 +365,27 @@ export function TasksScreen() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {filteredTasks.map((task: any) => (
-            <TaskItemRow
-              key={task._id}
-              task={task}
-              onEdit={(t) => {
-                setEditingTask(t);
-                setIsDialogOpen(true);
-              }}
-              goalTitle={getGoalTitle(task.goalId)}
-            />
-          ))}
-        </div>
+        <motion.div
+          className="space-y-2.5"
+          variants={listContainer}
+          initial="initial"
+          animate="animate"
+        >
+          <AnimatePresence initial={false}>
+            {filteredTasks.map((task: any) => (
+              <motion.div key={task._id} layout variants={listItem} exit="exit">
+                <TaskItemRow
+                  task={task}
+                  onEdit={(t) => {
+                    setEditingTask(t);
+                    setIsDialogOpen(true);
+                  }}
+                  goalTitle={getGoalTitle(task.goalId)}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
 
       {/* 5. Create / Edit Task Modal Dialog */}

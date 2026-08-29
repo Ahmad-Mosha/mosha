@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMoshaStore } from "@/lib/store";
+import { screenTransition } from "@/lib/motion";
 import { SideNav } from "@/components/shell/side-nav";
 import { TopHeader } from "@/components/shell/top-header";
 import { CommandMenu } from "@/components/shell/command-menu";
@@ -71,15 +73,22 @@ export default function Home() {
         <TopHeader />
 
         {/* Main Content View (Edge-to-Edge full width for Notes & Projects workspace) */}
-        <main
-          className={`flex-1 w-full animate-in fade-in duration-150 ${
-            isEdgeToEdge
-              ? "h-[calc(100vh-53px)] overflow-hidden"
-              : "px-6 py-6 max-w-7xl mx-auto"
-          }`}
-        >
-          {renderModuleContent()}
-        </main>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.main
+            key={activeModule}
+            variants={screenTransition}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className={`flex-1 w-full ${
+              isEdgeToEdge
+                ? "h-[calc(100vh-53px)] overflow-hidden"
+                : "px-6 py-6 max-w-7xl mx-auto"
+            }`}
+          >
+            {renderModuleContent()}
+          </motion.main>
+        </AnimatePresence>
       </div>
 
       {/* Global Modals */}

@@ -4,6 +4,7 @@ import React, { ReactNode, useMemo } from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { ThemeProvider } from "next-themes";
+import { MotionConfig } from "framer-motion";
 import { Toaster } from "sonner";
 
 interface ProvidersProps {
@@ -25,16 +26,20 @@ export function Providers({ children }: ProvidersProps) {
         enableSystem={false}
         disableTransitionOnChange
       >
-        <TooltipProvider delayDuration={150}>
-          {children}
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              className:
-                "!bg-surface-2 !border-line !text-ink !text-label !rounded-xl",
-            }}
-          />
-        </TooltipProvider>
+        {/* "user" honours prefers-reduced-motion globally, so no component
+            has to check for it individually. */}
+        <MotionConfig reducedMotion="user">
+          <TooltipProvider delayDuration={150}>
+            {children}
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className:
+                  "!bg-surface-2 !border-line !text-ink !text-label !rounded-xl",
+              }}
+            />
+          </TooltipProvider>
+        </MotionConfig>
       </ThemeProvider>
     </ConvexProvider>
   );
