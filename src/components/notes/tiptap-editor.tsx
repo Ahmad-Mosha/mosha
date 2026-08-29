@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -49,6 +49,14 @@ export function TipTapEditor({
 }: TipTapEditorProps) {
   const [copied, setCopied] = useState(false);
   const [showHighlights, setShowHighlights] = useState(false);
+  const [, setTick] = useState(0);
+
+  // Store latest onChange in a ref so we never re-bind editor on parent re-renders
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  // Debounced auto-save timer ref (only serializes HTML when typing pauses, 0ms lag during typing/formatting)
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -77,10 +85,18 @@ export function TipTapEditor({
       Underline,
     ],
     content: initialContent || "",
+    onTransaction: () => {
+      // Force instant toolbar active state sync on 60fps/120fps transactions
+      setTick((t) => (t + 1) % 1000);
+    },
     onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      const text = editor.getText();
-      onChange(html, text);
+      // Debounce serialization so typing and toolbar clicks have ZERO main-thread lag
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        const html = editor.getHTML();
+        const text = editor.getText();
+        onChangeRef.current(html, text);
+      }, 400);
     },
     editorProps: {
       attributes: {
@@ -89,6 +105,13 @@ export function TipTapEditor({
       },
     },
   });
+
+  // Clean up debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
 
   if (!editor) return null;
 
@@ -118,7 +141,7 @@ export function TipTapEditor({
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
-      {/* 1. Rich Text Formatting Toolbar */}
+      {/* 1. Ultra-Fast Rich Text Formatting Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-1 px-4 py-2.5 bg-[#FBFBFA] border-b border-[#ECEAE4] text-xs">
         <div className="flex flex-wrap items-center gap-0.5">
           {/* Headings */}

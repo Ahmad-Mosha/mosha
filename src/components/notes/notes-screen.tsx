@@ -107,24 +107,18 @@ export function NotesScreen() {
     setExpandedFolders((prev) => ({ ...prev, [folderId]: !prev[folderId] }));
   };
 
-  // Debounced auto-save timer for Content
-  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleEditorChange = (html: string, plainText: string) => {
+  // Direct save handler called by TipTap when debounce expires (Zero re-render lag)
+  const handleEditorChange = async (html: string, plainText: string) => {
     if (!activeNote) return;
-
-    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-    autoSaveTimerRef.current = setTimeout(async () => {
-      try {
-        await updateNote({
-          id: activeNote._id,
-          content: html,
-          plainText,
-        });
-      } catch (err) {
-        console.error("Auto-save content failed:", err);
-      }
-    }, 500);
+    try {
+      await updateNote({
+        id: activeNote._id,
+        content: html,
+        plainText,
+      });
+    } catch (err) {
+      console.error("Auto-save content failed:", err);
+    }
   };
 
   // Debounced auto-save timer for Title
@@ -502,7 +496,7 @@ export function NotesScreen() {
                           }`}
                           title="Delete Note"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
