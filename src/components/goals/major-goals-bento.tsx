@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { GoalCard } from "./goal-card";
@@ -12,12 +12,42 @@ import { Plus, Target } from "lucide-react";
 export function MajorGoalsBento() {
   const { setGoalDialogOpen, setEditingGoalId } = useMoshaStore();
 
-  const goals = useQuery(api.goals.list) || [];
+  const convexGoals = useQuery(api.goals.list);
+  const [cachedGoals, setCachedGoals] = useState<any[]>([]);
+  const [isLoadedFromCache, setIsLoadedFromCache] = useState(false);
+
+  // Warm instant hydration from local storage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("mosha_cached_goals");
+      if (saved) {
+        setCachedGoals(JSON.parse(saved));
+      }
+    } catch {
+      // ignore
+    }
+    setIsLoadedFromCache(true);
+  }, []);
+
+  // Update cache whenever Convex sends fresh data
+  useEffect(() => {
+    if (convexGoals !== undefined) {
+      setCachedGoals(convexGoals);
+      try {
+        localStorage.setItem("mosha_cached_goals", JSON.stringify(convexGoals));
+      } catch {
+        // ignore
+      }
+    }
+  }, [convexGoals]);
+
+  // Use Convex data if loaded, otherwise fallback to warm cache
+  const goals = convexGoals !== undefined ? convexGoals : cachedGoals;
+  const isLoading = convexGoals === undefined && cachedGoals.length === 0 && !isLoadedFromCache;
 
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
 
-  // Live-reactive goal selection
   const selectedGoal = goals.find((g: any) => g._id === selectedGoalId) || null;
 
   const inProgressGoals = goals.filter((g: any) => g.status === "in_progress");
@@ -42,7 +72,7 @@ export function MajorGoalsBento() {
 
   return (
     <div className="space-y-5 animate-in fade-in duration-200">
-      {/* 1. Quran Verse Wisdom Banner (Clean, editorial, full width) */}
+      {/* 1. Quran Verse Wisdom Banner */}
       <div className="w-full">
         <QuoteRotator />
       </div>
@@ -80,7 +110,26 @@ export function MajorGoalsBento() {
       </div>
 
       {/* 3. Goals Bento Grid */}
-      {displayedGoals.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 items-stretch">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bento-card rounded-xl p-5 space-y-4 animate-pulse"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-[#E2E8F0]" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-[#E2E8F0] rounded w-3/4" />
+                  <div className="h-3 bg-[#E2E8F0] rounded w-1/2" />
+                </div>
+              </div>
+              <div className="h-3 bg-[#E2E8F0] rounded w-full" />
+              <div className="h-2 bg-[#E2E8F0] rounded-full w-full" />
+            </div>
+          ))}
+        </div>
+      ) : displayedGoals.length === 0 ? (
         <div className="bento-card rounded-xl p-10 text-center space-y-3">
           <Target className="w-8 h-8 text-[#CBD5E1] mx-auto" />
           <h3 className="font-serif text-lg font-bold text-[#1A202C]">
@@ -102,7 +151,7 @@ export function MajorGoalsBento() {
         </div>
       )}
 
-      {/* 4. Goal Details Modal Drawer (Reactive via selectedGoalId) */}
+      {/* 4. Goal Details Modal Drawer */}
       <GoalDetailsDialog
         goal={selectedGoal}
         isOpen={Boolean(selectedGoalId)}
