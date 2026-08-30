@@ -39,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "learning", label: "Learning", icon: BookOpen },
   { id: "projects", label: "Projects", icon: Layers },
   { id: "gym", label: "Gym", icon: Dumbbell },
-  { id: "finance", label: "Sovereign Finance", icon: Wallet },
+  { id: "finance", label: "Finance", icon: Wallet },
   { id: "journal", label: "Engineering Journal", icon: BookMarked },
 ];
 

@@ -253,16 +253,56 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_date", ["date"]),
 
-  // 9. Sovereign Ledger (Personal Finance)
+  // 9. Finance
+  //
+  // Two questions matter: where the money went, and how long what is left
+  // lasts. Everything here serves one of those. Transactions are the ledger;
+  // recurring items are the fixed costs that make a burn rate predictable;
+  // pots are what you are saving toward.
   finance_records: defineTable({
-    type: v.string(),
+    type: v.string(), // "income" | "expense"
     title: v.string(),
     amount: v.number(),
     category: v.string(),
-    date: v.string(),
+    date: v.string(), // YYYY-MM-DD
     notes: v.optional(v.string()),
+    /** Set when this row was generated from a recurring item. */
+    recurringId: v.optional(v.id("finance_recurring")),
+    potId: v.optional(v.id("finance_pots")),
     createdAt: v.string(),
-  }).index("by_date", ["date"]),
+  })
+    .index("by_date", ["date"])
+    .index("by_category", ["category"]),
+
+  /** Fixed costs and income that repeat — what makes a burn rate meaningful. */
+  finance_recurring: defineTable({
+    type: v.string(), // "income" | "expense"
+    title: v.string(),
+    amount: v.number(),
+    category: v.string(),
+    cadence: v.string(), // "monthly" | "weekly" | "yearly"
+    dayOfMonth: v.optional(v.number()),
+    active: v.boolean(),
+    createdAt: v.string(),
+  }).index("by_active", ["active"]),
+
+  /** A savings target, optionally tied to a life goal it pays for. */
+  finance_pots: defineTable({
+    name: v.string(),
+    targetAmount: v.number(),
+    /** Money already in it, adjusted by contributions. */
+    currentAmount: v.number(),
+    goalId: v.optional(v.id("major_life_goals")),
+    targetDate: v.optional(v.string()),
+    createdAt: v.string(),
+  }),
+
+  /** Single row: currency and the balance the runway counts down from. */
+  finance_config: defineTable({
+    currency: v.optional(v.string()),
+    startingBalance: v.optional(v.number()),
+    updatedAt: v.string(),
+  }),
 
   // 11. Military Service — leave periods and the discharge countdown.
   // Days are "at base" unless a period says otherwise; only the exceptions
