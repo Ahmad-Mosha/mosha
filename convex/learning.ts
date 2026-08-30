@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { today } from "./recurrence";
+import { LEARNING_ROOT, renameChildFolder } from "./folderPaths";
 
 /**
  * Learning: tracks, the topics that make up their roadmap, and the resources
@@ -99,6 +100,11 @@ export const updateTrack = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, { id, ...fields }) => {
+    // A renamed track should not strand its notes under the old folder name.
+    if (fields.name !== undefined) {
+      const current = await ctx.db.get(id);
+      if (current) await renameChildFolder(ctx, LEARNING_ROOT, current.name, fields.name);
+    }
     await ctx.db.patch(id, fields);
   },
 });

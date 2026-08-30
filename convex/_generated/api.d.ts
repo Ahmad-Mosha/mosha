@@ -10,6 +10,7 @@
 
 import type * as calendar from "../calendar.js";
 import type * as finance from "../finance.js";
+import type * as folderPaths from "../folderPaths.js";
 import type * as goals from "../goals.js";
 import type * as gym from "../gym.js";
 import type * as journal from "../journal.js";
@@ -32,6 +33,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   calendar: typeof calendar;
   finance: typeof finance;
+  folderPaths: typeof folderPaths;
   goals: typeof goals;
   gym: typeof gym;
   journal: typeof journal;

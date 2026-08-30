@@ -64,7 +64,7 @@ export function Roadmap({
    */
   const openTopicNote = async (topic: any) => {
     try {
-      const id = await getOrCreateNote({ topicId: topic._id, title: topic.title });
+      const id = await getOrCreateNote({ topicId: topic._id });
       if (id) openNote(id);
     } catch {
       toast.error("Could not open the note");
@@ -236,7 +236,7 @@ export function Roadmap({
                         <span className="block font-mono text-meta text-ghost">
                           {notesByTopic[t._id]
                             ? `${notesByTopic[t._id].words} words · in your knowledge base`
-                            : "Opens full width in Notes, filed under this topic"}
+                            : "Opens full width in Notes, filed under Learning"}
                         </span>
                       </span>
                       <ArrowUpRight className="h-4 w-4 shrink-0 text-ghost transition-transform group-hover/note:translate-x-0.5 group-hover/note:-translate-y-0.5" />

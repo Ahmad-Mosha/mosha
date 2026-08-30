@@ -6,13 +6,13 @@ import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { today } from "../../../convex/recurrence";
 import {
-  ArrowLeft, Check, CircleDot, Github, Globe, Pencil, Plus, Trash2,
+  ArrowLeft, ArrowUpRight, Check, CircleDot, Github, Globe, NotebookPen, Pencil, Plus, Trash2,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { NoteEditor } from "../notes/editor";
 import { Select } from "@/components/ui/select";
 import { SprintSections, type Sprint } from "./sprint-board";
 import { STATUS_META } from "./projects-screen";
+import { useMoshaStore } from "@/lib/store";
 import { TaskComposer, LabelChips } from "./task-composer";
 import { TaskDialog } from "./task-dialog";
 import { priorityOf, dueMeta } from "./task-meta";
@@ -42,6 +42,9 @@ export function ProjectDetailView({
   const removeTask = useMutation(api.tasks.remove);
   const assignTask = useMutation(api.sprints.assignTask);
   const removeProject = useMutation(api.projects.removeProject);
+  const getOrCreateNote = useMutation(api.notes.getOrCreateForProject);
+  const notesByProject = useQuery(api.notes.notesByProject) ?? {};
+  const openNote = useMoshaStore((s) => s.openNote);
 
   const [tab, setTab] = useState<Tab>("board");
   /** Which sprint the board shows. null means the backlog. */
@@ -400,15 +403,35 @@ export function ProjectDetailView({
       />
 
       {tab === "notes" && (
-        <div className="h-[65vh] overflow-hidden rounded-xl border border-line">
-          <NoteEditor
-            key={projectId}
-            initialContent={project.devNotes || ""}
-            placeholder="Architecture, decisions, runbooks…"
-            onChange={(html) => updateProject({ id: projectId as any, devNotes: html })}
-          />
-        </div>
+        <button
+          onClick={async () => {
+            try {
+              const id = await getOrCreateNote({ projectId: projectId as any });
+              if (id) openNote(id);
+            } catch {
+              toast.error("Could not open the note");
+            }
+          }}
+          className="group/note flex w-full items-center gap-3 rounded-xl border border-line
+                     bg-surface px-4 py-3.5 text-left transition-colors hover:border-accent cursor-pointer"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-ink-2">
+            <NotebookPen className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-label text-ink">
+              {notesByProject[projectId] ? "Open the note" : "Start a note"}
+            </span>
+            <span className="block font-mono text-meta text-ghost">
+              {notesByProject[projectId]
+                ? `${notesByProject[projectId].words} words · Projects / ${project.name}`
+                : `Opens full width in Notes, filed under Projects / ${project.name}`}
+            </span>
+          </span>
+          <ArrowUpRight className="h-4 w-4 shrink-0 text-ghost transition-transform group-hover/note:translate-x-0.5 group-hover/note:-translate-y-0.5" />
+        </button>
       )}
+
     </div>
   );
 }
