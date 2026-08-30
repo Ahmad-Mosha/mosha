@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
+import { today } from "../../../convex/recurrence";
 import {
   ArrowLeft, Check, CircleDot, Github, Globe, Pencil, Plus, Trash2,
 } from "lucide-react";
@@ -13,7 +14,7 @@ import { SprintSections, type Sprint } from "./sprint-board";
 import { STATUS_META } from "./projects-screen";
 import { TaskComposer, LabelChips } from "./task-composer";
 import { TaskDialog } from "./task-dialog";
-import { priorityOf } from "./task-meta";
+import { priorityOf, dueMeta } from "./task-meta";
 
 const COLUMNS = [
   { id: "todo", label: "To do" },
@@ -84,16 +85,17 @@ export function ProjectDetailView({
     );
   }
 
-  const addTask = async (input: {
-    title: string; priority: string; labels: string[];
-  }) => {
+  const addTask = async (
+    input: { title: string; priority: string; labels: string[] },
+    sprintId: string | null = shownSprint
+  ) => {
     try {
       await createTask({
         title: input.title,
         priority: input.priority,
         module: "projects",
         projectId: projectId as any,
-        sprintId: (shownSprint ?? undefined) as any,
+        sprintId: (sprintId ?? undefined) as any,
         labels: input.labels.length ? input.labels : undefined,
       });
     } catch {
@@ -265,13 +267,15 @@ export function ProjectDetailView({
                       colTasks.map((t: any) => (
                         <div
                           key={t._id}
-                          className="group space-y-2 rounded-lg border border-line bg-surface-2 p-3"
+                          onClick={() => setEditingTask(t)}
+                          className="group cursor-pointer space-y-2 rounded-lg border border-line bg-surface-2 p-3 transition-colors hover:border-line-2"
                         >
                           <div className="flex items-start gap-2">
                             <button
-                              onClick={() =>
-                                updateStatus({ id: t._id, status: t.status === "done" ? "todo" : "done" })
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateStatus({ id: t._id, status: t.status === "done" ? "todo" : "done" });
+                              }}
                               className="mt-0.5 shrink-0 cursor-pointer"
                               title={t.status === "done" ? "Reopen" : "Mark done"}
                             >
@@ -283,16 +287,15 @@ export function ProjectDetailView({
                                 <span className="block h-3.5 w-3.5 rounded-full border border-line-2 hover:border-accent" />
                               )}
                             </button>
-                            <button
-                              onClick={() => setEditingTask(t)}
-                              className={`flex-1 text-left text-label leading-snug cursor-pointer ${
+                            <span
+                              className={`flex-1 text-label leading-snug ${
                                 t.status === "done" ? "text-ghost line-through" : "text-ink"
                               }`}
                             >
                               {t.title}
-                            </button>
+                            </span>
                             <button
-                              onClick={() => removeTask({ id: t._id })}
+                              onClick={(e) => { e.stopPropagation(); removeTask({ id: t._id }); }}
                               title="Delete task"
                               className="shrink-0 text-ghost opacity-0 transition-opacity hover:text-danger group-hover:opacity-100 cursor-pointer"
                             >
@@ -304,10 +307,21 @@ export function ProjectDetailView({
                             <span className={`rounded px-1.5 py-0.5 font-mono text-meta ${priorityOf(t.priority).chip}`}>
                               {priorityOf(t.priority).label}
                             </span>
+                            {(() => {
+                              const due = dueMeta(t.dueDate, today());
+                              return due ? (
+                                <span title={due.title} className={`rounded px-1.5 py-0.5 font-mono text-meta ${due.tone}`}>
+                                  {due.text}
+                                </span>
+                              ) : null;
+                            })()}
                             <LabelChips labels={t.labels} />
                           </div>
 
-                          <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+                          >
                             <Select
                               value={t.status || "todo"}
                               onValueChange={(v) => updateStatus({ id: t._id, status: v })}
@@ -343,7 +357,14 @@ export function ProjectDetailView({
       )}
 
       {tab === "sprints" && (
-        <SprintSections projectId={projectId} sprints={sprints} tasks={tasks} />
+        <SprintSections
+          projectId={projectId}
+          sprints={sprints}
+          tasks={tasks}
+          knownLabels={knownLabels}
+          onAddTask={addTask}
+          onEditTask={setEditingTask}
+        />
       )}
 
       <TaskDialog

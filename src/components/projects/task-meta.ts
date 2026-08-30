@@ -42,3 +42,16 @@ export function labelColour(label: string): string {
   }
   return LABEL_COLOURS[Math.abs(hash) % LABEL_COLOURS.length];
 }
+
+/**
+ * A due date is only interesting relative to today, so it renders as a short
+ * date whose colour carries the urgency — overdue reads before you parse it.
+ */
+export function dueMeta(due: string | undefined, today: string) {
+  if (!due) return null;
+  const short = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" })
+    .format(new Date(due + "T00:00:00"));
+  if (due < today) return { text: short, tone: "bg-danger-tint text-danger", title: `Overdue — ${due}` };
+  if (due === today) return { text: "Today", tone: "bg-warn-tint text-warn", title: `Due today — ${due}` };
+  return { text: short, tone: "bg-subtle-2 text-muted", title: `Due ${due}` };
+}
