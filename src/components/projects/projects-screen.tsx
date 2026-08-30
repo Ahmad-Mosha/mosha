@@ -51,6 +51,7 @@ export function ProjectsScreen() {
       onClose={() => { setDialogOpen(false); setEditing(null); }}
       editingProject={editing}
       knownTech={knownTech}
+      onDeleted={() => setSelected(null)}
     />
   );
 
