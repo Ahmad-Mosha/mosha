@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/select";
 import { ActivityHeatmap, currentStreak, longestStreak } from "@/components/ui/activity-heatmap";
 import { fromDayString, today } from "../../../convex/recurrence";
 import { LogDialog, type ProblemRow } from "./log-dialog";
+import { ProblemTable } from "./problem-table";
 
 const LONG = new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long" });
 
@@ -66,16 +67,6 @@ export function ProblemsScreen() {
     });
   }, [problems, query, difficulty, pattern]);
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, ProblemRow[]>();
-    for (const p of filtered) {
-      const key = p.pattern || "Uncategorised";
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(p);
-    }
-    return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
-  }, [filtered]);
-
   const mastered = problems.filter((p) => (p.masteryLevel ?? 0) >= 100).length;
 
   const openNew = (date?: string) => {
@@ -123,7 +114,7 @@ export function ProblemsScreen() {
           ramp="info"
           unit="problem"
           weeks={30}
-          cellSize={18}
+          cellSize={13}
           selectedDay={selectedDay}
           onSelectDay={(d) => setSelectedDay((cur) => (cur === d ? null : d))}
         />
@@ -161,11 +152,23 @@ export function ProblemsScreen() {
 
             <ul className="space-y-1">
               {dayProblems.map((p) => (
-                <ProblemRowItem
-                  key={p._id}
-                  problem={p}
-                  onOpen={() => { setEditing(p); setDialogOpen(true); }}
-                />
+                <li key={p._id}>
+                  <button
+                    onClick={() => { setEditing(p); setDialogOpen(true); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg border border-line
+                               bg-surface px-3 py-1.5 text-left transition-colors
+                               hover:border-line-2 cursor-pointer"
+                  >
+                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${masteryDot(p.masteryLevel ?? 0)}`} />
+                    <span className="min-w-0 flex-1 truncate text-label text-ink">{p.title}</span>
+                    <span className="shrink-0 font-mono text-meta text-ghost">
+                      {p.masteryLevel ?? 0}%
+                    </span>
+                    <span className={`w-14 shrink-0 text-right font-mono text-meta ${DIFF_STYLE[p.difficulty] ?? "text-faint"}`}>
+                      {p.difficulty}
+                    </span>
+                  </button>
+                </li>
               ))}
             </ul>
           </div>
@@ -239,30 +242,18 @@ export function ProblemsScreen() {
             Log your first solve
           </button>
         </div>
-      ) : grouped.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <p className="py-12 text-center text-label text-ghost">Nothing matches those filters.</p>
       ) : (
-        <div className="space-y-4">
-          {grouped.map(([name, list]) => (
-            <section key={name} className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <h3 className="text-heading text-ink">{name}</h3>
-                <span className="font-mono text-meta text-ghost">{list.length}</span>
-                <span className="h-px flex-1 bg-line" />
-              </div>
-              <ul className="space-y-1">
-                {list.map((p) => (
-                  <ProblemRowItem
-                    key={p._id}
-                    problem={p}
-                    showDate
-                    onOpen={() => { setEditing(p); setDialogOpen(true); }}
-                  />
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
+        <>
+          <p className="font-mono text-meta text-ghost">
+            {filtered.length} of {problems.length} shown
+          </p>
+          <ProblemTable
+            problems={filtered}
+            onOpen={(p) => { setEditing(p); setDialogOpen(true); }}
+          />
+        </>
       )}
 
       <LogDialog
@@ -273,56 +264,6 @@ export function ProblemsScreen() {
         onClose={() => { setDialogOpen(false); setEditing(null); }}
       />
     </div>
-  );
-}
-
-function ProblemRowItem({
-  problem, onOpen, showDate,
-}: {
-  problem: ProblemRow;
-  onOpen: () => void;
-  showDate?: boolean;
-}) {
-  const mastery = problem.masteryLevel ?? 0;
-  const isDue = problem.nextReviewDate && problem.nextReviewDate <= today();
-
-  return (
-    <li className="flex items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2
-                   transition-colors hover:border-line-2">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${masteryDot(mastery)}`} />
-
-      <button onClick={onOpen} className="min-w-0 flex-1 text-left cursor-pointer">
-        <span className="block truncate text-label text-ink">{problem.title}</span>
-        {showDate && problem.lastSolvedDate && (
-          <span className="font-mono text-meta text-ghost">{problem.lastSolvedDate}</span>
-        )}
-      </button>
-
-      {isDue && (
-        <span className="shrink-0 rounded bg-info-tint px-1.5 py-0.5 font-mono text-meta text-info">
-          due
-        </span>
-      )}
-      {(problem.reviewCount ?? 0) > 1 && (
-        <span className="shrink-0 font-mono text-meta text-ghost">×{problem.reviewCount}</span>
-      )}
-      <span className="shrink-0 font-mono text-meta text-ghost">{mastery}%</span>
-      <span className={`w-14 shrink-0 text-right font-mono text-meta ${DIFF_STYLE[problem.difficulty] ?? "text-faint"}`}>
-        {problem.difficulty}
-      </span>
-
-      {problem.url && (
-        <a
-          href={problem.url}
-          target="_blank"
-          rel="noreferrer"
-          title="Open problem"
-          className="shrink-0 text-ghost transition-colors hover:text-accent"
-        >
-          <ExternalLink className="h-3.5 w-3.5" />
-        </a>
-      )}
-    </li>
   );
 }
 
