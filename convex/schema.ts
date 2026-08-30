@@ -184,6 +184,24 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_date", ["date"]),
 
+  // 11. Military Service — leave periods and the discharge countdown.
+  // Days are "at base" unless a period says otherwise; only the exceptions
+  // are stored, which is how you actually think about it.
+  service_periods: defineTable({
+    kind: v.string(), // "home" | "duty"
+    startDate: v.string(), // YYYY-MM-DD, inclusive
+    endDate: v.string(), // YYYY-MM-DD, inclusive
+    label: v.optional(v.string()),
+    createdAt: v.string(),
+  }).index("by_start", ["startDate"]),
+
+  // Single row. Holds the dates the whole countdown hangs off.
+  service_config: defineTable({
+    dischargeDate: v.optional(v.string()),
+    serviceStartDate: v.optional(v.string()),
+    updatedAt: v.string(),
+  }),
+
   // 10. Engineering Journal & Lessons
   journal_entries: defineTable({
     title: v.string(),

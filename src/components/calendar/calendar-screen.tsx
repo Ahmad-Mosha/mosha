@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import {
@@ -10,15 +10,15 @@ import {
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { useMoshaStore, type ModuleId } from "@/lib/store";
-import { addDays, fromDayString, today, toDayString } from "../../../convex/recurrence";
+import { addDays, fromDayString, today } from "../../../convex/recurrence";
 import type { CalendarEvent } from "../../../convex/calendar";
+import { computeCountdown, statusFor, type ServicePeriod } from "@/lib/service";
 import { MonthGrid, monthMatrix } from "./month-grid";
 import { DayPanel } from "./day-panel";
-import { EVENT_ORDER, EVENT_STYLE } from "./event-style";
+import { ServiceHeader } from "./service-header";
 
 const MONTH_LABEL = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
 
-/** Which module a stream belongs to, for the day panel's jump links. */
 const KIND_TO_MODULE: Record<string, ModuleId> = {
   task: "tasks", gym: "gym", finance: "finance",
   journal: "journal", review: "problems", goal: "goals",
@@ -33,14 +33,13 @@ export function CalendarScreen() {
     return { year: d.getFullYear(), month: d.getMonth() };
   });
   const [selected, setSelected] = useState(today());
+  const [rangeEnd, setRangeEnd] = useState<string | null>(null);
   const [dragging, setDragging] = useState<CalendarEvent | null>(null);
 
-  // The grid always paints six weeks, so ask for exactly that span.
   const days = useMemo(() => monthMatrix(cursor.year, cursor.month), [cursor]);
-  const events = useQuery(api.calendar.inRange, {
-    from: days[0],
-    to: days[days.length - 1],
-  });
+  const events = useQuery(api.calendar.inRange, { from: days[0], to: days[days.length - 1] });
+  const periods = (useQuery(api.service.listPeriods) ?? []) as unknown as ServicePeriod[];
+  const config = useQuery(api.service.getConfig) ?? null;
 
   const eventsByDay = useMemo(() => {
     const map: Record<string, CalendarEvent[]> = {};
@@ -48,23 +47,39 @@ export function CalendarScreen() {
     return map;
   }, [events]);
 
-  const monthEvents = useMemo(
-    () => (events ?? []).filter((e) => fromDayString(e.date).getMonth() === cursor.month),
-    [events, cursor.month]
+  // Recomputed per cell, so keep it cheap and stable across renders.
+  const statusByDay = useCallback(
+    (day: string) => statusFor(day, periods, config),
+    [periods, config]
   );
 
-  const shift = (delta: number) => {
-    const d = new Date(cursor.year, cursor.month + delta, 1);
-    setCursor({ year: d.getFullYear(), month: d.getMonth() });
-  };
+  const countdown = useMemo(
+    () => computeCountdown(periods, config),
+    [periods, config]
+  );
 
-  const goToday = () => {
+  const shift = useCallback((delta: number) => {
+    setCursor((c) => {
+      const d = new Date(c.year, c.month + delta, 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+  }, []);
+
+  const goToday = useCallback(() => {
     const d = new Date();
     setCursor({ year: d.getFullYear(), month: d.getMonth() });
     setSelected(today());
-  };
+    setRangeEnd(null);
+  }, []);
 
-  // Arrow keys walk days, so a month can be scanned without the mouse.
+  const handleSelect = useCallback((day: string, extend: boolean) => {
+    if (extend) setRangeEnd(day);
+    else {
+      setSelected(day);
+      setRangeEnd(null);
+    }
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
@@ -79,6 +94,7 @@ export function CalendarScreen() {
         e.preventDefault();
         const next = addDays(selected, step);
         setSelected(next);
+        setRangeEnd(null);
         const d = fromDayString(next);
         if (d.getMonth() !== cursor.month) {
           setCursor({ year: d.getFullYear(), month: d.getMonth() });
@@ -86,27 +102,24 @@ export function CalendarScreen() {
       } else if (e.key === "t") {
         e.preventDefault();
         goToday();
+      } else if (e.key === "Escape") {
+        setRangeEnd(null);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selected, cursor.month]);
+  }, [selected, cursor.month, goToday]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
     setDragging(null);
     if (!over) return;
-
     const overId = String(over.id);
     if (!overId.startsWith("day:")) return;
     const target = overId.slice(4);
-
     const moved = (events ?? []).find((e) => e.id === active.id);
     if (!moved || moved.date === target) return;
-
     try {
       await updateTask({ id: active.id as any, dueDate: target });
       toast.success(`Moved to ${target}`);
@@ -124,16 +137,19 @@ export function CalendarScreen() {
       onDragCancel={() => setDragging(null)}
       onDragEnd={handleDragEnd}
     >
-      <div className="space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
-          <div>
-            <h1 className="font-serif text-title sm:text-display font-bold text-ink">
-              {MONTH_LABEL.format(new Date(cursor.year, cursor.month, 1))}
-            </h1>
-            <p className="text-label text-faint mt-0.5">
-              Every dated thing in the system, on one grid. Drag a task to move it.
-            </p>
-          </div>
+      {/* Fills the viewport exactly — a calendar you have to scroll is a
+          calendar you cannot read at a glance. */}
+      <div className="flex h-full min-h-0 flex-col gap-3 px-6 py-4">
+        <ServiceHeader
+          countdown={countdown}
+          dischargeDate={config?.dischargeDate}
+          serviceStartDate={config?.serviceStartDate}
+        />
+
+        <div className="flex shrink-0 items-center justify-between gap-3">
+          <h1 className="font-serif text-title text-ink">
+            {MONTH_LABEL.format(new Date(cursor.year, cursor.month, 1))}
+          </h1>
 
           <div className="flex items-center gap-1.5">
             <button
@@ -146,13 +162,12 @@ export function CalendarScreen() {
             </button>
             <button
               onClick={goToday}
+              title="Jump to today (t)"
               className="flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5
                          text-label font-medium text-muted transition-colors
                          hover:bg-subtle hover:text-ink cursor-pointer"
-              title="Jump to today (t)"
             >
-              <CalendarDays className="h-3.5 w-3.5" />
-              Today
+              <CalendarDays className="h-3.5 w-3.5" /> Today
             </button>
             <button
               onClick={() => shift(1)}
@@ -165,46 +180,30 @@ export function CalendarScreen() {
           </div>
         </div>
 
-        {/* A legend doubling as this month's tally per stream. */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          {EVENT_ORDER.map((kind) => {
-            const count = monthEvents.filter((e) => e.kind === kind).length;
-            const style = EVENT_STYLE[kind];
-            return (
-              <span
-                key={kind}
-                className={`flex items-center gap-1.5 font-mono text-meta ${
-                  count ? "text-muted" : "text-ghost"
-                }`}
-              >
-                <span className={`h-1.5 w-1.5 rounded-full ${style.dot} ${count ? "" : "opacity-30"}`} />
-                {style.label}
-                <span className="text-ghost">{count}</span>
-              </span>
-            );
-          })}
-        </div>
-
-        <div className="flex flex-col gap-5 lg:flex-row">
-          <div className="min-w-0 flex-1">
-            <MonthGrid
-              year={cursor.year}
-              month={cursor.month}
-              eventsByDay={eventsByDay}
-              selected={selected}
-              onSelect={setSelected}
-            />
-          </div>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row">
+          <MonthGrid
+            year={cursor.year}
+            month={cursor.month}
+            eventsByDay={eventsByDay}
+            statusByDay={statusByDay}
+            selected={selected}
+            rangeEnd={rangeEnd}
+            dischargeDate={config?.dischargeDate}
+            onSelect={handleSelect}
+          />
 
           <DayPanel
             day={selected}
+            rangeEnd={rangeEnd}
             events={eventsByDay[selected] || []}
+            periods={periods}
             onJump={(kind) => setActiveModule(KIND_TO_MODULE[kind] ?? "tasks")}
+            onClearRange={() => setRangeEnd(null)}
           />
         </div>
       </div>
 
-      <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(0.22,1,0.36,1)" }}>
+      <DragOverlay dropAnimation={{ duration: 160, easing: "cubic-bezier(0.22,1,0.36,1)" }}>
         {dragging && (
           <div className="rotate-2 rounded-md border border-accent bg-surface-2 px-2 py-1 shadow-lg">
             <span className="text-meta text-ink">{dragging.title}</span>

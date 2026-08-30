@@ -57,7 +57,10 @@ export default function Home() {
     }
   };
 
-  const isEdgeToEdge = activeModule === "notes" || activeModule === "projects";
+  const isEdgeToEdge =
+    activeModule === "notes" ||
+    activeModule === "projects" ||
+    activeModule === "calendar";
 
   return (
     <div className="min-h-screen bg-canvas flex flex-row antialiased text-ink">

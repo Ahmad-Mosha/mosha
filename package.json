@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx src/lib/parse-task-input.test.ts && tsx convex/recurrence.test.ts && tsx src/components/notes/editor/detect-language.test.ts"
+    "test": "tsx src/lib/parse-task-input.test.ts && tsx src/lib/service.test.ts && tsx convex/recurrence.test.ts && tsx src/components/notes/editor/detect-language.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -1,149 +1,152 @@
 "use client";
 
-import React from "react";
-import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { motion } from "framer-motion";
+import React, { memo } from "react";
+import { useDroppable } from "@dnd-kit/core";
+import { Home, Flag, Shield } from "lucide-react";
 import { addDays, fromDayString, today, toDayString } from "../../../convex/recurrence";
 import type { CalendarEvent } from "../../../convex/calendar";
+import type { DayStatus } from "@/lib/service";
 import { EVENT_STYLE } from "./event-style";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-/** Mon-first grid covering the whole month plus the days that pad the edges. */
+/** Mon-first grid covering the month plus the days that pad the edges. */
 export function monthMatrix(year: number, month: number): string[] {
   const first = new Date(year, month, 1);
-  // getDay() is Sunday-first; shift so Monday starts the week.
-  const lead = (first.getDay() + 6) % 7;
+  const lead = (first.getDay() + 6) % 7; // getDay() is Sunday-first
   const start = addDays(toDayString(first), -lead);
   return Array.from({ length: 42 }, (_, i) => addDays(start, i));
 }
 
-function EventChip({ event }: { event: CalendarEvent }) {
-  const style = EVENT_STYLE[event.kind];
-  const draggable = event.kind === "task";
-
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: event.id,
-    disabled: !draggable,
-    data: { kind: event.kind },
-  });
-
-  return (
-    <div
-      ref={setNodeRef}
-      {...(draggable ? { ...attributes, ...listeners } : {})}
-      title={`${style.label}: ${event.title}`}
-      className={`flex items-center gap-1 truncate rounded px-1 py-[1px] text-meta leading-tight
-        ${style.chip} ${isDragging ? "opacity-30" : ""}
-        ${draggable ? "cursor-grab touch-none active:cursor-grabbing" : ""}
-        ${event.done ? "line-through opacity-55" : ""}`}
-    >
-      <span className={`h-1 w-1 shrink-0 rounded-full ${style.dot}`} />
-      <span className="truncate">{event.title}</span>
-    </div>
-  );
-}
+/**
+ * Service status paints the cell; everything else sits on top of it. Home days
+ * should be visible from across the room — that is the whole point of the
+ * screen — so they get a filled tint rather than a marker.
+ */
+const STATUS_STYLE: Record<DayStatus, string> = {
+  home: "bg-success-tint border-success/35",
+  duty: "bg-warn-tint border-warn/35",
+  base: "bg-surface border-line",
+  discharged: "bg-accent-soft border-accent/30",
+};
 
 interface DayCellProps {
   day: string;
   events: CalendarEvent[];
+  status: DayStatus;
   inMonth: boolean;
   isSelected: boolean;
-  onSelect: (day: string) => void;
+  isRangeEnd: boolean;
+  inRange: boolean;
+  isDischarge: boolean;
+  onSelect: (day: string, extend: boolean) => void;
 }
 
-function DayCell({ day, events, inMonth, isSelected, onSelect }: DayCellProps) {
+const DayCell = memo(function DayCell({
+  day, events, status, inMonth, isSelected, isRangeEnd, inRange, isDischarge, onSelect,
+}: DayCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `day:${day}` });
   const isToday = day === today();
   const date = fromDayString(day);
-  const isWeekend = [0, 6].includes(date.getDay());
 
-  const shown = events.slice(0, 3);
-  const overflow = events.length - shown.length;
+  // At most one dot per stream keeps a busy day readable at this size.
+  const kinds = Array.from(new Set(events.map((e) => e.kind))).slice(0, 5);
 
   return (
     <button
       ref={setNodeRef}
       type="button"
-      onClick={() => onSelect(day)}
-      aria-label={`${day}, ${events.length} items`}
+      onClick={(e) => onSelect(day, e.shiftKey)}
+      aria-label={`${day}, ${status}, ${events.length} items`}
       aria-current={isToday ? "date" : undefined}
-      className={`group relative flex min-h-[104px] flex-col gap-1 rounded-lg border p-1.5 text-left
-        transition-colors cursor-pointer
-        ${isSelected ? "border-accent bg-accent-soft/50" : "border-line hover:border-line-2"}
-        ${isOver ? "border-accent bg-accent-soft" : ""}
-        ${!inMonth ? "opacity-40" : isWeekend ? "bg-subtle/50" : "bg-surface"}`}
+      className={`relative flex min-h-0 flex-col items-center justify-center gap-1 rounded-lg border
+        transition-[background-color,border-color] duration-150 cursor-pointer
+        ${STATUS_STYLE[status]}
+        ${!inMonth ? "opacity-35" : ""}
+        ${inRange ? "ring-1 ring-inset ring-accent/40" : ""}
+        ${isSelected || isRangeEnd ? "ring-2 ring-inset ring-accent" : ""}
+        ${isOver ? "ring-2 ring-inset ring-accent bg-accent-soft" : ""}
+        hover:border-line-2`}
     >
-      <div className="flex items-center justify-between">
-        <span
-          className={`grid h-5 min-w-5 place-items-center rounded-full px-1 font-mono text-meta
-            ${isToday
-              ? "bg-accent font-bold text-accent-fg"
-              : isSelected ? "font-semibold text-ink" : "text-faint"}`}
-        >
-          {date.getDate()}
-        </span>
-        {events.length > 0 && (
-          <span className="font-mono text-meta text-ghost opacity-0 transition-opacity group-hover:opacity-100">
-            {events.length}
-          </span>
-        )}
-      </div>
+      {status === "home" && (
+        <Home className="absolute left-1 top-1 h-2.5 w-2.5 text-success opacity-70" />
+      )}
+      {status === "duty" && (
+        <Shield className="absolute left-1 top-1 h-2.5 w-2.5 text-warn opacity-70" />
+      )}
+      {isDischarge && (
+        <Flag className="absolute left-1 top-1 h-3 w-3 text-accent" />
+      )}
 
-      <div className="flex flex-col gap-[2px] overflow-hidden">
-        {shown.map((e) => (
-          <EventChip key={`${e.kind}-${e.id}`} event={e} />
+      <span
+        className={`grid h-6 w-6 place-items-center rounded-full font-mono text-label
+          ${isToday
+            ? "bg-accent font-bold text-accent-fg"
+            : status === "home"
+              ? "font-semibold text-success"
+              : "text-ink-2"}`}
+      >
+        {date.getDate()}
+      </span>
+
+      <span className="flex h-1.5 items-center gap-[3px]">
+        {kinds.map((k) => (
+          <span key={k} className={`h-1.5 w-1.5 rounded-full ${EVENT_STYLE[k].dot}`} />
         ))}
-        {overflow > 0 && (
-          <span className="px-1 font-mono text-meta text-ghost">+{overflow} more</span>
-        )}
-      </div>
+      </span>
     </button>
   );
-}
+});
 
 interface Props {
   year: number;
   month: number;
   eventsByDay: Record<string, CalendarEvent[]>;
+  statusByDay: (day: string) => DayStatus;
   selected: string;
-  onSelect: (day: string) => void;
+  rangeEnd: string | null;
+  dischargeDate?: string;
+  onSelect: (day: string, extend: boolean) => void;
 }
 
-export function MonthGrid({ year, month, eventsByDay, selected, onSelect }: Props) {
+export function MonthGrid({
+  year, month, eventsByDay, statusByDay, selected, rangeEnd, dischargeDate, onSelect,
+}: Props) {
   const days = monthMatrix(year, month);
+  const lo = rangeEnd && rangeEnd < selected ? rangeEnd : selected;
+  const hi = rangeEnd && rangeEnd < selected ? selected : rangeEnd;
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-7 gap-1.5">
+    <div className="flex min-h-0 flex-1 flex-col gap-1">
+      <div className="grid shrink-0 grid-cols-7 gap-1">
         {WEEKDAYS.map((d) => (
-          <div
-            key={d}
-            className="px-1 font-mono text-meta font-semibold uppercase text-ghost"
-          >
+          <div key={d} className="text-center font-mono text-meta font-semibold uppercase text-ghost">
             {d}
           </div>
         ))}
       </div>
 
-      <motion.div
-        key={`${year}-${month}`}
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-        className="grid grid-cols-7 gap-1.5"
-      >
+      {/*
+        Six fixed rows filling the remaining height, so the month always fits
+        the viewport without scrolling. The grid is never re-keyed on a month
+        change — re-mounting 42 droppables was what made navigation stutter.
+      */}
+      <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-6 gap-1">
         {days.map((day) => (
           <DayCell
             key={day}
             day={day}
             events={eventsByDay[day] || []}
+            status={statusByDay(day)}
             inMonth={fromDayString(day).getMonth() === month}
             isSelected={day === selected}
+            isRangeEnd={day === rangeEnd}
+            inRange={Boolean(hi && day > lo && day < hi)}
+            isDischarge={day === dischargeDate}
             onSelect={onSelect}
           />
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
