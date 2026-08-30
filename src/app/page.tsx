@@ -13,7 +13,7 @@ import { NotesScreen } from "@/components/notes/notes-screen";
 import { CalendarScreen } from "@/components/calendar/calendar-screen";
 import { ProjectsScreen } from "@/components/projects/projects-screen";
 import { ProblemsScreen } from "@/components/problems/problems-screen";
-import { GymFitnessView } from "@/components/modules/gym-fitness-view";
+import { GymScreen } from "@/components/gym/gym-screen";
 import { FinanceView } from "@/components/modules/finance-view";
 import { LearningScreen } from "@/components/learning/learning-screen";
 import { EngineeringJournalView } from "@/components/modules/engineering-journal-view";
@@ -45,7 +45,7 @@ export default function Home() {
       case "problems":
         return <ProblemsScreen />;
       case "gym":
-        return <GymFitnessView />;
+        return <GymScreen />;
       case "finance":
         return <FinanceView />;
       case "learning":

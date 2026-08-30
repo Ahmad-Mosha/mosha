@@ -58,7 +58,7 @@ export function TopHeader() {
     learning: "Learning",
     career: "Engineering Career & Market",
     projects: "Projects",
-    gym: "Iron Journal (Fitness)",
+    gym: "Gym",
     finance: "Sovereign Ledger (Finance)",
     journal: "Engineering Journal",
     skills: "Interactive Skill Graph",
