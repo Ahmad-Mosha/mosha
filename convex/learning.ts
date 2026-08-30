@@ -1,77 +1,255 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { today } from "./recurrence";
 
-export const DEFAULT_TOPICS = [
-  {
-    subject: "Operating Systems",
-    title: "Virtual Memory, Paging & TLB Mechanics",
-    description: "Multi-level page tables, demand paging, TLB hit/miss latency, and page replacement algorithms.",
-    status: "in_progress",
-    progress: 70,
-    notes: "Review Linux page fault handling in kernel space.",
-    resources: [
-      { title: "OSTEP: Operating Systems Three Easy Pieces", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/", type: "book" },
-    ],
-    order: 1,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    subject: "Databases",
-    title: "Storage Engines: B+ Trees vs LSM Trees",
-    description: "Write amplification, compaction strategies (Leveled vs Tiered), and WAL crash recovery.",
-    status: "mastered",
-    progress: 100,
-    notes: "LSM excels at high write throughput (SSTables); B+ Tree excels at random read latency.",
-    resources: [
-      { title: "Designing Data-Intensive Applications (DDIA)", url: "https://dataintensive.net/", type: "book" },
-    ],
-    order: 2,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    subject: "Go",
-    title: "Goroutines, Channels & Runtime Scheduler (GMP Model)",
-    description: "Goroutines multiplexed on OS threads (M) via logical processors (P). Work stealing algorithm.",
-    status: "in_progress",
-    progress: 85,
-    notes: "Preemption in Go 1.14+ via asynchronous OS signals (SIGURG).",
-    resources: [
-      { title: "Go Under The Hood", url: "https://golang.design/under-the-hood/", type: "doc" },
-    ],
-    order: 3,
-    createdAt: new Date().toISOString(),
-  },
-];
+/**
+ * Learning: tracks, the topics that make up their roadmap, and the resources
+ * they are learned from.
+ *
+ * Progress is always derived from topic status — never stored — so a track's
+ * percentage cannot drift from the roadmap it describes.
+ */
 
-export const list = query({
+export const RESOURCE_TYPES = ["course", "book", "video", "article", "pdf", "docs", "other"];
+
+const progressOf = (topics: { status: string }[]) => {
+  if (topics.length === 0) return 0;
+  const done = topics.filter((t) => t.status === "done").length;
+  return Math.round((done / topics.length) * 100);
+};
+
+// --- Tracks -----------------------------------------------------------------
+
+export const listTracks = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("learning_topics").order("asc").collect();
+    const tracks = await ctx.db.query("learning_tracks").withIndex("by_order").collect();
+    const topics = await ctx.db.query("learning_topics").collect();
+    const resources = await ctx.db.query("learning_resources").collect();
+
+    return tracks.map((t) => {
+      const own = topics.filter((x) => x.trackId === t._id);
+      return {
+        ...t,
+        topicCount: own.length,
+        doneCount: own.filter((x) => x.status === "done").length,
+        progress: progressOf(own),
+        resourceCount: resources.filter((r) => r.trackId === t._id).length,
+        /** The topic to pick up next: the one in progress, else the first unstarted. */
+        nextTopic:
+          own.sort((a, b) => a.order - b.order).find((x) => x.status === "learning") ??
+          own.find((x) => x.status === "todo") ??
+          null,
+        lastStudiedAt: own
+          .map((x) => x.lastStudiedAt)
+          .filter(Boolean)
+          .sort()
+          .pop(),
+      };
+    });
   },
 });
 
-export const seedIfEmpty = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const existing = await ctx.db.query("learning_topics").first();
-    if (!existing) {
-      for (const t of DEFAULT_TOPICS) {
-        await ctx.db.insert("learning_topics", t);
-      }
+export const getTrack = query({
+  args: { id: v.id("learning_tracks") },
+  handler: async (ctx, args) => {
+    const track = await ctx.db.get(args.id);
+    if (!track) return null;
+
+    const topics = (
+      await ctx.db
+        .query("learning_topics")
+        .withIndex("by_track", (q) => q.eq("trackId", args.id))
+        .collect()
+    ).sort((a, b) => a.order - b.order);
+
+    const resources = await ctx.db
+      .query("learning_resources")
+      .withIndex("by_track", (q) => q.eq("trackId", args.id))
+      .collect();
+
+    return { ...track, topics, resources, progress: progressOf(topics) };
+  },
+});
+
+export const createTrack = mutation({
+  args: {
+    name: v.string(),
+    description: v.optional(v.string()),
+    status: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.query("learning_tracks").collect();
+    return await ctx.db.insert("learning_tracks", {
+      name: args.name.trim(),
+      description: args.description,
+      status: args.status ?? "active",
+      order: existing.length,
+      createdAt: new Date().toISOString(),
+    });
+  },
+});
+
+export const updateTrack = mutation({
+  args: {
+    id: v.id("learning_tracks"),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    status: v.optional(v.string()),
+    order: v.optional(v.number()),
+  },
+  handler: async (ctx, { id, ...fields }) => {
+    await ctx.db.patch(id, fields);
+  },
+});
+
+/** Removing a track takes its roadmap and its resource links with it. */
+export const removeTrack = mutation({
+  args: { id: v.id("learning_tracks") },
+  handler: async (ctx, args) => {
+    const topics = await ctx.db
+      .query("learning_topics")
+      .withIndex("by_track", (q) => q.eq("trackId", args.id))
+      .collect();
+    for (const t of topics) await ctx.db.delete(t._id);
+
+    const resources = await ctx.db
+      .query("learning_resources")
+      .withIndex("by_track", (q) => q.eq("trackId", args.id))
+      .collect();
+    for (const r of resources) await ctx.db.delete(r._id);
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+// --- Topics -----------------------------------------------------------------
+
+export const createTopic = mutation({
+  args: {
+    trackId: v.id("learning_tracks"),
+    title: v.string(),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const siblings = await ctx.db
+      .query("learning_topics")
+      .withIndex("by_track", (q) => q.eq("trackId", args.trackId))
+      .collect();
+
+    return await ctx.db.insert("learning_topics", {
+      trackId: args.trackId,
+      title: args.title.trim(),
+      description: args.description,
+      status: "todo",
+      order: siblings.length,
+      createdAt: new Date().toISOString(),
+    });
+  },
+});
+
+export const updateTopic = mutation({
+  args: {
+    id: v.id("learning_topics"),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    status: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    order: v.optional(v.number()),
+  },
+  handler: async (ctx, { id, ...fields }) => {
+    // Any real engagement with a topic counts as studying it today, which is
+    // what the heatmap reflects. Reordering does not.
+    const touched =
+      fields.status !== undefined ||
+      fields.notes !== undefined ||
+      fields.title !== undefined;
+
+    await ctx.db.patch(id, {
+      ...fields,
+      ...(touched ? { lastStudiedAt: today() } : {}),
+    });
+  },
+});
+
+export const removeTopic = mutation({
+  args: { id: v.id("learning_topics") },
+  handler: async (ctx, args) => {
+    // Resources pinned to this topic stay with the track, unpinned.
+    const resources = await ctx.db
+      .query("learning_resources")
+      .withIndex("by_topic", (q) => q.eq("topicId", args.id))
+      .collect();
+    for (const r of resources) await ctx.db.patch(r._id, { topicId: undefined });
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+/** Persist a reordered roadmap in one call. */
+export const reorderTopics = mutation({
+  args: { orderedIds: v.array(v.id("learning_topics")) },
+  handler: async (ctx, args) => {
+    for (let i = 0; i < args.orderedIds.length; i++) {
+      await ctx.db.patch(args.orderedIds[i], { order: i });
     }
   },
 });
 
-export const updateProgress = mutation({
+// --- Resources --------------------------------------------------------------
+
+export const listResources = query({
+  args: {},
+  handler: async (ctx) => {
+    const resources = await ctx.db.query("learning_resources").collect();
+    const tracks = await ctx.db.query("learning_tracks").collect();
+    const topics = await ctx.db.query("learning_topics").collect();
+
+    return resources.map((r) => ({
+      ...r,
+      trackName: tracks.find((t) => t._id === r.trackId)?.name ?? "—",
+      topicTitle: r.topicId ? topics.find((t) => t._id === r.topicId)?.title : undefined,
+    }));
+  },
+});
+
+export const createResource = mutation({
   args: {
-    id: v.id("learning_topics"),
-    progress: v.number(),
-    status: v.string(),
+    trackId: v.id("learning_tracks"),
+    topicId: v.optional(v.id("learning_topics")),
+    title: v.string(),
+    url: v.optional(v.string()),
+    type: v.string(),
+    notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, {
-      progress: args.progress,
-      status: args.status,
+    return await ctx.db.insert("learning_resources", {
+      ...args,
+      title: args.title.trim(),
+      status: "queued",
+      createdAt: new Date().toISOString(),
     });
+  },
+});
+
+export const updateResource = mutation({
+  args: {
+    id: v.id("learning_resources"),
+    title: v.optional(v.string()),
+    url: v.optional(v.string()),
+    type: v.optional(v.string()),
+    status: v.optional(v.string()),
+    topicId: v.optional(v.id("learning_topics")),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { id, ...fields }) => {
+    await ctx.db.patch(id, fields);
+  },
+});
+
+export const removeResource = mutation({
+  args: { id: v.id("learning_resources") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
   },
 });
