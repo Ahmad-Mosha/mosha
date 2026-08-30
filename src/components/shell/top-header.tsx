@@ -59,7 +59,7 @@ export function TopHeader() {
     career: "Engineering Career & Market",
     projects: "Projects",
     gym: "Gym",
-    finance: "Sovereign Ledger (Finance)",
+    finance: "Finance",
     journal: "Engineering Journal",
     skills: "Interactive Skill Graph",
     interview: "Interview Mode Arena",

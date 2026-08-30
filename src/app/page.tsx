@@ -14,7 +14,7 @@ import { CalendarScreen } from "@/components/calendar/calendar-screen";
 import { ProjectsScreen } from "@/components/projects/projects-screen";
 import { ProblemsScreen } from "@/components/problems/problems-screen";
 import { GymScreen } from "@/components/gym/gym-screen";
-import { FinanceView } from "@/components/modules/finance-view";
+import { FinanceScreen } from "@/components/finance/finance-screen";
 import { LearningScreen } from "@/components/learning/learning-screen";
 import { EngineeringJournalView } from "@/components/modules/engineering-journal-view";
 import { GenericModuleView } from "@/components/modules/generic-module-view";
@@ -47,7 +47,7 @@ export default function Home() {
       case "gym":
         return <GymScreen />;
       case "finance":
-        return <FinanceView />;
+        return <FinanceScreen />;
       case "learning":
         return <LearningScreen />;
       case "journal":
