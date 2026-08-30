@@ -192,25 +192,64 @@ export default defineSchema({
     .index("by_track", ["trackId"])
     .index("by_topic", ["topicId"]),
 
-  // 8. Iron Journal (Gym & Fitness)
+  // 8. Gym
+  //
+  // A session is what actually happened; a plan is what you intended. Sessions
+  // stand alone so a workout is never blocked on having a plan, and a plan can
+  // seed one when you do have it.
   gym_sessions: defineTable({
     title: v.string(),
-    split: v.string(),
-    date: v.string(),
-    durationMinutes: v.number(),
-    totalVolumeKg: v.optional(v.number()),
+    split: v.string(), // "push" | "pull" | "legs" | "upper" | "lower" | "full" | custom
+    date: v.string(), // YYYY-MM-DD
+    durationMinutes: v.optional(v.number()),
     notes: v.optional(v.string()),
+    /** 1-5, how the session felt. */
     rating: v.optional(v.number()),
+    planId: v.optional(v.id("gym_plans")),
     exercises: v.array(
       v.object({
+        id: v.string(),
         name: v.string(),
-        sets: v.number(),
-        reps: v.number(),
-        weightKg: v.number(),
-        rpe: v.optional(v.number()),
-        isPr: v.optional(v.boolean()),
+        sets: v.array(
+          v.object({
+            reps: v.number(),
+            weightKg: v.number(),
+            rpe: v.optional(v.number()),
+          })
+        ),
       })
     ),
+    createdAt: v.string(),
+  }).index("by_date", ["date"]),
+
+  /** Reusable templates: the exercises you intend to do for a given split. */
+  gym_plans: defineTable({
+    name: v.string(),
+    split: v.string(),
+    notes: v.optional(v.string()),
+    exercises: v.array(
+      v.object({
+        id: v.string(),
+        name: v.string(),
+        targetSets: v.number(),
+        targetReps: v.number(),
+        targetWeightKg: v.optional(v.number()),
+      })
+    ),
+    order: v.number(),
+    createdAt: v.string(),
+  }).index("by_order", ["order"]),
+
+  /** Body over time — weight is the spine, the rest is optional. */
+  body_metrics: defineTable({
+    date: v.string(), // YYYY-MM-DD, one entry per day
+    weightKg: v.optional(v.number()),
+    bodyFatPct: v.optional(v.number()),
+    /** Free-form so you measure whatever you actually measure. */
+    measurements: v.optional(
+      v.array(v.object({ name: v.string(), valueCm: v.number() }))
+    ),
+    notes: v.optional(v.string()),
     createdAt: v.string(),
   }).index("by_date", ["date"]),
 
