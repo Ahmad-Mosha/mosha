@@ -19,6 +19,7 @@ import type * as problems from "../problems.js";
 import type * as projects from "../projects.js";
 import type * as recurrence from "../recurrence.js";
 import type * as service from "../service.js";
+import type * as spacedRepetition from "../spacedRepetition.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   recurrence: typeof recurrence;
   service: typeof service;
+  spacedRepetition: typeof spacedRepetition;
   tasks: typeof tasks;
 }>;
 

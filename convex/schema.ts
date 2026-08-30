@@ -111,6 +111,9 @@ export default defineSchema({
 
   // 6. Problem Solving & Algorithmic Mastery Hub
   problems: defineTable({
+    // Links a progress row to a NeetCode 150 entry (src/lib/neetcode-150.ts).
+    // Absent for problems logged outside the curriculum.
+    slug: v.optional(v.string()),
     title: v.string(),
     url: v.optional(v.string()),
     platform: v.string(),
@@ -123,12 +126,15 @@ export default defineSchema({
     code: v.optional(v.string()),
     language: v.optional(v.string()),
     reviewCount: v.optional(v.number()),
+    reviewStreak: v.optional(v.number()), // clean recalls in a row
+    attempts: v.optional(v.number()),
     nextReviewDate: v.optional(v.string()),
     lastSolvedDate: v.optional(v.string()),
     createdAt: v.string(),
   })
     .index("by_next_review", ["nextReviewDate"])
-    .index("by_pattern", ["pattern"]),
+    .index("by_pattern", ["pattern"])
+    .index("by_slug", ["slug"]),
 
   // 7. Learning & CS Roadmaps
   learning_topics: defineTable({
