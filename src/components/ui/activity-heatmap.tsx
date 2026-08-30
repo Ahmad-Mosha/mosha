@@ -76,6 +76,10 @@ interface Props {
   /** Rendered in the tooltip: "3 problems". */
   unit?: string;
   onSelectDay?: (day: string) => void;
+  /** Highlighted with a ring; pair with onSelectDay. */
+  selectedDay?: string | null;
+  /** Cell edge in px. The default reads comfortably at arm's length. */
+  cellSize?: number;
   className?: string;
 }
 
@@ -87,8 +91,11 @@ export function ActivityHeatmap({
   ramp = "accent",
   unit = "",
   onSelectDay,
+  selectedDay,
+  cellSize = 16,
   className = "",
 }: Props) {
+  const gap = Math.max(3, Math.round(cellSize / 5));
   const { columns, max, monthMarks } = useMemo(() => {
     const end = today();
     // Wind back to the Monday that starts the earliest visible week, so every
@@ -121,22 +128,26 @@ export function ActivityHeatmap({
   const now = today();
 
   return (
-    <div className={`w-full overflow-x-auto ${className}`}>
-      <div className="inline-flex min-w-full flex-col gap-1">
-        <div className="flex gap-[3px] pl-0.5">
+    <div className={`flex w-full justify-center overflow-x-auto ${className}`}>
+      <div className="inline-flex flex-col gap-1">
+        <div className="flex pl-0.5" style={{ gap }}>
           {columns.map((_, i) => {
             const mark = monthMarks.find((m) => m.col === i);
             return (
-              <span key={i} className="w-[11px] font-mono text-meta text-ghost">
+              <span
+                key={i}
+                className="font-mono text-meta text-ghost"
+                style={{ width: cellSize }}
+              >
                 {mark ? mark.label : ""}
               </span>
             );
           })}
         </div>
 
-        <div className="flex gap-[3px]">
+        <div className="flex" style={{ gap }}>
           {columns.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-[3px]">
+            <div key={wi} className="flex flex-col" style={{ gap }}>
               {week.map((day) => {
                 const count = counts[day] ?? 0;
                 const future = day > now;
@@ -152,10 +163,12 @@ export function ActivityHeatmap({
                         : `${count} ${unit}${count === 1 ? "" : unit ? "s" : ""} · ${day}`
                     }
                     aria-label={`${day}: ${count} ${unit}`}
-                    className={`h-[11px] w-[11px] rounded-[3px] transition-transform
+                    style={{ width: cellSize, height: cellSize, borderRadius: Math.round(cellSize / 4) }}
+                    className={`transition-transform
                       ${future ? "bg-subtle opacity-40" : ramps[levelFor(count, max)]}
-                      ${day === now ? "ring-1 ring-accent ring-offset-1 ring-offset-canvas" : ""}
-                      ${onSelectDay && !future ? "cursor-pointer hover:scale-125" : ""}`}
+                      ${day === selectedDay ? "ring-2 ring-accent ring-offset-1 ring-offset-canvas" : ""}
+                      ${day === now && day !== selectedDay ? "ring-1 ring-accent/60 ring-offset-1 ring-offset-canvas" : ""}
+                      ${onSelectDay && !future ? "cursor-pointer hover:scale-110" : ""}`}
                   />
                 );
               })}
@@ -163,10 +176,14 @@ export function ActivityHeatmap({
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 pt-0.5">
+        <div className="flex items-center gap-1.5 pt-1">
           <span className="font-mono text-meta text-ghost">Less</span>
           {ramps.map((cls, i) => (
-            <span key={i} className={`h-[11px] w-[11px] rounded-[3px] ${cls}`} />
+            <span
+              key={i}
+              className={cls}
+              style={{ width: cellSize, height: cellSize, borderRadius: Math.round(cellSize / 4) }}
+            />
           ))}
           <span className="font-mono text-meta text-ghost">More</span>
         </div>

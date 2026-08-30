@@ -67,89 +67,109 @@ export const updateMastery = mutation({
 });
 
 // ---------------------------------------------------------------------------
-// Curriculum progress
+// Solving log
 // ---------------------------------------------------------------------------
 
 import { scheduleAfter, type Recall } from "./spacedRepetition";
 import { today } from "./recurrence";
 
 /**
- * Record an attempt at a curriculum problem, creating the progress row on
- * first contact. The client sends the slug and the metadata it already knows
- * from the static list, so nothing needs to be seeded up front — 150 empty
- * rows would just be 150 rows to keep in sync.
+ * A stable key for a problem, derived from its title.
+ *
+ * Re-solving something should update the existing row and advance its review
+ * schedule, not create a second copy — so the same title always lands on the
+ * same record, however it was typed.
  */
-export const logAttempt = mutation({
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Log a solve. Anything can be logged — the plan you are following, or the
+ * problem that just came up. Nothing needs to exist beforehand.
+ */
+export const logSolve = mutation({
   args: {
-    slug: v.string(),
     title: v.string(),
     pattern: v.string(),
     difficulty: v.string(),
     recall: v.string(),
+    platform: v.optional(v.string()),
     url: v.optional(v.string()),
     notes: v.optional(v.string()),
     code: v.optional(v.string()),
     language: v.optional(v.string()),
     solveTimeSeconds: v.optional(v.number()),
+    /** Defaults to today; set it when logging something solved earlier. */
+    solvedOn: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const title = args.title.trim();
+    if (!title) throw new Error("A problem needs a title");
+
+    const slug = slugify(title);
+    const solvedOn = args.solvedOn || today();
+
     const existing = await ctx.db
       .query("problems")
-      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
       .first();
 
     const schedule = scheduleAfter(
       args.recall as Recall,
-      existing?.reviewStreak ?? 0
+      existing?.reviewStreak ?? 0,
+      solvedOn
     );
+
+    const optional = {
+      ...(args.url !== undefined ? { url: args.url } : {}),
+      ...(args.notes !== undefined ? { notes: args.notes } : {}),
+      ...(args.code !== undefined ? { code: args.code } : {}),
+      ...(args.language !== undefined ? { language: args.language } : {}),
+      ...(args.solveTimeSeconds !== undefined
+        ? { solveTimeSeconds: args.solveTimeSeconds }
+        : {}),
+    };
 
     if (existing) {
       await ctx.db.patch(existing._id, {
         ...schedule,
+        title,
+        pattern: args.pattern,
+        difficulty: args.difficulty,
         reviewCount: (existing.reviewCount ?? 0) + 1,
         attempts: (existing.attempts ?? 0) + 1,
-        ...(args.notes !== undefined ? { notes: args.notes } : {}),
-        ...(args.code !== undefined ? { code: args.code } : {}),
-        ...(args.language !== undefined ? { language: args.language } : {}),
-        ...(args.solveTimeSeconds !== undefined
-          ? { solveTimeSeconds: args.solveTimeSeconds }
-          : {}),
+        ...optional,
       });
       return existing._id;
     }
 
     return await ctx.db.insert("problems", {
-      slug: args.slug,
-      title: args.title,
+      slug,
+      title,
       pattern: args.pattern,
       difficulty: args.difficulty,
-      platform: "leetcode",
-      url: args.url,
-      notes: args.notes,
-      code: args.code,
-      language: args.language,
-      solveTimeSeconds: args.solveTimeSeconds,
+      platform: args.platform || "leetcode",
       reviewCount: 1,
       attempts: 1,
       ...schedule,
+      ...optional,
       createdAt: new Date().toISOString(),
     });
   },
 });
 
-/** Undo — drops the progress row so the problem returns to unsolved. */
-export const resetProblem = mutation({
-  args: { slug: v.string() },
+export const removeProblem = mutation({
+  args: { id: v.id("problems") },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("problems")
-      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
-      .first();
-    if (existing) await ctx.db.delete(existing._id);
+    await ctx.db.delete(args.id);
   },
 });
 
-/** Everything due for review on or before today, hardest recall first. */
+/** Everything due for review on or before today, weakest recall first. */
 export const dueForReview = query({
   args: {},
   handler: async (ctx) => {
