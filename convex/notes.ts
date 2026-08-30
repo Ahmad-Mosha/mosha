@@ -211,3 +211,54 @@ export const clearAllFolders = mutation({
     return { deleted: all.length };
   },
 });
+
+/**
+ * The note for a learning topic, created on first use.
+ *
+ * Topic write-ups belong in the knowledge base like everything else — indexed
+ * by search, filed in folders, opened in the full editor — rather than sitting
+ * in a field only the Learning screen can read.
+ */
+export const getOrCreateForTopic = mutation({
+  args: {
+    topicId: v.id("learning_topics"),
+    title: v.string(),
+    folderId: v.optional(v.id("folders")),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("notes")
+      .withIndex("by_topic", (q) => q.eq("topicId", args.topicId))
+      .first();
+    if (existing) return existing._id;
+
+    const now = new Date().toISOString();
+    return await ctx.db.insert("notes", {
+      title: args.title.trim() || "Untitled Note",
+      content: "<p></p>",
+      plainText: "",
+      topicId: args.topicId,
+      folderId: args.folderId,
+      isPinned: false,
+      isFavorite: false,
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+/** Which topics already have a note, so the roadmap can show it. */
+export const notesByTopic = query({
+  args: {},
+  handler: async (ctx) => {
+    const notes = await ctx.db.query("notes").collect();
+    const map: Record<string, { id: string; words: number }> = {};
+    for (const n of notes) {
+      if (!n.topicId) continue;
+      const text = (n.plainText ?? "").trim();
+      map[n.topicId] = { id: n._id, words: text ? text.split(/\s+/).length : 0 };
+    }
+    return map;
+  },
+});

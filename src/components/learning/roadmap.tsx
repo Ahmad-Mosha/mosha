@@ -5,10 +5,10 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import {
-  Check, ChevronDown, ChevronUp, CircleDot, NotebookPen, Plus, Trash2,
+  ArrowUpRight, Check, ChevronDown, ChevronUp, CircleDot, NotebookPen, Plus, Trash2,
 } from "lucide-react";
 import { Select } from "@/components/ui/select";
-import { NoteEditor } from "../notes/editor";
+import { useMoshaStore } from "@/lib/store";
 import { ResourceList } from "./resource-list";
 import { TOPIC_STATUS, TOPIC_STATUS_OPTIONS } from "./learning-meta";
 
@@ -20,16 +20,20 @@ import { TOPIC_STATUS, TOPIC_STATUS_OPTIONS } from "./learning-meta";
  * derived. Opening one reveals its notes and the resources pinned to it.
  */
 export function Roadmap({
-  trackId, topics, resources,
+  trackId, topics, resources, notesByTopic,
 }: {
   trackId: string;
   topics: any[];
   resources: any[];
+  /** topicId -> the note that holds its write-up. */
+  notesByTopic: Record<string, { id: string; words: number }>;
 }) {
   const createTopic = useMutation(api.learning.createTopic);
   const updateTopic = useMutation(api.learning.updateTopic);
   const removeTopic = useMutation(api.learning.removeTopic);
   const reorderTopics = useMutation(api.learning.reorderTopics);
+  const getOrCreateNote = useMutation(api.notes.getOrCreateForTopic);
+  const openNote = useMoshaStore((s) => s.openNote);
 
   const [open, setOpen] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -51,6 +55,20 @@ export function Roadmap({
     if (target < 0 || target >= next.length) return;
     [next[index], next[target]] = [next[target], next[index]];
     await reorderTopics({ orderedIds: next.map((t) => t._id) });
+  };
+
+  /**
+   * Notes live in the knowledge base, not in this screen. Opening one creates
+   * it on first use, then hands off to Notes — full width, full editor, and
+   * searchable alongside everything else you have written.
+   */
+  const openTopicNote = async (topic: any) => {
+    try {
+      const id = await getOrCreateNote({ topicId: topic._id, title: topic.title });
+      if (id) openNote(id);
+    } catch {
+      toast.error("Could not open the note");
+    }
   };
 
   /** Clicking the marker cycles the topic forward through the roadmap. */
@@ -128,12 +146,15 @@ export function Roadmap({
                     <span className={`block truncate text-label ${t.status === "done" ? "text-ghost" : "text-ink"}`}>
                       {t.title}
                     </span>
-                    {(own.length > 0 || t.notes) && (
+                    {(own.length > 0 || notesByTopic[t._id]) && (
                       <span className="flex items-center gap-2 font-mono text-meta text-ghost">
                         {own.length > 0 && <span>{own.length} resources</span>}
-                        {t.notes && (
+                        {notesByTopic[t._id] && (
                           <span className="flex items-center gap-1">
-                            <NotebookPen className="h-2.5 w-2.5" /> notes
+                            <NotebookPen className="h-2.5 w-2.5" />
+                            {notesByTopic[t._id].words > 0
+                              ? `${notesByTopic[t._id].words} words`
+                              : "note"}
                           </span>
                         )}
                       </span>
@@ -199,19 +220,27 @@ export function Roadmap({
                       filterTopicId={t._id}
                     />
 
-                    <div>
-                      <h3 className="mb-1.5 font-mono text-meta font-semibold uppercase text-faint">
-                        Notes
-                      </h3>
-                      <div className="h-80 overflow-hidden rounded-xl border border-line">
-                        <NoteEditor
-                          key={t._id}
-                          initialContent={t.notes || ""}
-                          placeholder="What you understood, in your own words…"
-                          onChange={(html) => updateTopic({ id: t._id, notes: html })}
-                        />
-                      </div>
-                    </div>
+                    <button
+                      onClick={() => openTopicNote(t)}
+                      className="group/note flex w-full items-center gap-3 rounded-xl border border-line
+                                 bg-surface-2 px-3 py-2.5 text-left transition-colors
+                                 hover:border-accent cursor-pointer"
+                    >
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-soft text-ink-2">
+                        <NotebookPen className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-label text-ink">
+                          {notesByTopic[t._id] ? "Open the note" : "Start a note"}
+                        </span>
+                        <span className="block font-mono text-meta text-ghost">
+                          {notesByTopic[t._id]
+                            ? `${notesByTopic[t._id].words} words · in your knowledge base`
+                            : "Opens full width in Notes, filed under this topic"}
+                        </span>
+                      </span>
+                      <ArrowUpRight className="h-4 w-4 shrink-0 text-ghost transition-transform group-hover/note:translate-x-0.5 group-hover/note:-translate-y-0.5" />
+                    </button>
                   </div>
                 )}
               </li>

@@ -21,6 +21,7 @@ export function TrackView({
   onDeleted: () => void;
 }) {
   const track = useQuery(api.learning.getTrack, { id: trackId as any });
+  const notesByTopic = useQuery(api.notes.notesByTopic) ?? {};
   const updateTrack = useMutation(api.learning.updateTrack);
   const removeTrack = useMutation(api.learning.removeTrack);
 
@@ -117,7 +118,12 @@ export function TrackView({
       </header>
 
       {tab === "roadmap" ? (
-        <Roadmap trackId={trackId} topics={track.topics} resources={track.resources} />
+        <Roadmap
+          trackId={trackId}
+          topics={track.topics}
+          resources={track.resources}
+          notesByTopic={notesByTopic}
+        />
       ) : (
         <ResourceList trackId={trackId} resources={track.resources} topics={track.topics} />
       )}

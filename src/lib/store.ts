@@ -31,6 +31,14 @@ interface MoshaState {
   activeModule: ModuleId;
   setActiveModule: (mod: ModuleId) => void;
 
+  /**
+   * Set when another screen wants Notes opened on a specific note. The Notes
+   * screen consumes it and clears it, so it never re-hijacks the selection.
+   */
+  focusNoteId: string | null;
+  openNote: (id: string) => void;
+  clearFocusNote: () => void;
+
   // Command Menu (⌘K)
   isCommandMenuOpen: boolean;
   setCommandMenuOpen: (open: boolean) => void;
@@ -72,6 +80,10 @@ export const useMoshaStore = create<MoshaState>((set) => ({
   // Default to tasks as the primary Home screen
   activeModule: "tasks",
   setActiveModule: (mod) => set({ activeModule: mod }),
+
+  focusNoteId: null,
+  openNote: (id) => set({ focusNoteId: id, activeModule: "notes" }),
+  clearFocusNote: () => set({ focusNoteId: null }),
 
   // Command Menu
   isCommandMenuOpen: false,
