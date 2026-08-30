@@ -12,7 +12,7 @@ import { GoalDialog } from "@/components/goals/goal-dialog";
 import { NotesScreen } from "@/components/notes/notes-screen";
 import { CalendarScreen } from "@/components/calendar/calendar-screen";
 import { ProjectsScreen } from "@/components/projects/projects-screen";
-import { ProblemSolvingView } from "@/components/modules/problem-solving-view";
+import { ProblemsScreen } from "@/components/problems/problems-screen";
 import { GymFitnessView } from "@/components/modules/gym-fitness-view";
 import { FinanceView } from "@/components/modules/finance-view";
 import { LearningCsView } from "@/components/modules/learning-cs-view";
@@ -43,7 +43,7 @@ export default function Home() {
       case "projects":
         return <ProjectsScreen />;
       case "problems":
-        return <ProblemSolvingView />;
+        return <ProblemsScreen />;
       case "gym":
         return <GymFitnessView />;
       case "finance":

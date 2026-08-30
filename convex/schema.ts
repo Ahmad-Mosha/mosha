@@ -111,6 +111,9 @@ export default defineSchema({
 
   // 6. Problem Solving & Algorithmic Mastery Hub
   problems: defineTable({
+    // Links a progress row to a NeetCode 150 entry (src/lib/neetcode-150.ts).
+    // Absent for problems logged outside the curriculum.
+    slug: v.optional(v.string()),
     title: v.string(),
     url: v.optional(v.string()),
     platform: v.string(),
@@ -123,12 +126,15 @@ export default defineSchema({
     code: v.optional(v.string()),
     language: v.optional(v.string()),
     reviewCount: v.optional(v.number()),
+    reviewStreak: v.optional(v.number()), // clean recalls in a row
+    attempts: v.optional(v.number()),
     nextReviewDate: v.optional(v.string()),
     lastSolvedDate: v.optional(v.string()),
     createdAt: v.string(),
   })
     .index("by_next_review", ["nextReviewDate"])
-    .index("by_pattern", ["pattern"]),
+    .index("by_pattern", ["pattern"])
+    .index("by_slug", ["slug"]),
 
   // 7. Learning & CS Roadmaps
   learning_topics: defineTable({
@@ -192,6 +198,9 @@ export default defineSchema({
     startDate: v.string(), // YYYY-MM-DD, inclusive
     endDate: v.string(), // YYYY-MM-DD, inclusive
     label: v.optional(v.string()),
+    // "cycle" rows are regenerated from the rotation rule; "manual" ones are
+    // hand-marked and must survive a regenerate.
+    source: v.optional(v.string()),
     createdAt: v.string(),
   }).index("by_start", ["startDate"]),
 
@@ -199,6 +208,11 @@ export default defineSchema({
   service_config: defineTable({
     dischargeDate: v.optional(v.string()),
     serviceStartDate: v.optional(v.string()),
+    // Fixed rotation: a known changeover date plus how long each phase runs.
+    cycleAnchor: v.optional(v.string()), // a date the anchor phase begins
+    cycleAnchorPhase: v.optional(v.string()), // "base" | "home" on that date
+    cycleBaseDays: v.optional(v.number()),
+    cycleHomeDays: v.optional(v.number()),
     updatedAt: v.string(),
   }),
 
