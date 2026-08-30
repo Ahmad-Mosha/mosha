@@ -7,6 +7,7 @@ import { NoteEditor } from "./editor";
 import { NoteTree } from "./note-tree";
 import { FolderDialog } from "./folder-dialog";
 import { Select, NONE } from "@/components/ui/select";
+import { useMoshaStore } from "@/lib/store";
 import { toast } from "sonner";
 import {
   BookOpen, Folder, FolderPlus, PanelLeft, PanelLeftClose,
@@ -38,6 +39,9 @@ export function NotesScreen() {
   const notes = convexNotes ?? [];
   const isLoadingNotes = convexNotes === undefined;
 
+  const focusNoteId = useMoshaStore((s) => s.focusNoteId);
+  const clearFocusNote = useMoshaStore((s) => s.clearFocusNote);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
@@ -59,6 +63,14 @@ export function NotesScreen() {
   useEffect(() => {
     if (notes.length > 0 && !activeNoteId) setActiveNoteId(notes[0]._id);
   }, [notes, activeNoteId]);
+
+  // Another screen asked for a specific note; take it, then release the request
+  // so it cannot override the next selection the user makes.
+  useEffect(() => {
+    if (!focusNoteId) return;
+    setActiveNoteId(focusNoteId);
+    clearFocusNote();
+  }, [focusNoteId, clearFocusNote]);
 
   const activeNote = notes.find((n: any) => n._id === activeNoteId) || null;
 

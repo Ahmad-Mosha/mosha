@@ -110,6 +110,7 @@ export default defineSchema({
     plainText: v.optional(v.string()), // For instant search & preview snippets
     folderId: v.optional(v.id("folders")),
     projectId: v.optional(v.id("projects")), // Linked to Project
+    topicId: v.optional(v.id("learning_topics")), // Linked to a learning topic
     isPinned: v.boolean(),
     isFavorite: v.boolean(),
     tags: v.optional(v.array(v.string())),
@@ -119,6 +120,7 @@ export default defineSchema({
   })
     .index("by_folder", ["folderId"])
     .index("by_project", ["projectId"])
+    .index("by_topic", ["topicId"])
     .index("by_pinned", ["isPinned"])
     .index("by_updated", ["updatedAt"]),
 
@@ -169,8 +171,6 @@ export default defineSchema({
     description: v.optional(v.string()),
     status: v.string(), // "todo" | "learning" | "done"
     order: v.number(),
-    /** Rich text, same editor as Notes. */
-    notes: v.optional(v.string()),
     /** Drives the study heatmap; touched whenever the topic is worked on. */
     lastStudiedAt: v.optional(v.string()),
     createdAt: v.string(),

@@ -154,16 +154,12 @@ export const updateTopic = mutation({
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     status: v.optional(v.string()),
-    notes: v.optional(v.string()),
     order: v.optional(v.number()),
   },
   handler: async (ctx, { id, ...fields }) => {
     // Any real engagement with a topic counts as studying it today, which is
     // what the heatmap reflects. Reordering does not.
-    const touched =
-      fields.status !== undefined ||
-      fields.notes !== undefined ||
-      fields.title !== undefined;
+    const touched = fields.status !== undefined || fields.title !== undefined;
 
     await ctx.db.patch(id, {
       ...fields,
