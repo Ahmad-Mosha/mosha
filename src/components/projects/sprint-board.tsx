@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { LabelChips } from "./task-composer";
-import { priorityOf } from "./task-meta";
+import { priorityOf, dueMeta } from "./task-meta";
+import { TaskComposer } from "./task-composer";
 import { today } from "../../../convex/recurrence";
 
 const SHORT = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
@@ -43,11 +44,17 @@ export interface Sprint {
  * vertical scan and moving work is a dropdown, not a hunt.
  */
 export function SprintSections({
-  projectId, sprints, tasks,
+  projectId, sprints, tasks, knownLabels, onAddTask, onEditTask,
 }: {
   projectId: string;
   sprints: Sprint[];
   tasks: any[];
+  knownLabels: string[];
+  onAddTask: (
+    input: { title: string; priority: string; labels: string[] },
+    sprintId: string | null
+  ) => Promise<void>;
+  onEditTask: (task: any) => void;
 }) {
   const createSprint = useMutation(api.sprints.createSprint);
   const updateSprint = useMutation(api.sprints.updateSprint);
@@ -215,7 +222,15 @@ export function SprintSections({
               </div>
 
               {isOpen && (
-                <TaskList tasks={own} sprints={sprints} emptyLabel="Nothing in this sprint yet." />
+                <TaskList
+                  tasks={own}
+                  sprints={sprints}
+                  knownLabels={knownLabels}
+                  emptyLabel="Nothing in this sprint yet."
+                  placeholder={`Add to ${s.name}…`}
+                  onAdd={(input) => onAddTask(input, s._id)}
+                  onEdit={onEditTask}
+                />
               )}
             </section>
           );
@@ -236,7 +251,15 @@ export function SprintSections({
           </div>
 
           {open.__backlog && (
-            <TaskList tasks={backlog} sprints={sprints} emptyLabel="Backlog is empty." />
+            <TaskList
+              tasks={backlog}
+              sprints={sprints}
+              knownLabels={knownLabels}
+              emptyLabel="Backlog is empty."
+              placeholder="Add to the backlog…"
+              onAdd={(input) => onAddTask(input, null)}
+              onEdit={onEditTask}
+            />
           )}
         </section>
       </div>
@@ -261,92 +284,111 @@ function IconAction({
   );
 }
 
-/** Rows inside an expanded band. Moving work is a dropdown on the row. */
+/**
+ * Rows inside an expanded band, with a composer of its own — a section you
+ * cannot add to is a section that should not be there, which is exactly what
+ * the backlog band was. The whole row opens the task; only the controls on it
+ * stop the click.
+ */
 function TaskList({
-  tasks, sprints, emptyLabel,
+  tasks, sprints, knownLabels, emptyLabel, placeholder, onAdd, onEdit,
 }: {
   tasks: any[];
   sprints: Sprint[];
+  knownLabels: string[];
   emptyLabel: string;
+  placeholder: string;
+  onAdd: (input: { title: string; priority: string; labels: string[] }) => Promise<void>;
+  onEdit: (task: any) => void;
 }) {
   const updateStatus = useMutation(api.tasks.updateStatus);
   const removeTask = useMutation(api.tasks.remove);
   const assignTask = useMutation(api.sprints.assignTask);
-
-  if (tasks.length === 0) {
-    return (
-      <p className="border-t border-line px-4 py-5 text-center text-label text-ghost">
-        {emptyLabel}
-      </p>
-    );
-  }
+  const now = today();
 
   return (
-    <ul className="border-t border-line">
-      {tasks.map((t) => {
-        const done = t.status === "done";
-        return (
-          <li
-            key={t._id}
-            className="group/row flex items-center gap-3 border-b border-line/60 px-4 py-2 last:border-0 hover:bg-subtle/40"
-          >
-            <button
-              onClick={() => updateStatus({ id: t._id, status: done ? "todo" : "done" })}
-              title={done ? "Reopen" : "Mark done"}
-              className="shrink-0 cursor-pointer"
-            >
-              {done ? (
-                <Check className="h-4 w-4 text-success" />
-              ) : t.status === "in_progress" ? (
-                <CircleDot className="h-4 w-4 text-warn" />
-              ) : (
-                <span className="block h-4 w-4 rounded-full border border-line-2 hover:border-accent" />
-              )}
-            </button>
-
-            <span className={`min-w-0 flex-1 truncate text-label ${done ? "text-ghost line-through" : "text-ink"}`}>
-              {t.title}
-            </span>
-
-            <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-meta ${priorityOf(t.priority).chip}`}>
-              {priorityOf(t.priority).label}
-            </span>
-
-            <LabelChips labels={t.labels} />
-
-            <span className="flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity group-hover/row:opacity-100">
-              <Select
-                value={t.status || "todo"}
-                onValueChange={(v) => updateStatus({ id: t._id, status: v })}
-                size="sm"
-                options={[
-                  { value: "todo", label: "To do" },
-                  { value: "in_progress", label: "In progress" },
-                  { value: "done", label: "Done" },
-                ]}
-              />
-              <Select
-                value={t.sprintId ?? "__backlog"}
-                onValueChange={(v) =>
-                  assignTask({ taskId: t._id, sprintId: (v === "__backlog" ? undefined : v) as any })
-                }
-                size="sm"
-                options={[
-                  { value: "__backlog", label: "Backlog" },
-                  ...sprints.map((s) => ({ value: s._id, label: s.name })),
-                ]}
-              />
-              <button
-                onClick={() => removeTask({ id: t._id })}
-                title="Delete task"
-                className="grid h-6 w-6 place-items-center rounded text-ghost hover:bg-danger-tint hover:text-danger cursor-pointer"
+    <div className="border-t border-line">
+      {tasks.length === 0 ? (
+        <p className="px-4 py-4 text-center text-label text-ghost">{emptyLabel}</p>
+      ) : (
+        <ul>
+          {tasks.map((t) => {
+            const done = t.status === "done";
+            const due = dueMeta(t.dueDate, now);
+            return (
+              <li
+                key={t._id}
+                onClick={() => onEdit(t)}
+                className="group/row flex cursor-pointer items-center gap-3 border-b border-line/60 px-4 py-2 last:border-0 hover:bg-subtle/40"
               >
-                <Trash2 className="h-3 w-3" />
-              </button>
-            </span>
-          </li>
-        );
-      })}
-    </ul>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateStatus({ id: t._id, status: done ? "todo" : "done" });
+                  }}
+                  title={done ? "Reopen" : "Mark done"}
+                  className="shrink-0 cursor-pointer"
+                >
+                  {done ? (
+                    <Check className="h-4 w-4 text-success" />
+                  ) : t.status === "in_progress" ? (
+                    <CircleDot className="h-4 w-4 text-warn" />
+                  ) : (
+                    <span className="block h-4 w-4 rounded-full border border-line-2 hover:border-accent" />
+                  )}
+                </button>
+
+                <span className={`min-w-0 flex-1 truncate text-label ${done ? "text-ghost line-through" : "text-ink"}`}>
+                  {t.title}
+                </span>
+
+                {due && (
+                  <span
+                    title={due.title}
+                    className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-meta ${due.tone}`}
+                  >
+                    {due.text}
+                  </span>
+                )}
+
+                <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-meta ${priorityOf(t.priority).chip}`}>
+                  {priorityOf(t.priority).label}
+                </span>
+
+                <LabelChips labels={t.labels} />
+
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity group-hover/row:opacity-100"
+                >
+                  <Select
+                    value={t.sprintId ?? "__backlog"}
+                    onValueChange={(v) =>
+                      assignTask({ taskId: t._id, sprintId: (v === "__backlog" ? undefined : v) as any })
+                    }
+                    size="sm"
+                    options={[
+                      { value: "__backlog", label: "Backlog" },
+                      ...sprints.map((s) => ({ value: s._id, label: s.name })),
+                    ]}
+                  />
+                  <button
+                    onClick={() => removeTask({ id: t._id })}
+                    title="Delete task"
+                    className="grid h-6 w-6 place-items-center rounded text-ghost hover:bg-danger-tint hover:text-danger cursor-pointer"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <div className="border-t border-line/60 p-2">
+        <TaskComposer placeholder={placeholder} knownLabels={knownLabels} onAdd={onAdd} />
+      </div>
+    </div>
   );
 }
