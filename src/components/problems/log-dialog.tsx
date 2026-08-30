@@ -7,6 +7,7 @@ import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Trash2, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
+import { PatternInput } from "./pattern-input";
 import { nextInterval, type Recall } from "../../../convex/spacedRepetition";
 import { today } from "../../../convex/recurrence";
 
@@ -130,16 +131,11 @@ export function LogDialog({ open, editing, defaultDate, knownPatterns, onClose }
           <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1">
               <span className="font-mono text-meta uppercase text-faint">Pattern</span>
-              <input
-                list="known-patterns"
+              <PatternInput
                 value={pattern}
-                onChange={(e) => setPattern(e.target.value)}
-                placeholder="Two Pointers…"
-                className={field}
+                onChange={setPattern}
+                options={knownPatterns}
               />
-              <datalist id="known-patterns">
-                {knownPatterns.map((p) => <option key={p} value={p} />)}
-              </datalist>
             </div>
 
             <div className="space-y-1">
