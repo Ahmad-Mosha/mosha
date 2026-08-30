@@ -37,7 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "notes", label: "Notes & Knowledge", icon: FileText, badge: "Docs" },
   { id: "problems", label: "Problem Solving", icon: Code2 },
   { id: "learning", label: "Learning & CS", icon: BookOpen },
-  { id: "projects", label: "Projects & Tech", icon: Layers },
+  { id: "projects", label: "Projects", icon: Layers },
   { id: "gym", label: "Gym & Fitness", icon: Dumbbell },
   { id: "finance", label: "Sovereign Finance", icon: Wallet },
   { id: "journal", label: "Engineering Journal", icon: BookMarked },
@@ -55,39 +55,58 @@ export function SideNav() {
         isMini ? "w-16" : "w-64"
       }`}
     >
-      {/* Top Brand Header */}
-      <div className="flex items-center justify-between px-3.5 py-4 border-b border-line/60">
-        <div
-          onClick={() => setActiveModule("tasks")}
-          className="flex items-center space-x-3 cursor-pointer overflow-hidden select-none"
-        >
-          <div className="w-8 h-8 rounded-lg bg-accent text-accent-fg flex items-center justify-center font-serif font-bold text-heading shadow-sm shrink-0">
-            M
-          </div>
-          {!isMini && (
-            <div className="leading-tight transition-opacity duration-200">
-              <span className="font-serif font-bold text-heading tracking-tight text-ink">
-                MOSHA
+      {/*
+        Collapsed, there is only 36px of content box — not enough for the 32px
+        mark and a separate toggle, which is why they used to overlap. So the
+        mark becomes the toggle, revealing a chevron on hover.
+      */}
+      <div
+        className={`flex items-center border-b border-line/60 py-4 ${
+          isMini ? "justify-center px-2" : "justify-between px-3.5"
+        }`}
+      >
+        {isMini ? (
+          <button
+            onClick={toggleSidebar}
+            title="Expand sidebar"
+            aria-label="Expand sidebar"
+            className="group/mark grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent
+                       text-accent-fg shadow-sm transition-colors hover:bg-accent-hover cursor-pointer"
+          >
+            <span className="font-serif text-heading font-bold group-hover/mark:hidden">M</span>
+            <ChevronRight className="hidden h-4 w-4 group-hover/mark:block" />
+          </button>
+        ) : (
+          <>
+            <div
+              onClick={() => setActiveModule("tasks")}
+              className="flex min-w-0 cursor-pointer select-none items-center gap-3"
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent
+                               font-serif text-heading font-bold text-accent-fg shadow-sm">
+                M
               </span>
-              <span className="block text-meta font-mono uppercase tracking-wider text-faint">
-                Precision Workspace
+              <span className="min-w-0 leading-tight">
+                <span className="block truncate font-serif text-heading font-bold tracking-tight text-ink">
+                  MOSHA
+                </span>
+                <span className="block truncate font-mono text-meta uppercase tracking-wider text-faint">
+                  Precision Workspace
+                </span>
               </span>
             </div>
-          )}
-        </div>
 
-        {/* Toggle Mini / Full Button */}
-        <button
-          onClick={toggleSidebar}
-          title={isMini ? "Expand Sidebar" : "Collapse to Mini"}
-          className="p-1 rounded-md text-faint hover:text-ink hover:bg-subtle-2 transition-colors cursor-pointer"
-        >
-          {isMini ? (
-            <ChevronRight className="w-4 h-4" />
-          ) : (
-            <ChevronLeft className="w-4 h-4" />
-          )}
-        </button>
+            <button
+              onClick={toggleSidebar}
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-faint
+                         transition-colors hover:bg-subtle-2 hover:text-ink cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Navigation List */}

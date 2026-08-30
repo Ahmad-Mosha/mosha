@@ -37,3 +37,4 @@ next-env.d.ts
 # stitch design files
 /stitch_mosha_personal_world_design/
 stitch_*/
+.next-build/

@@ -30,6 +30,7 @@ export const create = mutation({
     status: v.optional(v.string()),
     goalId: v.optional(v.id("major_life_goals")),
     projectId: v.optional(v.id("projects")),
+    sprintId: v.optional(v.id("sprints")),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -61,6 +62,7 @@ export const create = mutation({
       streakCount: recurring ? 0 : undefined,
       goalId: args.goalId,
       projectId: args.projectId,
+      sprintId: args.sprintId,
       subtasks: args.subtasks,
       order: args.order,
       createdAt: new Date().toISOString(),

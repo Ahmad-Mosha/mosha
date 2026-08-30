@@ -31,12 +31,9 @@ export default defineSchema({
     description: v.string(),
     status: v.string(), // "active" | "in_progress" | "planning" | "in_review" | "completed" | "on_hold"
     techStack: v.array(v.string()), // e.g. ["Rust", "gRPC", "Redis"]
-    version: v.optional(v.string()), // e.g. "v1.4.2"
-    branch: v.optional(v.string()), // e.g. "main" or "feature/grpc-multiplexing"
     githubUrl: v.optional(v.string()),
     liveUrl: v.optional(v.string()),
     devNotes: v.optional(v.string()), // Architecture notes / RFC content
-    goalId: v.optional(v.id("major_life_goals")),
     order: v.number(),
     createdAt: v.string(),
     updatedAt: v.string(),
@@ -59,6 +56,7 @@ export default defineSchema({
     lastCompletedDate: v.optional(v.string()), // YYYY-MM-DD
     goalId: v.optional(v.id("major_life_goals")), // Link to Major Life Goal
     projectId: v.optional(v.id("projects")), // Link to Project
+    sprintId: v.optional(v.id("sprints")), // Which sprint the task sits in
     subtasks: v.optional(
       v.array(
         v.object({
@@ -78,6 +76,18 @@ export default defineSchema({
     .index("by_module", ["module"])
     .index("by_daily", ["isDaily"])
     .index("by_project", ["projectId"]),
+
+  // 3b. Sprints — a project's work split into time-boxed chunks
+  sprints: defineTable({
+    projectId: v.id("projects"),
+    name: v.string(),
+    goal: v.optional(v.string()),
+    startDate: v.optional(v.string()),
+    endDate: v.optional(v.string()),
+    status: v.string(), // "planned" | "active" | "done"
+    order: v.number(),
+    createdAt: v.string(),
+  }).index("by_project", ["projectId"]),
 
   // 4. Knowledge Base Folders & Hierarchy
   folders: defineTable({
