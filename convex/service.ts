@@ -81,3 +81,70 @@ export const removePeriod = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+/**
+ * Replace the rotation-generated periods in one shot.
+ *
+ * The rule itself is expanded on the client (src/lib/service.ts, where it is
+ * unit-tested) and this only persists the result, so the date maths has a
+ * single home. Hand-marked periods are untouched — only `source: "cycle"`
+ * rows are cleared, so a one-off leave you added by hand survives a
+ * regenerate.
+ */
+export const replaceCycle = mutation({
+  args: {
+    rule: v.object({
+      anchor: v.string(),
+      anchorPhase: v.string(),
+      baseDays: v.number(),
+      homeDays: v.number(),
+    }),
+    periods: v.array(
+      v.object({
+        kind: v.string(),
+        startDate: v.string(),
+        endDate: v.string(),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db.query("service_periods").collect();
+    for (const p of existing) {
+      if (p.source === "cycle") await ctx.db.delete(p._id);
+    }
+
+    const now = new Date().toISOString();
+    for (const p of args.periods) {
+      await ctx.db.insert("service_periods", { ...p, source: "cycle", createdAt: now });
+    }
+
+    const config = (await ctx.db.query("service_config").collect())[0];
+    const rulePatch = {
+      cycleAnchor: args.rule.anchor,
+      cycleAnchorPhase: args.rule.anchorPhase,
+      cycleBaseDays: args.rule.baseDays,
+      cycleHomeDays: args.rule.homeDays,
+      updatedAt: now,
+    };
+    if (config) await ctx.db.patch(config._id, rulePatch);
+    else await ctx.db.insert("service_config", rulePatch);
+
+    return args.periods.length;
+  },
+});
+
+/** Drop the generated rotation, leaving hand-marked periods alone. */
+export const clearCycle = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db.query("service_periods").collect();
+    let removed = 0;
+    for (const p of existing) {
+      if (p.source === "cycle") {
+        await ctx.db.delete(p._id);
+        removed++;
+      }
+    }
+    return removed;
+  },
+});

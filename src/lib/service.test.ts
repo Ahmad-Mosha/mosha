@@ -55,4 +55,45 @@ assert.strictEqual(statusFor("2026-08-20", withDuty, config), "duty");
 assert.strictEqual(countLeaveDays(withDuty), 16, "duty excluded from leave total");
 assert.strictEqual(computeCountdown(withDuty, config, NOW).nextLeave?._id, "b", "duty is not a leave");
 
-console.log("service: all assertions passed");
+
+// --- fixed rotation -------------------------------------------------------
+import { generateCyclePeriods } from "./service.ts";
+import { fromDayString } from "../../convex/recurrence.ts";
+
+// 7 days base from Sat 5 Sep, then 7 home from Sat 12 Sep, repeating.
+const rule = { anchor: "2026-09-05", anchorPhase: "base" as const, baseDays: 7, homeDays: 7 };
+const gen = generateCyclePeriods(rule, "2026-09-05", "2026-10-30");
+
+assert.deepStrictEqual(
+  gen.map((p) => [p.startDate, p.endDate]),
+  [
+    ["2026-09-12", "2026-09-18"],
+    ["2026-09-26", "2026-10-02"],
+    ["2026-10-10", "2026-10-16"],
+    ["2026-10-24", "2026-10-30"],
+  ],
+  "7/7 rotation lands every home stretch on a Saturday"
+);
+
+// Every generated start must be a Saturday, like the real changeover day.
+for (const p of gen) {
+  assert.strictEqual(fromDayString(p.startDate).getDay(), 6, `${p.startDate} is a Saturday`);
+}
+
+// Starting mid-stretch must not invent a short period.
+const midway = generateCyclePeriods(rule, "2026-09-15", "2026-09-30");
+assert.strictEqual(midway[0].startDate, "2026-09-15", "clipped to the window start");
+assert.strictEqual(midway[0].endDate, "2026-09-18", "but keeps the real end");
+
+// Walking backwards from before the anchor still phases correctly.
+const before = generateCyclePeriods(rule, "2026-08-22", "2026-09-11");
+assert.deepStrictEqual(
+  before.map((p) => [p.startDate, p.endDate]),
+  [["2026-08-29", "2026-09-04"]],
+  "the home stretch before the anchor"
+);
+
+assert.deepStrictEqual(generateCyclePeriods({ ...rule, homeDays: 0 }, "2026-09-05", "2026-10-30"), [],
+  "a zero-length phase generates nothing rather than looping");
+
+console.log("service cycle: all assertions passed");

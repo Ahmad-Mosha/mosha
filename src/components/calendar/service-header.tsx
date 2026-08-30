@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Home, Flag, Pencil, Check, X } from "lucide-react";
+import { Home, Flag, Pencil, Check, X, Repeat } from "lucide-react";
+import { RotationSetup } from "./rotation-setup";
+import type { CycleRule } from "@/lib/service";
 import { fromDayString } from "../../../convex/recurrence";
 import type { Countdown } from "@/lib/service";
 
@@ -13,15 +15,17 @@ interface Props {
   countdown: Countdown;
   dischargeDate?: string;
   serviceStartDate?: string;
+  cycle?: Partial<CycleRule>;
 }
 
 /**
  * The number that matters, kept at the top of the screen. Everything else on
  * this page is scheduling; this is the one thing worth seeing every time.
  */
-export function ServiceHeader({ countdown, dischargeDate, serviceStartDate }: Props) {
+export function ServiceHeader({ countdown, dischargeDate, serviceStartDate, cycle }: Props) {
   const setConfig = useMutation(api.service.setConfig);
   const [editing, setEditing] = useState(false);
+  const [rotating, setRotating] = useState(false);
   const [discharge, setDischarge] = useState(dischargeDate ?? "");
   const [start, setStart] = useState(serviceStartDate ?? "");
 
@@ -32,6 +36,16 @@ export function ServiceHeader({ countdown, dischargeDate, serviceStartDate }: Pr
     });
     setEditing(false);
   };
+
+  if (rotating) {
+    return (
+      <RotationSetup
+        dischargeDate={dischargeDate}
+        existing={cycle}
+        onClose={() => setRotating(false)}
+      />
+    );
+  }
 
   if (!dischargeDate && !editing) {
     return (
@@ -124,6 +138,16 @@ export function ServiceHeader({ countdown, dischargeDate, serviceStartDate }: Pr
           ) : (
             <span className="text-label text-ghost">No leave scheduled</span>
           )}
+
+          <button
+            onClick={() => setRotating(true)}
+            title="Set up a fixed rotation"
+            className="grid h-7 w-7 place-items-center rounded-lg text-ghost opacity-0
+                       transition-opacity hover:bg-subtle hover:text-ink
+                       group-hover/hdr:opacity-100 cursor-pointer"
+          >
+            <Repeat className="h-3.5 w-3.5" />
+          </button>
 
           <button
             onClick={() => setEditing(true)}

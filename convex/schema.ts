@@ -192,6 +192,9 @@ export default defineSchema({
     startDate: v.string(), // YYYY-MM-DD, inclusive
     endDate: v.string(), // YYYY-MM-DD, inclusive
     label: v.optional(v.string()),
+    // "cycle" rows are regenerated from the rotation rule; "manual" ones are
+    // hand-marked and must survive a regenerate.
+    source: v.optional(v.string()),
     createdAt: v.string(),
   }).index("by_start", ["startDate"]),
 
@@ -199,6 +202,11 @@ export default defineSchema({
   service_config: defineTable({
     dischargeDate: v.optional(v.string()),
     serviceStartDate: v.optional(v.string()),
+    // Fixed rotation: a known changeover date plus how long each phase runs.
+    cycleAnchor: v.optional(v.string()), // a date the anchor phase begins
+    cycleAnchorPhase: v.optional(v.string()), // "base" | "home" on that date
+    cycleBaseDays: v.optional(v.number()),
+    cycleHomeDays: v.optional(v.number()),
     updatedAt: v.string(),
   }),
 

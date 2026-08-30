@@ -144,6 +144,12 @@ export function CalendarScreen() {
           countdown={countdown}
           dischargeDate={config?.dischargeDate}
           serviceStartDate={config?.serviceStartDate}
+          cycle={{
+            anchor: config?.cycleAnchor,
+            anchorPhase: config?.cycleAnchorPhase as "base" | "home" | undefined,
+            baseDays: config?.cycleBaseDays,
+            homeDays: config?.cycleHomeDays,
+          }}
         />
 
         <div className="flex shrink-0 items-center justify-between gap-3">
