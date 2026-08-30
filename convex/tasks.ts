@@ -31,6 +31,7 @@ export const create = mutation({
     goalId: v.optional(v.id("major_life_goals")),
     projectId: v.optional(v.id("projects")),
     sprintId: v.optional(v.id("sprints")),
+    labels: v.optional(v.array(v.string())),
     subtasks: v.optional(
       v.array(
         v.object({
@@ -63,6 +64,7 @@ export const create = mutation({
       goalId: args.goalId,
       projectId: args.projectId,
       sprintId: args.sprintId,
+      labels: args.labels,
       subtasks: args.subtasks,
       order: args.order,
       createdAt: new Date().toISOString(),
@@ -84,6 +86,8 @@ export const update = mutation({
     status: v.optional(v.string()),
     goalId: v.optional(v.id("major_life_goals")),
     projectId: v.optional(v.id("projects")),
+    sprintId: v.optional(v.id("sprints")),
+    labels: v.optional(v.array(v.string())),
     isDaily: v.optional(v.boolean()),
     recurrence: v.optional(v.string()),
     streakCount: v.optional(v.number()),

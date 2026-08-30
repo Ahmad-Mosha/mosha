@@ -8,6 +8,7 @@ import {
   Check, ChevronRight, CircleDot, Inbox, Play, Plus, Target, Trash2,
 } from "lucide-react";
 import { Select } from "@/components/ui/select";
+import { LabelChips } from "./task-composer";
 import { today } from "../../../convex/recurrence";
 
 const SHORT = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
@@ -305,6 +306,8 @@ function TaskList({
             <span className={`min-w-0 flex-1 truncate text-label ${done ? "text-ghost line-through" : "text-ink"}`}>
               {t.title}
             </span>
+
+            <LabelChips labels={t.labels} />
 
             <span className="flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity group-hover/row:opacity-100">
               <Select

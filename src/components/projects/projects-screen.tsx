@@ -25,6 +25,13 @@ export function ProjectsScreen() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
 
+  /** Every stack entry already in use, offered as suggestions. */
+  const knownTech = useMemo(
+    () =>
+      Array.from(new Set(projects.flatMap((p: any) => p.techStack ?? []))).sort(),
+    [projects]
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return projects.filter((p: any) => {
@@ -38,13 +45,27 @@ export function ProjectsScreen() {
     });
   }, [projects, status, query]);
 
+  const dialog = (
+    <ProjectDialog
+      isOpen={dialogOpen}
+      onClose={() => { setDialogOpen(false); setEditing(null); }}
+      editingProject={editing}
+      knownTech={knownTech}
+    />
+  );
+
+  // The dialog has to render in both branches; it used to live only in the
+  // list, so Edit from inside a project set state with nothing mounted to show.
   if (selected) {
     return (
-      <ProjectDetailView
-        projectId={selected}
-        onBack={() => setSelected(null)}
-        onEdit={(p) => { setEditing(p); setDialogOpen(true); }}
-      />
+      <>
+        <ProjectDetailView
+          projectId={selected}
+          onBack={() => setSelected(null)}
+          onEdit={(p) => { setEditing(p); setDialogOpen(true); }}
+        />
+        {dialog}
+      </>
     );
   }
 
@@ -110,11 +131,7 @@ export function ProjectsScreen() {
         </div>
       )}
 
-      <ProjectDialog
-        isOpen={dialogOpen}
-        onClose={() => { setDialogOpen(false); setEditing(null); }}
-        editingProject={editing}
-      />
+      {dialog}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { NoteEditor } from "../notes/editor";
 import { Select } from "@/components/ui/select";
 import { SprintSections, type Sprint } from "./sprint-board";
 import { STATUS_META } from "./projects-screen";
+import { TaskComposer, LabelChips } from "./task-composer";
 
 const COLUMNS = [
   { id: "todo", label: "To do" },
@@ -37,7 +38,6 @@ export function ProjectDetailView({
   const assignTask = useMutation(api.sprints.assignTask);
 
   const [tab, setTab] = useState<Tab>("board");
-  const [draft, setDraft] = useState("");
 
   const tasks = project?.tasks ?? [];
   const activeSprint = sprints.find((s) => s.status === "active") ?? null;
@@ -49,6 +49,12 @@ export function ProjectDetailView({
         ? tasks.filter((t: any) => t.sprintId === activeSprint._id)
         : tasks.filter((t: any) => !t.sprintId),
     [tasks, activeSprint]
+  );
+
+  /** Suggestions are whatever this project has already used. */
+  const knownLabels = useMemo(
+    () => Array.from(new Set(tasks.flatMap((t: any) => t.labels ?? []))).sort() as string[],
+    [tasks]
   );
 
   const done = tasks.filter((t: any) => t.status === "done").length;
@@ -68,18 +74,18 @@ export function ProjectDetailView({
     );
   }
 
-  const addTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!draft.trim()) return;
+  const addTask = async (input: {
+    title: string; priority: string; labels: string[];
+  }) => {
     try {
       await createTask({
-        title: draft.trim(),
-        priority: "p2_medium",
+        title: input.title,
+        priority: input.priority,
         module: "projects",
         projectId: projectId as any,
         sprintId: (activeSprint?._id ?? undefined) as any,
+        labels: input.labels.length ? input.labels : undefined,
       });
-      setDraft("");
     } catch {
       toast.error("Could not add that task");
     }
@@ -213,24 +219,11 @@ export function ProjectDetailView({
             )}
           </div>
 
-          <form onSubmit={addTask} className="flex items-center gap-1.5">
-            <div className="relative flex-1">
-              <Plus className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ghost" />
-              <input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder={activeSprint ? `Add to ${activeSprint.name}…` : "Add to the backlog…"}
-                className="w-full rounded-lg border border-line bg-surface py-2 pl-8 pr-2 text-label text-ink outline-none transition-colors placeholder:text-ghost focus:border-accent"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={!draft.trim()}
-              className="rounded-lg bg-accent px-4 py-2 text-label font-semibold text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-40 cursor-pointer"
-            >
-              Add
-            </button>
-          </form>
+          <TaskComposer
+            placeholder={activeSprint ? `Add to ${activeSprint.name}…` : "Add to the backlog…"}
+            knownLabels={knownLabels}
+            onAdd={addTask}
+          />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {COLUMNS.map((col) => {
@@ -284,6 +277,8 @@ export function ProjectDetailView({
                               <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
+
+                          <LabelChips labels={t.labels} />
 
                           <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
                             <Select

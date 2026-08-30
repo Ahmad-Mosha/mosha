@@ -57,6 +57,9 @@ export default defineSchema({
     goalId: v.optional(v.id("major_life_goals")), // Link to Major Life Goal
     projectId: v.optional(v.id("projects")), // Link to Project
     sprintId: v.optional(v.id("sprints")), // Which sprint the task sits in
+    // Free-form labels — frontend, backend, review, devops. Never a fixed
+    // list; the vocabulary is whatever has been used.
+    labels: v.optional(v.array(v.string())),
     subtasks: v.optional(
       v.array(
         v.object({

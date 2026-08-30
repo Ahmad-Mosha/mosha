@@ -7,12 +7,15 @@ import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Github, Globe, Terminal, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
+import { TagInput } from "@/components/ui/tag-input";
 import { STATUS_META } from "./projects-screen";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   editingProject?: any | null;
+  /** Stack entries already used across projects, offered as suggestions. */
+  knownTech?: string[];
 }
 
 /**
@@ -20,7 +23,7 @@ interface Props {
  * working branch used to live here too — both were copies of something git
  * already knows, kept up to date by hand and wrong the moment you forgot.
  */
-export function ProjectDialog({ isOpen, onClose, editingProject }: Props) {
+export function ProjectDialog({ isOpen, onClose, editingProject, knownTech = [] }: Props) {
   const createProject = useMutation(api.projects.createProject);
   const updateProject = useMutation(api.projects.updateProject);
 
@@ -28,7 +31,6 @@ export function ProjectDialog({ isOpen, onClose, editingProject }: Props) {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("active");
   const [techStack, setTechStack] = useState<string[]>([]);
-  const [techInput, setTechInput] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [liveUrl, setLiveUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -41,14 +43,8 @@ export function ProjectDialog({ isOpen, onClose, editingProject }: Props) {
     setTechStack(editingProject?.techStack ?? []);
     setGithubUrl(editingProject?.githubUrl ?? "");
     setLiveUrl(editingProject?.liveUrl ?? "");
-    setTechInput("");
   }, [editingProject, isOpen]);
 
-  const addTech = (raw: string) => {
-    const clean = raw.trim().replace(/,$/, "");
-    if (clean && !techStack.includes(clean)) setTechStack((s) => [...s, clean]);
-    setTechInput("");
-  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,39 +121,12 @@ export function ProjectDialog({ isOpen, onClose, editingProject }: Props) {
 
             <div className="space-y-1.5">
               <span className="font-mono text-meta uppercase text-faint">Stack</span>
-              <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-lg border border-line bg-surface p-2">
-                {techStack.map((tech) => (
-                  <span
-                    key={tech}
-                    className="flex items-center gap-1 rounded bg-subtle-2 px-1.5 py-0.5 font-mono text-meta text-muted"
-                  >
-                    {tech}
-                    <button
-                      type="button"
-                      onClick={() => setTechStack((s) => s.filter((t) => t !== tech))}
-                      className="text-ghost hover:text-danger cursor-pointer"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-                <input
-                  value={techInput}
-                  onChange={(e) => setTechInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    // Enter or comma commits; backspace on an empty field removes the last.
-                    if (e.key === "Enter" || e.key === ",") {
-                      e.preventDefault();
-                      addTech(techInput);
-                    } else if (e.key === "Backspace" && !techInput) {
-                      setTechStack((s) => s.slice(0, -1));
-                    }
-                  }}
-                  onBlur={() => techInput && addTech(techInput)}
-                  placeholder={techStack.length ? "" : "TypeScript, Go, Postgres…"}
-                  className="min-w-24 flex-1 bg-transparent px-1 font-mono text-meta text-ink outline-none placeholder:text-ghost"
-                />
-              </div>
+              <TagInput
+                values={techStack}
+                onChange={setTechStack}
+                options={knownTech}
+                placeholder="TypeScript, Go, Postgres…"
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
