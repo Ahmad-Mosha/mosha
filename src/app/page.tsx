@@ -57,10 +57,9 @@ export default function Home() {
     }
   };
 
-  const isEdgeToEdge =
-    activeModule === "notes" ||
-    activeModule === "projects" ||
-    activeModule === "calendar";
+  // Only screens that manage their own full height. Projects is a normal
+  // scrolling page and needs the padded container like every other module.
+  const isEdgeToEdge = activeModule === "notes" || activeModule === "calendar";
 
   return (
     <div className="min-h-screen bg-canvas flex flex-row antialiased text-ink">
