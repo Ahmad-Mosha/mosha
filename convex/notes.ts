@@ -1,6 +1,9 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
+import {
+  LEARNING_ROOT, PROJECTS_ROOT, ensureFolderPath,
+} from "./folderPaths";
 
 // Query: List all folders
 export const listFolders = query({
@@ -220,11 +223,7 @@ export const clearAllFolders = mutation({
  * in a field only the Learning screen can read.
  */
 export const getOrCreateForTopic = mutation({
-  args: {
-    topicId: v.id("learning_topics"),
-    title: v.string(),
-    folderId: v.optional(v.id("folders")),
-  },
+  args: { topicId: v.id("learning_topics") },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("notes")
@@ -232,19 +231,81 @@ export const getOrCreateForTopic = mutation({
       .first();
     if (existing) return existing._id;
 
+    const topic = await ctx.db.get(args.topicId);
+    if (!topic) throw new Error("Topic not found");
+    const track = await ctx.db.get(topic.trackId);
+
+    const folderId = await ensureFolderPath(ctx, [
+      LEARNING_ROOT,
+      track?.name ?? "Untitled track",
+    ]);
+
     const now = new Date().toISOString();
     return await ctx.db.insert("notes", {
-      title: args.title.trim() || "Untitled Note",
+      title: topic.title.trim() || "Untitled Note",
       content: "<p></p>",
       plainText: "",
       topicId: args.topicId,
-      folderId: args.folderId,
+      folderId,
       isPinned: false,
       isFavorite: false,
       tags: [],
       createdAt: now,
       updatedAt: now,
     });
+  },
+});
+
+/** The note for a project, filed under Projects / <project>. */
+export const getOrCreateForProject = mutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("notes")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .first();
+    if (existing) return existing._id;
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const folderId = await ensureFolderPath(ctx, [
+      PROJECTS_ROOT,
+      project.name ?? "Untitled project",
+    ]);
+
+    const now = new Date().toISOString();
+    // Carry across whatever the old embedded editor held, so nothing is lost.
+    const legacy = (project as any).devNotes as string | undefined;
+    const content = legacy && legacy.trim() ? legacy : "<p></p>";
+
+    return await ctx.db.insert("notes", {
+      title: project.name,
+      content,
+      plainText: content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+      projectId: args.projectId,
+      folderId,
+      isPinned: false,
+      isFavorite: false,
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+/** Which projects already have a note. */
+export const notesByProject = query({
+  args: {},
+  handler: async (ctx) => {
+    const notes = await ctx.db.query("notes").collect();
+    const map: Record<string, { id: string; words: number }> = {};
+    for (const n of notes) {
+      if (!n.projectId) continue;
+      const text = (n.plainText ?? "").trim();
+      map[n.projectId] = { id: n._id, words: text ? text.split(/\s+/).length : 0 };
+    }
+    return map;
   },
 });
 

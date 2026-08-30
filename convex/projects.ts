@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { PROJECTS_ROOT, renameChildFolder } from "./folderPaths";
 
 // Query: List all projects
 export const listProjects = query({
@@ -96,6 +97,10 @@ export const updateProject = mutation({
     order: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    if (args.name !== undefined) {
+      const current = await ctx.db.get(args.id);
+      if (current) await renameChildFolder(ctx, PROJECTS_ROOT, current.name, args.name);
+    }
     const { id, ...fields } = args;
     await ctx.db.patch(id, {
       ...fields,
