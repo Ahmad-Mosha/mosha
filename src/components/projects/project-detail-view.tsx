@@ -8,6 +8,7 @@ import { today } from "../../../convex/recurrence";
 import {
   ArrowLeft, Check, CircleDot, Github, Globe, Pencil, Plus, Trash2,
 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { NoteEditor } from "../notes/editor";
 import { Select } from "@/components/ui/select";
 import { SprintSections, type Sprint } from "./sprint-board";
@@ -25,11 +26,12 @@ const COLUMNS = [
 type Tab = "board" | "sprints" | "notes";
 
 export function ProjectDetailView({
-  projectId, onBack, onEdit,
+  projectId, onBack, onEdit, onDeleted,
 }: {
   projectId: string;
   onBack: () => void;
   onEdit: (project: any) => void;
+  onDeleted: () => void;
 }) {
   const project = useQuery(api.projects.getProject, { id: projectId as any });
   const sprints = (useQuery(api.sprints.listForProject, { projectId: projectId as any }) ??
@@ -39,11 +41,13 @@ export function ProjectDetailView({
   const updateStatus = useMutation(api.tasks.updateStatus);
   const removeTask = useMutation(api.tasks.remove);
   const assignTask = useMutation(api.sprints.assignTask);
+  const removeProject = useMutation(api.projects.removeProject);
 
   const [tab, setTab] = useState<Tab>("board");
   /** Which sprint the board shows. null means the backlog. */
   const [boardSprint, setBoardSprint] = useState<string | null | undefined>(undefined);
   const [editingTask, setEditingTask] = useState<any | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const tasks = project?.tasks ?? [];
   const activeSprint = sprints.find((s) => s.status === "active") ?? null;
@@ -161,6 +165,13 @@ export function ProjectDetailView({
               className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-subtle hover:text-ink cursor-pointer"
             >
               <Pencil className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => setConfirmDelete(true)}
+              title="Delete project"
+              className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-danger/35 hover:bg-danger-tint hover:text-danger cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -366,6 +377,20 @@ export function ProjectDetailView({
           onEditTask={setEditingTask}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title={`Delete “${project.name}”?`}
+        body="Its sprints go with it. Its tasks move to your general list rather than being deleted."
+        confirmLabel="Delete project"
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          await removeProject({ id: projectId as any });
+          toast.success("Project deleted — its tasks moved to your general list");
+          setConfirmDelete(false);
+          onDeleted();
+        }}
+      />
 
       <TaskDialog
         task={editingTask}

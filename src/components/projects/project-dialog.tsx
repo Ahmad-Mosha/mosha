@@ -5,7 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
-import { Github, Globe, Terminal, Trash2, X } from "lucide-react";
+import { Github, Globe, Terminal, X } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
 import { STATUS_META } from "./projects-screen";
@@ -28,8 +28,6 @@ interface Props {
 export function ProjectDialog({ isOpen, onClose, editingProject, knownTech = [], onDeleted }: Props) {
   const createProject = useMutation(api.projects.createProject);
   const updateProject = useMutation(api.projects.updateProject);
-  const removeProject = useMutation(api.projects.removeProject);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -47,7 +45,6 @@ export function ProjectDialog({ isOpen, onClose, editingProject, knownTech = [],
     setTechStack(editingProject?.techStack ?? []);
     setGithubUrl(editingProject?.githubUrl ?? "");
     setLiveUrl(editingProject?.liveUrl ?? "");
-    setConfirmDelete(false);
   }, [editingProject, isOpen]);
 
 
@@ -159,44 +156,7 @@ export function ProjectDialog({ isOpen, onClose, editingProject, knownTech = [],
               </label>
             </div>
 
-            <div className="flex items-center justify-between gap-2 pt-1">
-              {editingProject ? (
-                confirmDelete ? (
-                  <span className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await removeProject({ id: editingProject._id });
-                        toast.success("Project deleted — its tasks moved to your general list");
-                        onDeleted?.();
-                        onClose();
-                      }}
-                      className="rounded-lg bg-danger px-3 py-1.5 text-label font-semibold text-accent-fg cursor-pointer"
-                    >
-                      Delete for good
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(false)}
-                      className="font-mono text-meta text-ghost hover:text-ink cursor-pointer"
-                    >
-                      cancel
-                    </button>
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDelete(true)}
-                    className="flex items-center gap-1.5 font-mono text-meta text-ghost transition-colors hover:text-danger cursor-pointer"
-                  >
-                    <Trash2 className="h-3 w-3" /> Delete project
-                  </button>
-                )
-              ) : (
-                <span />
-              )}
-
-              <div className="flex gap-2">
+            <div className="flex justify-end gap-2 pt-1">
               <Dialog.Close className="rounded-lg border border-line px-4 py-2 text-label text-muted transition-colors hover:bg-subtle hover:text-ink cursor-pointer">
                 Cancel
               </Dialog.Close>
@@ -206,8 +166,7 @@ export function ProjectDialog({ isOpen, onClose, editingProject, knownTech = [],
                 className="rounded-lg bg-accent px-4 py-2 text-label font-semibold text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-40 cursor-pointer"
               >
                 {saving ? "Saving…" : editingProject ? "Save" : "Create"}
-                </button>
-              </div>
+              </button>
             </div>
           </form>
         </Dialog.Content>
