@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { PROJECTS_ROOT, renameChildFolder } from "./folderPaths";
+import { PROJECTS_ROOT, removeOwnedFolder, renameChildFolder } from "./folderPaths";
 
 // Query: List all projects
 export const listProjects = query({
@@ -134,12 +134,18 @@ export const removeProject = mutation({
       await ctx.db.delete(s._id);
     }
 
-    // Unlink notes
+    const project = await ctx.db.get(args.id);
+    if (project) {
+      await removeOwnedFolder(ctx, PROJECTS_ROOT, project.name, (n) =>
+        String((n as any).projectId ?? "") === String(args.id)
+      );
+    }
+
+    // Any note still pointing here that lived outside the folder loses the link.
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_project", (q) => q.eq("projectId", args.id))
       .collect();
-
     for (const n of notes) {
       await ctx.db.patch(n._id, { projectId: undefined });
     }
