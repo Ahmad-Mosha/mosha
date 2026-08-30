@@ -82,3 +82,67 @@ export async function renameChildFolder(
   );
   if (match) await ctx.db.patch(match._id, { name: nextName.trim() });
 }
+
+/**
+ * Tear down the folder a track or project owned.
+ *
+ * Notes belonging to the thing being deleted go with it — keeping them would
+ * just move the clutter one level down. Anything else you happened to file in
+ * that folder is moved to General rather than destroyed, and subfolders are
+ * lifted out so nothing is lost by association.
+ */
+export async function removeOwnedFolder(
+  ctx: MutationCtx,
+  rootName: string,
+  ownerName: string,
+  ownsNote: (note: { topicId?: unknown; projectId?: unknown }) => boolean
+) {
+  const roots = await ctx.db
+    .query("folders")
+    .withIndex("by_parent", (q) => q.eq("parentId", undefined))
+    .collect();
+  const root = roots.find(
+    (f) => f.name.trim().toLowerCase() === rootName.toLowerCase()
+  );
+  if (!root) return;
+
+  const children = await ctx.db
+    .query("folders")
+    .withIndex("by_parent", (q) => q.eq("parentId", root._id))
+    .collect();
+  const owned = children.find(
+    (f) => f.name.trim().toLowerCase() === ownerName.trim().toLowerCase()
+  );
+  if (!owned) return;
+
+  const notes = await ctx.db
+    .query("notes")
+    .withIndex("by_folder", (q) => q.eq("folderId", owned._id))
+    .collect();
+
+  for (const note of notes) {
+    if (ownsNote(note)) await ctx.db.delete(note._id);
+    else await ctx.db.patch(note._id, { folderId: undefined });
+  }
+
+  const nested = await ctx.db
+    .query("folders")
+    .withIndex("by_parent", (q) => q.eq("parentId", owned._id))
+    .collect();
+  for (const f of nested) await ctx.db.patch(f._id, { parentId: undefined });
+
+  await ctx.db.delete(owned._id);
+
+  // A root left holding nothing is noise, so it goes too.
+  const remaining = await ctx.db
+    .query("folders")
+    .withIndex("by_parent", (q) => q.eq("parentId", root._id))
+    .collect();
+  const rootNotes = await ctx.db
+    .query("notes")
+    .withIndex("by_folder", (q) => q.eq("folderId", root._id))
+    .collect();
+  if (remaining.length === 0 && rootNotes.length === 0) {
+    await ctx.db.delete(root._id);
+  }
+}

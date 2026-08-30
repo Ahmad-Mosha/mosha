@@ -131,7 +131,7 @@ export function TrackView({
       <ConfirmDialog
         open={confirm}
         title={`Delete “${track.name}”?`}
-        body="Its roadmap and saved resources go with it. This cannot be undone."
+        body="Its roadmap, saved resources and topic notes go with it, along with its folder in Notes. This cannot be undone."
         confirmLabel="Delete track"
         onCancel={() => setConfirm(false)}
         onConfirm={async () => {

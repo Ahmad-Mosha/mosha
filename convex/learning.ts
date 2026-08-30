@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { today } from "./recurrence";
-import { LEARNING_ROOT, renameChildFolder } from "./folderPaths";
+import { LEARNING_ROOT, removeOwnedFolder, renameChildFolder } from "./folderPaths";
 
 /**
  * Learning: tracks, the topics that make up their roadmap, and the resources
@@ -113,10 +113,20 @@ export const updateTrack = mutation({
 export const removeTrack = mutation({
   args: { id: v.id("learning_tracks") },
   handler: async (ctx, args) => {
+    const track = await ctx.db.get(args.id);
+
     const topics = await ctx.db
       .query("learning_topics")
       .withIndex("by_track", (q) => q.eq("trackId", args.id))
       .collect();
+
+    if (track) {
+      const topicIds = new Set(topics.map((t) => String(t._id)));
+      await removeOwnedFolder(ctx, LEARNING_ROOT, track.name, (n) =>
+        Boolean(n.topicId && topicIds.has(String(n.topicId)))
+      );
+    }
+
     for (const t of topics) await ctx.db.delete(t._id);
 
     const resources = await ctx.db

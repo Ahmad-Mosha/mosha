@@ -232,7 +232,7 @@ function ProjectCard({ project, onOpen }: { project: any; onOpen: () => void }) 
         <ConfirmDialog
           open={confirm}
           title={`Delete “${project.name}”?`}
-          body="Its sprints go with it. Its tasks move to your general list rather than being deleted."
+          body="Its sprints and its notes folder go with it. Its tasks move to your general list rather than being deleted."
           confirmLabel="Delete project"
           onCancel={() => setConfirm(false)}
           onConfirm={async () => {

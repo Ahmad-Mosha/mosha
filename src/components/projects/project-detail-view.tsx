@@ -384,7 +384,7 @@ export function ProjectDetailView({
       <ConfirmDialog
         open={confirmDelete}
         title={`Delete “${project.name}”?`}
-        body="Its sprints go with it. Its tasks move to your general list rather than being deleted."
+        body="Its sprints and its notes folder go with it. Its tasks move to your general list rather than being deleted."
         confirmLabel="Delete project"
         onCancel={() => setConfirmDelete(false)}
         onConfirm={async () => {
