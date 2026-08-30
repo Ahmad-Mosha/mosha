@@ -3,7 +3,10 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Github, Globe, Plus, Search } from "lucide-react";
+import { Github, Globe, Plus, Search, Trash2 } from "lucide-react";
+import { useMutation } from "convex/react";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select } from "@/components/ui/select";
 import { ProjectDialog } from "./project-dialog";
 import { ProjectDetailView } from "./project-detail-view";
@@ -64,6 +67,7 @@ export function ProjectsScreen() {
           projectId={selected}
           onBack={() => setSelected(null)}
           onEdit={(p) => { setEditing(p); setDialogOpen(true); }}
+          onDeleted={() => setSelected(null)}
         />
         {dialog}
       </>
@@ -138,6 +142,8 @@ export function ProjectsScreen() {
 }
 
 function ProjectCard({ project, onOpen }: { project: any; onOpen: () => void }) {
+  const removeProject = useMutation(api.projects.removeProject);
+  const [confirm, setConfirm] = useState(false);
   const meta = STATUS_META[project.status] ?? STATUS_META.planning;
   const stack: string[] = project.techStack ?? [];
 
@@ -154,9 +160,19 @@ function ProjectCard({ project, onOpen }: { project: any; onOpen: () => void }) 
             <p className="mt-0.5 line-clamp-2 text-label text-faint">{project.description}</p>
           )}
         </div>
-        <span className={`flex shrink-0 items-center gap-1.5 rounded px-2 py-0.5 font-mono text-meta ${meta.chip}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
-          {meta.label}
+        <span className="flex shrink-0 items-center gap-1.5">
+          <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 font-mono text-meta ${meta.chip}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+            {meta.label}
+          </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); setConfirm(true); }}
+            title="Delete project"
+            className="grid h-6 w-6 place-items-center rounded text-ghost opacity-0 transition
+                       hover:bg-danger-tint hover:text-danger group-hover:opacity-100 cursor-pointer"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
         </span>
       </div>
 
@@ -211,6 +227,20 @@ function ProjectCard({ project, onOpen }: { project: any; onOpen: () => void }) 
             )}
           </span>
         </div>
+      </div>
+      <div onClick={(e) => e.stopPropagation()}>
+        <ConfirmDialog
+          open={confirm}
+          title={`Delete “${project.name}”?`}
+          body="Its sprints go with it. Its tasks move to your general list rather than being deleted."
+          confirmLabel="Delete project"
+          onCancel={() => setConfirm(false)}
+          onConfirm={async () => {
+            await removeProject({ id: project._id });
+            toast.success("Project deleted — its tasks moved to your general list");
+            setConfirm(false);
+          }}
+        />
       </div>
     </article>
   );
