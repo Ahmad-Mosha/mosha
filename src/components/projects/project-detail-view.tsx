@@ -1,362 +1,318 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { ProjectKanban } from "./project-kanban";
-import { NoteEditor } from "../notes/editor";
+import { toast } from "sonner";
 import {
-  ArrowLeft,
-  Github,
-  Globe,
-  GitBranch,
-  Edit2,
-  Trash2,
-  CheckCircle2,
-  Layers,
-  FileCode,
-  Terminal,
-  Calendar,
+  ArrowLeft, Check, Circle, Github, Globe, Pencil, Plus, Trash2,
 } from "lucide-react";
+import { NoteEditor } from "../notes/editor";
+import { Select } from "@/components/ui/select";
+import { SprintBoard } from "./sprint-board";
+import { STATUS_META } from "./projects-screen";
 
-interface ProjectDetailViewProps {
-  projectId: any;
-  onBack: () => void;
-  onEdit: (project: any) => void;
-}
+const COLUMNS = [
+  { id: "todo", label: "To do" },
+  { id: "in_progress", label: "In progress" },
+  { id: "done", label: "Done" },
+];
+
+type Tab = "sprints" | "notes";
 
 export function ProjectDetailView({
-  projectId,
-  onBack,
-  onEdit,
-}: ProjectDetailViewProps) {
-  const project = useQuery(api.projects.getProject, { id: projectId });
+  projectId, onBack, onEdit,
+}: {
+  projectId: string;
+  onBack: () => void;
+  onEdit: (project: any) => void;
+}) {
+  const project = useQuery(api.projects.getProject, { id: projectId as any });
+  const sprints = useQuery(api.sprints.listForProject, { projectId: projectId as any }) ?? [];
   const updateProject = useMutation(api.projects.updateProject);
-  const removeProject = useMutation(api.projects.removeProject);
+  const createTask = useMutation(api.tasks.create);
+  const updateStatus = useMutation(api.tasks.updateStatus);
+  const removeTask = useMutation(api.tasks.remove);
+  const assignTask = useMutation(api.sprints.assignTask);
 
-  const [activeTab, setActiveTab] = useState<"kanban" | "notes" | "overview">("kanban");
+  const [tab, setTab] = useState<Tab>("sprints");
+  const [selectedSprint, setSelectedSprint] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
 
-  // Debounced auto-save timer for Dev Notes
-  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const tasks = project?.tasks ?? [];
 
+  /** The board shows one sprint at a time, or the backlog when none is picked. */
+  const boardTasks = useMemo(
+    () =>
+      selectedSprint
+        ? tasks.filter((t: any) => t.sprintId === selectedSprint)
+        : tasks.filter((t: any) => !t.sprintId),
+    [tasks, selectedSprint]
+  );
+
+  if (project === undefined) {
+    return <div className="py-20 text-center text-label text-ghost">Loading…</div>;
+  }
   if (!project) {
     return (
-      <div className="flex-1 flex items-center justify-center p-12 text-label text-ghost animate-pulse">
-        Loading project workspace...
+      <div className="space-y-3 py-20 text-center">
+        <p className="text-label text-ghost">That project no longer exists.</p>
+        <button onClick={onBack} className="text-label text-accent hover:underline cursor-pointer">
+          Back to projects
+        </button>
       </div>
     );
   }
 
-  const handleDevNotesChange = (html: string, plainText: string) => {
-    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-    autoSaveTimerRef.current = setTimeout(async () => {
-      try {
-        await updateProject({
-          id: project._id,
-          devNotes: html,
-        });
-      } catch (err) {
-        console.error("Auto-save dev notes failed:", err);
-      }
-    }, 500);
-  };
+  const meta = STATUS_META[project.status] ?? STATUS_META.planning;
 
-  const handleDelete = async () => {
-    if (confirm(`Are you sure you want to delete "${project.name}"?`)) {
-      await removeProject({ id: project._id });
-      onBack();
-    }
-  };
-
-  const tasks = project.tasks || [];
-  const doneTasks = tasks.filter((t: any) => t.status === "done").length;
-  const progress = tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0;
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return (
-          <span className="px-2.5 py-1 rounded-full bg-success-tint text-success border border-success/35 font-mono text-meta font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            <span>Active</span>
-          </span>
-        );
-      case "in_progress":
-        return (
-          <span className="px-2.5 py-1 rounded-full bg-warn-tint text-warn border border-warn/35 font-mono text-meta font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-warn" />
-            <span>In Progress</span>
-          </span>
-        );
-      case "in_review":
-        return (
-          <span className="px-2.5 py-1 rounded-full bg-info-tint text-info border border-info/35 font-mono text-meta font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-info" />
-            <span>In Review</span>
-          </span>
-        );
-      case "completed":
-        return (
-          <span className="px-2.5 py-1 rounded-full bg-shipped-tint text-shipped border border-shipped/35 font-mono text-meta font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-shipped" />
-            <span>Shipped</span>
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2.5 py-1 rounded-full bg-subtle text-muted border border-line font-mono text-meta font-semibold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-ghost" />
-            <span>Planning</span>
-          </span>
-        );
+  const addTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!draft.trim()) return;
+    try {
+      await createTask({
+        title: draft.trim(),
+        priority: "p2_medium",
+        module: "projects",
+        projectId: projectId as any,
+        sprintId: (selectedSprint ?? undefined) as any,
+      });
+      setDraft("");
+    } catch {
+      toast.error("Could not add that task");
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-surface-2 overflow-hidden animate-in fade-in duration-150">
-      {/* 1. Project Master Header */}
-      <div className="px-6 py-4 border-b border-line bg-surface flex flex-wrap justify-between items-center gap-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="p-1.5 rounded-lg border border-line hover:bg-surface-2 text-muted hover:text-ink transition-colors cursor-pointer flex items-center gap-1 text-label font-semibold"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Projects</span>
-          </button>
+    <div className="space-y-5">
+      <header className="space-y-3 border-b border-line pb-4">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 font-mono text-meta uppercase text-faint transition-colors hover:text-ink cursor-pointer"
+        >
+          <ArrowLeft className="h-3 w-3" /> Projects
+        </button>
 
-          <div className="flex items-center gap-2">
-            <h1 className="font-serif text-title md:text-title font-bold text-ink">
-              {project.name}
-            </h1>
-            {getStatusBadge(project.status)}
-            {project.version && (
-              <span className="px-2 py-0.5 rounded bg-subtle-2 font-mono text-meta text-muted font-semibold">
-                {project.version}
-              </span>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="font-serif text-title text-ink">{project.name}</h1>
+              <Select
+                value={project.status}
+                onValueChange={(v) => updateProject({ id: projectId as any, status: v })}
+                size="sm"
+                options={Object.entries(STATUS_META).map(([v, m]) => ({ value: v, label: m.label }))}
+              />
+            </div>
+            {project.description && (
+              <p className="mt-1 max-w-2xl text-label text-faint">{project.description}</p>
+            )}
+            {project.techStack?.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {project.techStack.map((t: string) => (
+                  <span key={t} className="rounded bg-subtle-2 px-1.5 py-0.5 font-mono text-meta text-muted">
+                    {t}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Action Controls & External Links */}
-        <div className="flex items-center space-x-2 text-label">
-          {project.branch && (
-            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-2 border border-line font-mono text-meta text-muted">
-              <GitBranch className="w-3.5 h-3.5 text-faint" />
-              <span>{project.branch}</span>
-            </div>
-          )}
-
-          {project.githubUrl && (
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-subtle text-muted hover:text-ink transition-colors cursor-pointer"
-              title="Open GitHub Repository"
-            >
-              <Github className="w-4 h-4" />
-            </a>
-          )}
-
-          {project.liveUrl && (
-            <a
-              href={project.liveUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-subtle text-muted hover:text-ink transition-colors cursor-pointer"
-              title="Open Live Deployment"
-            >
-              <Globe className="w-4 h-4" />
-            </a>
-          )}
-
-          <button
-            onClick={() => onEdit(project)}
-            className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-subtle text-muted hover:text-ink transition-colors cursor-pointer"
-            title="Edit Project"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={handleDelete}
-            className="p-1.5 rounded-lg border border-line bg-surface-2 hover:bg-danger-tint text-faint hover:text-danger transition-colors cursor-pointer"
-            title="Delete Project"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Sub-Header: Description, Tech Stack & Navigation Tabs */}
-      <div className="px-6 pt-3 border-b border-line bg-surface-2 flex flex-wrap justify-between items-end gap-3 shrink-0">
-        <div className="space-y-2 pb-3 max-w-2xl">
-          {project.description && (
-            <p className="text-label text-muted leading-relaxed font-normal">
-              {project.description}
-            </p>
-          )}
-
-          {/* Tech Stack Pills */}
-          <div className="flex flex-wrap gap-1">
-            {(project.techStack || []).map((t: string) => (
-              <span
-                key={t}
-                className="px-2 py-0.5 rounded bg-subtle border border-line font-mono text-meta text-accent font-medium shadow-2xs"
+          <div className="flex items-center gap-1.5">
+            {project.githubUrl && (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noreferrer"
+                title="Repository"
+                className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-subtle hover:text-ink"
               >
-                {t}
-              </span>
-            ))}
+                <Github className="h-4 w-4" />
+              </a>
+            )}
+            {project.liveUrl && (
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noreferrer"
+                title="Live site"
+                className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-subtle hover:text-ink"
+              >
+                <Globe className="h-4 w-4" />
+              </a>
+            )}
+            <button
+              onClick={() => onEdit(project)}
+              title="Edit project"
+              className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-subtle hover:text-ink cursor-pointer"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 
-        {/* Tab Navigation Buttons */}
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={() => setActiveTab("kanban")}
-            className={`px-4 py-2 text-label font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === "kanban"
-                ? "border-accent text-ink"
-                : "border-transparent text-faint hover:text-ink"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Sprint Kanban</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-subtle-2 text-meta font-mono">
-              {tasks.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("notes")}
-            className={`px-4 py-2 text-label font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === "notes"
-                ? "border-accent text-ink"
-                : "border-transparent text-faint hover:text-ink"
-            }`}
-          >
-            <FileCode className="w-3.5 h-3.5" />
-            <span>Architecture & Dev Notes</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2 text-label font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-              activeTab === "overview"
-                ? "border-accent text-ink"
-                : "border-transparent text-faint hover:text-ink"
-            }`}
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Progress & Metrics ({progress}%)</span>
-          </button>
+        <div className="flex gap-1">
+          {(["sprints", "notes"] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`rounded-lg px-3 py-1.5 text-label capitalize transition-colors cursor-pointer ${
+                tab === t ? "bg-accent font-semibold text-accent-fg" : "text-muted hover:bg-subtle hover:text-ink"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
         </div>
-      </div>
+      </header>
 
-      {/* 3. Tab Content Panes */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-surface">
-        {activeTab === "kanban" && (
-          <ProjectKanban projectId={project._id} />
-        )}
+      {tab === "sprints" ? (
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[320px_1fr]">
+          <SprintBoard
+            projectId={projectId}
+            sprints={sprints as any}
+            selectedSprint={selectedSprint}
+            onSelectSprint={setSelectedSprint}
+          />
 
-        {activeTab === "notes" && (
-          <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-5xl w-full mx-auto space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-line">
-              <div>
-                <h3 className="font-serif text-heading font-bold text-ink">
-                  Technical Specs & Architecture RFC
-                </h3>
-                <p className="text-label text-faint">
-                  Document system boundaries, data contracts, and deployment runbooks.
-                </p>
-              </div>
-              <span className="text-meta font-mono text-ghost">
-                Auto-saves in real-time
-              </span>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-mono text-meta font-semibold uppercase text-faint">
+                {selectedSprint
+                  ? sprints.find((s: any) => s._id === selectedSprint)?.name ?? "Sprint"
+                  : "Backlog"}
+                <span className="ml-1.5 text-ghost">{boardTasks.length}</span>
+              </h2>
+              {selectedSprint && (
+                <button
+                  onClick={() => setSelectedSprint(null)}
+                  className="font-mono text-meta text-ghost hover:text-ink cursor-pointer"
+                >
+                  show backlog
+                </button>
+              )}
             </div>
 
-            <NoteEditor
-              key={project._id}
-              initialContent={project.devNotes || "<h2>Architecture Overview</h2><p>Document technical details here...</p>"}
-              onChange={handleDevNotesChange}
-              placeholder="Write architecture notes, paste code snippets, or document endpoints..."
-            />
-          </div>
-        )}
-
-        {activeTab === "overview" && (
-          <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-4xl w-full mx-auto space-y-6">
-            {/* Progress Card */}
-            <div className="p-6 bg-surface-2 border border-line rounded-2xl shadow-xs space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-serif text-heading font-bold text-ink">
-                  Sprint Completion Rate
-                </h3>
-                <span className="font-mono text-heading font-bold text-accent">
-                  {progress}% Complete
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full bg-subtle-2 h-3 rounded-full overflow-hidden">
-                <div
-                  className="bg-accent h-full rounded-full transition-all duration-500"
-                  style={{ width: `${progress}%` }}
+            <form onSubmit={addTask} className="flex items-center gap-1.5">
+              <div className="relative flex-1">
+                <Plus className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ghost" />
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder={selectedSprint ? "Add to this sprint…" : "Add to the backlog…"}
+                  className="w-full rounded-lg border border-line bg-surface py-1.5 pl-8 pr-2 text-label text-ink outline-none transition-colors placeholder:text-ghost focus:border-accent"
                 />
               </div>
+              {/* An explicit submit: a lone input gives no implicit submission
+                  here, so Enter did nothing. */}
+              <button
+                type="submit"
+                disabled={!draft.trim()}
+                className="rounded-lg bg-accent px-3 py-1.5 text-label font-semibold text-accent-fg
+                           transition-colors hover:bg-accent-hover disabled:opacity-40 cursor-pointer"
+              >
+                Add
+              </button>
+            </form>
 
-              <div className="grid grid-cols-3 gap-4 pt-2 text-center text-label">
-                <div className="p-3 bg-subtle rounded-xl border border-line">
-                  <span className="font-mono text-heading font-bold text-ink">
-                    {tasks.length}
-                  </span>
-                  <p className="text-faint text-meta mt-0.5">Total Tasks</p>
-                </div>
-                <div className="p-3 bg-subtle rounded-xl border border-line">
-                  <span className="font-mono text-heading font-bold text-success">
-                    {doneTasks}
-                  </span>
-                  <p className="text-faint text-meta mt-0.5">Done Tasks</p>
-                </div>
-                <div className="p-3 bg-subtle rounded-xl border border-line">
-                  <span className="font-mono text-heading font-bold text-warn">
-                    {tasks.length - doneTasks}
-                  </span>
-                  <p className="text-faint text-meta mt-0.5">Pending Issues</p>
-                </div>
-              </div>
-            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              {COLUMNS.map((col) => {
+                const colTasks = boardTasks.filter(
+                  (t: any) => (t.status || "todo") === col.id
+                );
+                return (
+                  <div key={col.id} className="space-y-2 rounded-xl border border-line bg-surface p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-meta font-semibold uppercase text-faint">
+                        {col.label}
+                      </span>
+                      <span className="font-mono text-meta text-ghost">{colTasks.length}</span>
+                    </div>
 
-            {/* Quick Repository Overview */}
-            <div className="p-6 bg-surface-2 border border-line rounded-2xl shadow-xs space-y-3 text-label">
-              <h4 className="font-mono uppercase tracking-wider text-meta font-bold text-muted">
-                Repository Metadata
-              </h4>
-              <div className="space-y-2 text-muted">
-                <div className="flex justify-between py-1.5 border-b border-line">
-                  <span className="text-faint">Branch</span>
-                  <span className="font-mono font-medium text-ink">{project.branch || "main"}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-line">
-                  <span className="text-faint">Version</span>
-                  <span className="font-mono font-medium text-ink">{project.version || "v1.0.0"}</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-line">
-                  <span className="text-faint">Created At</span>
-                  <span className="font-mono font-medium text-ink">
-                    {new Date(project.createdAt).toLocaleDateString([], {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
-                </div>
-              </div>
+                    {colTasks.length === 0 ? (
+                      <p className="py-6 text-center font-mono text-meta text-ghost">empty</p>
+                    ) : (
+                      colTasks.map((t: any) => (
+                        <div
+                          key={t._id}
+                          className="group space-y-1.5 rounded-lg border border-line bg-surface-2 p-2.5"
+                        >
+                          <div className="flex items-start gap-2">
+                            <button
+                              onClick={() =>
+                                updateStatus({
+                                  id: t._id,
+                                  status: t.status === "done" ? "todo" : "done",
+                                })
+                              }
+                              className="mt-0.5 shrink-0 cursor-pointer"
+                              title={t.status === "done" ? "Reopen" : "Mark done"}
+                            >
+                              {t.status === "done" ? (
+                                <Check className="h-3.5 w-3.5 text-success" />
+                              ) : (
+                                <Circle className="h-3.5 w-3.5 text-line-2 hover:text-accent" />
+                              )}
+                            </button>
+                            <span
+                              className={`flex-1 text-label ${
+                                t.status === "done" ? "text-ghost line-through" : "text-ink"
+                              }`}
+                            >
+                              {t.title}
+                            </span>
+                            <button
+                              onClick={() => removeTask({ id: t._id })}
+                              title="Delete task"
+                              className="shrink-0 text-ghost opacity-0 transition-opacity hover:text-danger group-hover:opacity-100 cursor-pointer"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <Select
+                              value={t.status || "todo"}
+                              onValueChange={(v) => updateStatus({ id: t._id, status: v })}
+                              size="sm"
+                              options={COLUMNS.map((c) => ({ value: c.id, label: c.label }))}
+                            />
+                            {sprints.length > 0 && (
+                              <Select
+                                value={t.sprintId ?? "__backlog"}
+                                onValueChange={(v) =>
+                                  assignTask({
+                                    taskId: t._id,
+                                    sprintId: (v === "__backlog" ? undefined : v) as any,
+                                  })
+                                }
+                                size="sm"
+                                options={[
+                                  { value: "__backlog", label: "Backlog" },
+                                  ...sprints.map((s: any) => ({ value: s._id, label: s.name })),
+                                ]}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="h-[65vh] overflow-hidden rounded-xl border border-line">
+          <NoteEditor
+            key={projectId}
+            initialContent={project.devNotes || ""}
+            placeholder="Architecture, decisions, runbooks…"
+            onChange={(html) => updateProject({ id: projectId as any, devNotes: html })}
+          />
+        </div>
+      )}
     </div>
   );
 }

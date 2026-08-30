@@ -57,7 +57,7 @@ export function TopHeader() {
     problems: "Algorithmic Mastery Hub",
     learning: "Learning & CS Subjects",
     career: "Engineering Career & Market",
-    projects: "Projects & Tech Builds",
+    projects: "Projects",
     gym: "Iron Journal (Fitness)",
     finance: "Sovereign Ledger (Finance)",
     journal: "Engineering Journal",

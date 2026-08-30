@@ -1,341 +1,200 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { X, Plus, Terminal, Github, Globe, GitBranch, Layers } from "lucide-react";
-import { Select, NONE } from "@/components/ui/select";
+import { toast } from "sonner";
+import { Github, Globe, Terminal, X } from "lucide-react";
+import { Select } from "@/components/ui/select";
+import { STATUS_META } from "./projects-screen";
 
-interface ProjectDialogProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
   editingProject?: any | null;
 }
 
-const COMMON_TECH = [
-  "TypeScript",
-  "React",
-  "Next.js",
-  "Tailwind",
-  "Rust",
-  "Go",
-  "Python",
-  "gRPC",
-  "Redis",
-  "PostgreSQL",
-  "Kafka",
-  "Docker",
-];
-
-export function ProjectDialog({
-  isOpen,
-  onClose,
-  editingProject,
-}: ProjectDialogProps) {
+/**
+ * Name, what it is, what it's built with, where it lives. Release version and
+ * working branch used to live here too — both were copies of something git
+ * already knows, kept up to date by hand and wrong the moment you forgot.
+ */
+export function ProjectDialog({ isOpen, onClose, editingProject }: Props) {
   const createProject = useMutation(api.projects.createProject);
   const updateProject = useMutation(api.projects.updateProject);
-  const goals = useQuery(api.goals.list) || [];
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("active");
   const [techStack, setTechStack] = useState<string[]>([]);
   const [techInput, setTechInput] = useState("");
-  const [version, setVersion] = useState("v1.0.0");
-  const [branch, setBranch] = useState("main");
   const [githubUrl, setGithubUrl] = useState("");
   const [liveUrl, setLiveUrl] = useState("");
-  const [goalId, setGoalId] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (editingProject) {
-      setName(editingProject.name || "");
-      setDescription(editingProject.description || "");
-      setStatus(editingProject.status || "active");
-      setTechStack(editingProject.techStack || []);
-      setVersion(editingProject.version || "v1.0.0");
-      setBranch(editingProject.branch || "main");
-      setGithubUrl(editingProject.githubUrl || "");
-      setLiveUrl(editingProject.liveUrl || "");
-      setGoalId(editingProject.goalId || "");
-    } else {
-      setName("");
-      setDescription("");
-      setStatus("active");
-      setTechStack(["TypeScript", "React"]);
-      setVersion("v1.0.0");
-      setBranch("main");
-      setGithubUrl("");
-      setLiveUrl("");
-      setGoalId("");
-    }
+    if (!isOpen) return;
+    setName(editingProject?.name ?? "");
+    setDescription(editingProject?.description ?? "");
+    setStatus(editingProject?.status ?? "active");
+    setTechStack(editingProject?.techStack ?? []);
+    setGithubUrl(editingProject?.githubUrl ?? "");
+    setLiveUrl(editingProject?.liveUrl ?? "");
+    setTechInput("");
   }, [editingProject, isOpen]);
 
-  const handleAddTech = (tech: string) => {
-    const clean = tech.trim();
-    if (clean && !techStack.includes(clean)) {
-      setTechStack([...techStack, clean]);
-    }
+  const addTech = (raw: string) => {
+    const clean = raw.trim().replace(/,$/, "");
+    if (clean && !techStack.includes(clean)) setTechStack((s) => [...s, clean]);
     setTechInput("");
   };
 
-  const handleRemoveTech = (tech: string) => {
-    setTechStack(techStack.filter((t) => t !== tech));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-
-    setIsSubmitting(true);
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    const payload = {
+      name: name.trim(),
+      description: description.trim(),
+      status,
+      techStack,
+      githubUrl: githubUrl.trim() || undefined,
+      liveUrl: liveUrl.trim() || undefined,
+    };
     try {
-      if (editingProject) {
-        await updateProject({
-          id: editingProject._id,
-          name: name.trim(),
-          description: description.trim(),
-          status,
-          techStack,
-          version: version.trim() || undefined,
-          branch: branch.trim() || undefined,
-          githubUrl: githubUrl.trim() || undefined,
-          liveUrl: liveUrl.trim() || undefined,
-          goalId: goalId ? (goalId as any) : undefined,
-        });
-      } else {
-        await createProject({
-          name: name.trim(),
-          description: description.trim(),
-          status,
-          techStack,
-          version: version.trim() || "v1.0.0",
-          branch: branch.trim() || "main",
-          githubUrl: githubUrl.trim() || undefined,
-          liveUrl: liveUrl.trim() || undefined,
-          goalId: goalId ? (goalId as any) : undefined,
-        });
-      }
+      if (editingProject) await updateProject({ id: editingProject._id, ...payload });
+      else await createProject(payload);
       onClose();
-    } catch (err) {
-      console.error("Failed to save project:", err);
+    } catch {
+      toast.error("Could not save the project");
     } finally {
-      setIsSubmitting(false);
+      setSaving(false);
     }
   };
 
+  const field =
+    "w-full rounded-lg border border-line bg-surface px-3 py-2 text-label text-ink outline-none transition-colors placeholder:text-ghost focus:border-accent";
+
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 animate-in fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl bg-surface-2 border border-line rounded-2xl shadow-xl p-6 z-50 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
-          <div className="flex justify-between items-center pb-4 border-b border-line">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs animate-in fade-in" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-line bg-surface-2 p-5 shadow-2xl animate-in zoom-in-95">
+          <div className="flex items-center justify-between border-b border-line pb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-accent text-accent-fg flex items-center justify-center font-bold text-body">
-                <Terminal className="w-4 h-4" />
-              </div>
-              <Dialog.Title className="font-serif text-heading font-bold text-ink">
-                {editingProject ? "Edit Project" : "New Engineering Project"}
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-accent-fg">
+                <Terminal className="h-4 w-4" />
+              </span>
+              <Dialog.Title className="font-serif text-heading text-ink">
+                {editingProject ? "Edit project" : "New project"}
               </Dialog.Title>
             </div>
-            <Dialog.Close asChild>
-              <button className="text-faint hover:text-ink p-1 rounded-md hover:bg-subtle-2 transition-colors cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
+            <Dialog.Close className="grid h-7 w-7 place-items-center rounded-lg text-faint hover:bg-subtle-2 hover:text-ink cursor-pointer">
+              <X className="h-4 w-4" />
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 pt-4 text-label">
-            {/* Project Name */}
+          <form onSubmit={submit} className="space-y-3.5 pt-4">
+            <input
+              autoFocus
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Project name"
+              className={field}
+            />
+
+            <textarea
+              rows={2}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What is it, in one line"
+              className={`${field} leading-relaxed`}
+            />
+
             <div className="space-y-1">
-              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
-                Project / Repository Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Nexus API Gateway, Core Auth Service..."
-                className="w-full bg-subtle border border-line rounded-xl px-3.5 py-2.5 text-label text-ink focus:outline-none focus:border-accent focus:bg-surface-2 transition-all font-medium"
+              <span className="font-mono text-meta uppercase text-faint">Status</span>
+              <Select
+                value={status}
+                onValueChange={setStatus}
+                className="w-full"
+                options={Object.entries(STATUS_META).map(([v, m]) => ({ value: v, label: m.label }))}
               />
             </div>
 
-            {/* Description */}
-            <div className="space-y-1">
-              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
-                Description & Purpose
-              </label>
-              <textarea
-                rows={2}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="High-level architectural overview or objective..."
-                className="w-full bg-subtle border border-line rounded-xl px-3.5 py-2 text-label text-ink focus:outline-none focus:border-accent focus:bg-surface-2 transition-all leading-relaxed"
-              />
-            </div>
-
-            {/* Status & Version */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
-                  Status
-                </label>
-                <Select
-                  value={status}
-                  onValueChange={setStatus}
-                  className="w-full"
-                  options={[
-                    { value: "active", label: "🟢 Active Development" },
-                    { value: "in_progress", label: "🟡 In Progress" },
-                    { value: "in_review", label: "🔵 In Review" },
-                    { value: "planning", label: "⚪ Planning / Spec" },
-                    { value: "completed", label: "🟣 Completed / Shipped" },
-                    { value: "on_hold", label: "🔴 Maintenance / Paused" }
-                  ]}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
-                  Release Version
-                </label>
-                <input
-                  type="text"
-                  value={version}
-                  onChange={(e) => setVersion(e.target.value)}
-                  placeholder="v1.0.0"
-                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-label font-mono text-ink focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Tech Stack Tags */}
             <div className="space-y-1.5">
-              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted">
-                Tech Stack
-              </label>
-              <div className="flex flex-wrap gap-1.5 p-2 bg-subtle border border-line rounded-xl min-h-[38px] items-center">
+              <span className="font-mono text-meta uppercase text-faint">Stack</span>
+              <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-lg border border-line bg-surface p-2">
                 {techStack.map((tech) => (
                   <span
                     key={tech}
-                    className="bg-surface-2 border border-line px-2 py-0.5 rounded-md font-mono text-meta text-accent font-medium flex items-center gap-1 shadow-2xs"
+                    className="flex items-center gap-1 rounded bg-subtle-2 px-1.5 py-0.5 font-mono text-meta text-muted"
                   >
-                    <span>{tech}</span>
+                    {tech}
                     <button
                       type="button"
-                      onClick={() => handleRemoveTech(tech)}
-                      className="text-ghost hover:text-danger cursor-pointer ml-0.5"
+                      onClick={() => setTechStack((s) => s.filter((t) => t !== tech))}
+                      className="text-ghost hover:text-danger cursor-pointer"
                     >
                       ×
                     </button>
                   </span>
                 ))}
                 <input
-                  type="text"
                   value={techInput}
                   onChange={(e) => setTechInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && techInput.trim()) {
+                    // Enter or comma commits; backspace on an empty field removes the last.
+                    if (e.key === "Enter" || e.key === ",") {
                       e.preventDefault();
-                      handleAddTech(techInput);
+                      addTech(techInput);
+                    } else if (e.key === "Backspace" && !techInput) {
+                      setTechStack((s) => s.slice(0, -1));
                     }
                   }}
-                  placeholder="+ Add tech (Enter)..."
-                  className="bg-transparent text-label font-mono focus:outline-none flex-1 min-w-[100px] px-1"
+                  onBlur={() => techInput && addTech(techInput)}
+                  placeholder={techStack.length ? "" : "TypeScript, Go, Postgres…"}
+                  className="min-w-24 flex-1 bg-transparent px-1 font-mono text-meta text-ink outline-none placeholder:text-ghost"
                 />
-              </div>
-
-              {/* Quick Tech Badges */}
-              <div className="flex flex-wrap gap-1 pt-1">
-                {COMMON_TECH.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => handleAddTech(t)}
-                    className={`px-1.5 py-0.5 rounded border text-meta font-mono transition-colors cursor-pointer ${
-                      techStack.includes(t)
-                        ? "bg-accent text-accent-fg border-accent"
-                        : "bg-surface-2 border-line text-faint hover:bg-subtle-2"
-                    }`}
-                  >
-                    +{t}
-                  </button>
-                ))}
               </div>
             </div>
 
-            {/* Git Branch & URLs */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted flex items-center gap-1">
-                  <GitBranch className="w-3.5 h-3.5" />
-                  <span>Working Branch</span>
-                </label>
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <label className="space-y-1">
+                <span className="flex items-center gap-1.5 font-mono text-meta uppercase text-faint">
+                  <Github className="h-3 w-3" /> Repository
+                </span>
                 <input
-                  type="text"
-                  value={branch}
-                  onChange={(e) => setBranch(e.target.value)}
-                  placeholder="main, feature/grpc..."
-                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-label font-mono text-ink focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted flex items-center gap-1">
-                  <Github className="w-3.5 h-3.5" />
-                  <span>GitHub Repo URL</span>
-                </label>
-                <input
-                  type="url"
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
-                  placeholder="https://github.com/..."
-                  className="w-full bg-subtle border border-line rounded-xl px-3 py-2 text-label text-ink focus:outline-none"
+                  placeholder="https://github.com/…"
+                  className={field}
                 />
-              </div>
-            </div>
-
-            {/* Linked Life Goal */}
-            <div className="space-y-1 pt-1">
-              <label className="font-mono uppercase tracking-wider text-meta font-semibold text-muted flex items-center gap-1">
-                <Layers className="w-3.5 h-3.5" />
-                <span>Link to Major Life Goal</span>
               </label>
-              <Select
-                value={goalId || NONE}
-                onValueChange={(v) => setGoalId(v === NONE ? "" : v)}
-                className="w-full"
-                options={[
-                  { value: NONE, label: "No linked life goal" },
-                  ...goals.map((g: any) => ({
-                    value: g._id,
-                    label: `${g.icon || "🎯"} ${g.title}`,
-                  })),
-                ]}
-              />
+              <label className="space-y-1">
+                <span className="flex items-center gap-1.5 font-mono text-meta uppercase text-faint">
+                  <Globe className="h-3 w-3" /> Live
+                </span>
+                <input
+                  value={liveUrl}
+                  onChange={(e) => setLiveUrl(e.target.value)}
+                  placeholder="https://…"
+                  className={field}
+                />
+              </label>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-2 pt-4 border-t border-line">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl border border-line hover:bg-subtle text-muted text-label font-semibold transition-colors cursor-pointer"
-              >
+            <div className="flex justify-end gap-2 pt-1">
+              <Dialog.Close className="rounded-lg border border-line px-4 py-2 text-label text-muted transition-colors hover:bg-subtle hover:text-ink cursor-pointer">
                 Cancel
-              </button>
+              </Dialog.Close>
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="px-5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-accent-fg text-label font-semibold shadow-xs transition-colors cursor-pointer"
+                disabled={!name.trim() || saving}
+                className="rounded-lg bg-accent px-4 py-2 text-label font-semibold text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-40 cursor-pointer"
               >
-                {isSubmitting
-                  ? "Saving..."
-                  : editingProject
-                  ? "Save Changes"
-                  : "Create Project"}
+                {saving ? "Saving…" : editingProject ? "Save" : "Create"}
               </button>
             </div>
           </form>
