@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { useMoshaStore } from "@/lib/store";
-import { screenTransition } from "@/lib/motion";
 import { SideNav } from "@/components/shell/side-nav";
 import { TopHeader } from "@/components/shell/top-header";
 import { CommandMenu } from "@/components/shell/command-menu";
@@ -12,6 +10,7 @@ import { TaskCreateDialog } from "@/components/tasks/task-create-dialog";
 import { MajorGoalsBento } from "@/components/goals/major-goals-bento";
 import { GoalDialog } from "@/components/goals/goal-dialog";
 import { NotesScreen } from "@/components/notes/notes-screen";
+import { CalendarScreen } from "@/components/calendar/calendar-screen";
 import { ProjectsScreen } from "@/components/projects/projects-screen";
 import { ProblemSolvingView } from "@/components/modules/problem-solving-view";
 import { GymFitnessView } from "@/components/modules/gym-fitness-view";
@@ -39,6 +38,8 @@ export default function Home() {
         return <MajorGoalsBento />;
       case "notes":
         return <NotesScreen />;
+      case "calendar":
+        return <CalendarScreen />;
       case "projects":
         return <ProjectsScreen />;
       case "problems":
@@ -56,7 +57,10 @@ export default function Home() {
     }
   };
 
-  const isEdgeToEdge = activeModule === "notes" || activeModule === "projects";
+  const isEdgeToEdge =
+    activeModule === "notes" ||
+    activeModule === "projects" ||
+    activeModule === "calendar";
 
   return (
     <div className="min-h-screen bg-canvas flex flex-row antialiased text-ink">
@@ -72,31 +76,22 @@ export default function Home() {
         {/* Top Header Bar */}
         <TopHeader />
 
-        {/* Edge-to-edge workspaces (Notes, Projects) mount a full-height editor.
-            Fading that whole subtree stalls the animation mid-flight and washes
-            out the screen, so those swap instantly; the padded module screens
-            keep the transition. */}
-        {isEdgeToEdge ? (
-          <main
-            key={activeModule}
-            className="flex-1 w-full h-[calc(100vh-53px)] overflow-hidden"
-          >
-            {renderModuleContent()}
-          </main>
-        ) : (
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.main
-              key={activeModule}
-              variants={screenTransition}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="flex-1 w-full px-6 py-6 max-w-7xl mx-auto"
-            >
-              {renderModuleContent()}
-            </motion.main>
-          </AnimatePresence>
-        )}
+        {/* Screen change is a CSS animation, not a JS one.
+            framer's AnimatePresence in wait-mode stranded mid-flight whenever
+            the incoming screen did heavy synchronous mount work — a Tiptap
+            editor, a 42-cell drag-enabled grid — leaving the whole module
+            frozen at half opacity. A CSS keyframe cannot stall on a blocked
+            frame, and re-keying it per module replays it on every switch. */}
+        <main
+          key={activeModule}
+          className={`flex-1 w-full animate-in fade-in slide-in-from-bottom-1 duration-200 ${
+            isEdgeToEdge
+              ? "h-[calc(100vh-53px)] overflow-hidden"
+              : "px-6 py-6 max-w-7xl mx-auto"
+          }`}
+        >
+          {renderModuleContent()}
+        </main>
       </div>
 
       {/* Global Modals */}

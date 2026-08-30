@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as calendar from "../calendar.js";
 import type * as finance from "../finance.js";
 import type * as goals from "../goals.js";
 import type * as gym from "../gym.js";
@@ -17,6 +18,7 @@ import type * as notes from "../notes.js";
 import type * as problems from "../problems.js";
 import type * as projects from "../projects.js";
 import type * as recurrence from "../recurrence.js";
+import type * as service from "../service.js";
 import type * as tasks from "../tasks.js";
 
 import type {
@@ -26,6 +28,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  calendar: typeof calendar;
   finance: typeof finance;
   goals: typeof goals;
   gym: typeof gym;
@@ -35,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   problems: typeof problems;
   projects: typeof projects;
   recurrence: typeof recurrence;
+  service: typeof service;
   tasks: typeof tasks;
 }>;
 

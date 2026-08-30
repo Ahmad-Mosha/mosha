@@ -52,6 +52,7 @@ export function TopHeader() {
     tasks: "Tasks & Focus (Home)",
     goals: "Major Life Goals",
     notes: "Notes & Knowledge Base",
+    calendar: "Calendar",
     today: "Today's Sanctuary",
     problems: "Algorithmic Mastery Hub",
     learning: "Learning & CS Subjects",
