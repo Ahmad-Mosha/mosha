@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { LabelChips } from "./task-composer";
+import { priorityOf } from "./task-meta";
 import { today } from "../../../convex/recurrence";
 
 const SHORT = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
@@ -305,6 +306,10 @@ function TaskList({
 
             <span className={`min-w-0 flex-1 truncate text-label ${done ? "text-ghost line-through" : "text-ink"}`}>
               {t.title}
+            </span>
+
+            <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-meta ${priorityOf(t.priority).chip}`}>
+              {priorityOf(t.priority).label}
             </span>
 
             <LabelChips labels={t.labels} />

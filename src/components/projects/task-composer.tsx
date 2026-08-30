@@ -4,12 +4,7 @@ import React, { useState } from "react";
 import { Plus, Tag } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
-
-const PRIORITIES = [
-  { value: "p1_urgent", label: "High" },
-  { value: "p2_medium", label: "Medium" },
-  { value: "p3_low", label: "Low" },
-];
+import { PRIORITY_OPTIONS, labelColour } from "./task-meta";
 
 /**
  * Adding work is more than a title. Priority sits inline, and labels open on
@@ -61,7 +56,7 @@ export function TaskComposer({
           value={priority}
           onValueChange={setPriority}
           size="sm"
-          options={PRIORITIES}
+          options={PRIORITY_OPTIONS}
         />
 
         <button
@@ -107,7 +102,7 @@ export function LabelChips({ labels }: { labels?: string[] }) {
   return (
     <span className="flex flex-wrap items-center gap-1">
       {labels.map((l) => (
-        <span key={l} className="rounded bg-subtle-2 px-1.5 py-0.5 font-mono text-meta text-muted">
+        <span key={l} className={`rounded px-1.5 py-0.5 font-mono text-meta ${labelColour(l)}`}>
           {l}
         </span>
       ))}

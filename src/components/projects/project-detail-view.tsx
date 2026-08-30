@@ -12,6 +12,8 @@ import { Select } from "@/components/ui/select";
 import { SprintSections, type Sprint } from "./sprint-board";
 import { STATUS_META } from "./projects-screen";
 import { TaskComposer, LabelChips } from "./task-composer";
+import { TaskDialog } from "./task-dialog";
+import { priorityOf } from "./task-meta";
 
 const COLUMNS = [
   { id: "todo", label: "To do" },
@@ -38,17 +40,25 @@ export function ProjectDetailView({
   const assignTask = useMutation(api.sprints.assignTask);
 
   const [tab, setTab] = useState<Tab>("board");
+  /** Which sprint the board shows. null means the backlog. */
+  const [boardSprint, setBoardSprint] = useState<string | null | undefined>(undefined);
+  const [editingTask, setEditingTask] = useState<any | null>(null);
 
   const tasks = project?.tasks ?? [];
   const activeSprint = sprints.find((s) => s.status === "active") ?? null;
 
-  /** The board is the running sprint; with none, it is the loose work. */
+  /**
+   * The board defaults to the running sprint but is switchable — undefined
+   * means "follow the active sprint", null means the backlog.
+   */
+  const shownSprint = boardSprint === undefined ? activeSprint?._id ?? null : boardSprint;
+
   const boardTasks = useMemo(
     () =>
-      activeSprint
-        ? tasks.filter((t: any) => t.sprintId === activeSprint._id)
+      shownSprint
+        ? tasks.filter((t: any) => t.sprintId === shownSprint)
         : tasks.filter((t: any) => !t.sprintId),
-    [tasks, activeSprint]
+    [tasks, shownSprint]
   );
 
   /** Suggestions are whatever this project has already used. */
@@ -83,7 +93,7 @@ export function ProjectDetailView({
         priority: input.priority,
         module: "projects",
         projectId: projectId as any,
-        sprintId: (activeSprint?._id ?? undefined) as any,
+        sprintId: (shownSprint ?? undefined) as any,
         labels: input.labels.length ? input.labels : undefined,
       });
     } catch {
@@ -207,20 +217,31 @@ export function ProjectDetailView({
 
       {tab === "board" && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-mono text-meta font-semibold uppercase text-faint">
-              {activeSprint ? activeSprint.name : "Backlog"}
-              <span className="ml-1.5 text-ghost">{boardTasks.length}</span>
-            </h2>
-            {!activeSprint && sprints.length > 0 && (
-              <span className="font-mono text-meta text-ghost">
-                start a sprint to board it
-              </span>
-            )}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-meta font-semibold uppercase text-faint">Showing</span>
+              <Select
+                value={shownSprint ?? "__backlog"}
+                onValueChange={(v) => setBoardSprint(v === "__backlog" ? null : v)}
+                size="sm"
+                options={[
+                  { value: "__backlog", label: "Backlog" },
+                  ...sprints.map((s) => ({
+                    value: s._id,
+                    label: s.status === "active" ? `${s.name} · running` : s.name,
+                  })),
+                ]}
+              />
+              <span className="font-mono text-meta text-ghost">{boardTasks.length}</span>
+            </div>
           </div>
 
           <TaskComposer
-            placeholder={activeSprint ? `Add to ${activeSprint.name}…` : "Add to the backlog…"}
+            placeholder={
+              shownSprint
+                ? `Add to ${sprints.find((s) => s._id === shownSprint)?.name ?? "sprint"}…`
+                : "Add to the backlog…"
+            }
             knownLabels={knownLabels}
             onAdd={addTask}
           />
@@ -262,13 +283,14 @@ export function ProjectDetailView({
                                 <span className="block h-3.5 w-3.5 rounded-full border border-line-2 hover:border-accent" />
                               )}
                             </button>
-                            <span
-                              className={`flex-1 text-label leading-snug ${
+                            <button
+                              onClick={() => setEditingTask(t)}
+                              className={`flex-1 text-left text-label leading-snug cursor-pointer ${
                                 t.status === "done" ? "text-ghost line-through" : "text-ink"
                               }`}
                             >
                               {t.title}
-                            </span>
+                            </button>
                             <button
                               onClick={() => removeTask({ id: t._id })}
                               title="Delete task"
@@ -278,7 +300,12 @@ export function ProjectDetailView({
                             </button>
                           </div>
 
-                          <LabelChips labels={t.labels} />
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span className={`rounded px-1.5 py-0.5 font-mono text-meta ${priorityOf(t.priority).chip}`}>
+                              {priorityOf(t.priority).label}
+                            </span>
+                            <LabelChips labels={t.labels} />
+                          </div>
 
                           <div className="flex items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
                             <Select
@@ -318,6 +345,13 @@ export function ProjectDetailView({
       {tab === "sprints" && (
         <SprintSections projectId={projectId} sprints={sprints} tasks={tasks} />
       )}
+
+      <TaskDialog
+        task={editingTask}
+        sprints={sprints}
+        knownLabels={knownLabels}
+        onClose={() => setEditingTask(null)}
+      />
 
       {tab === "notes" && (
         <div className="h-[65vh] overflow-hidden rounded-xl border border-line">

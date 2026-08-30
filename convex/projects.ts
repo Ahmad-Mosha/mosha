@@ -115,8 +115,18 @@ export const removeProject = mutation({
       .withIndex("by_project", (q) => q.eq("projectId", args.id))
       .collect();
 
+    // Tasks survive the project — they move to the general list rather than
+    // being destroyed. Their sprint link has to go with the sprints below.
     for (const t of tasks) {
-      await ctx.db.patch(t._id, { projectId: undefined });
+      await ctx.db.patch(t._id, { projectId: undefined, sprintId: undefined });
+    }
+
+    const sprints = await ctx.db
+      .query("sprints")
+      .withIndex("by_project", (q) => q.eq("projectId", args.id))
+      .collect();
+    for (const s of sprints) {
+      await ctx.db.delete(s._id);
     }
 
     // Unlink notes
