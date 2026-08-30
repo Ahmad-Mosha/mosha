@@ -55,7 +55,7 @@ export function TopHeader() {
     calendar: "Calendar",
     today: "Today's Sanctuary",
     problems: "Algorithmic Mastery Hub",
-    learning: "Learning & CS Subjects",
+    learning: "Learning",
     career: "Engineering Career & Market",
     projects: "Projects",
     gym: "Iron Journal (Fitness)",

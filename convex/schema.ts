@@ -149,26 +149,48 @@ export default defineSchema({
     .index("by_pattern", ["pattern"])
     .index("by_slug", ["slug"]),
 
-  // 7. Learning & CS Roadmaps
-  learning_topics: defineTable({
-    subject: v.string(),
-    title: v.string(),
-    description: v.string(),
-    status: v.string(),
-    progress: v.number(),
-    notes: v.optional(v.string()),
-    resources: v.optional(
-      v.array(
-        v.object({
-          title: v.string(),
-          url: v.string(),
-          type: v.string(),
-        })
-      )
-    ),
+  // 7. Learning
+  //
+  // A subject is learned from several sources at once — a course, a book, a
+  // few videos — so the unit is the track, not the source. Tracks hold an
+  // ordered list of topics (the roadmap); resources attach to a track, and
+  // optionally to one topic inside it.
+  learning_tracks: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    status: v.string(), // "active" | "planned" | "paused" | "done"
     order: v.number(),
     createdAt: v.string(),
-  }).index("by_subject", ["subject"]),
+  }).index("by_order", ["order"]),
+
+  learning_topics: defineTable({
+    trackId: v.id("learning_tracks"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    status: v.string(), // "todo" | "learning" | "done"
+    order: v.number(),
+    /** Rich text, same editor as Notes. */
+    notes: v.optional(v.string()),
+    /** Drives the study heatmap; touched whenever the topic is worked on. */
+    lastStudiedAt: v.optional(v.string()),
+    createdAt: v.string(),
+  })
+    .index("by_track", ["trackId"])
+    .index("by_studied", ["lastStudiedAt"]),
+
+  learning_resources: defineTable({
+    trackId: v.id("learning_tracks"),
+    /** Set when the resource covers one topic rather than the whole track. */
+    topicId: v.optional(v.id("learning_topics")),
+    title: v.string(),
+    url: v.optional(v.string()), // absent for a local file or an AI-generated PDF
+    type: v.string(), // "course" | "book" | "video" | "article" | "pdf" | "docs" | "other"
+    status: v.string(), // "queued" | "active" | "done"
+    notes: v.optional(v.string()),
+    createdAt: v.string(),
+  })
+    .index("by_track", ["trackId"])
+    .index("by_topic", ["topicId"]),
 
   // 8. Iron Journal (Gym & Fitness)
   gym_sessions: defineTable({

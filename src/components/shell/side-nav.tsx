@@ -36,7 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "goals", label: "Major Life Goals", icon: Target, badge: "Pillars" },
   { id: "notes", label: "Notes & Knowledge", icon: FileText, badge: "Docs" },
   { id: "problems", label: "Problem Solving", icon: Code2 },
-  { id: "learning", label: "Learning & CS", icon: BookOpen },
+  { id: "learning", label: "Learning", icon: BookOpen },
   { id: "projects", label: "Projects", icon: Layers },
   { id: "gym", label: "Gym & Fitness", icon: Dumbbell },
   { id: "finance", label: "Sovereign Finance", icon: Wallet },

@@ -15,7 +15,7 @@ import { ProjectsScreen } from "@/components/projects/projects-screen";
 import { ProblemsScreen } from "@/components/problems/problems-screen";
 import { GymFitnessView } from "@/components/modules/gym-fitness-view";
 import { FinanceView } from "@/components/modules/finance-view";
-import { LearningCsView } from "@/components/modules/learning-cs-view";
+import { LearningScreen } from "@/components/learning/learning-screen";
 import { EngineeringJournalView } from "@/components/modules/engineering-journal-view";
 import { GenericModuleView } from "@/components/modules/generic-module-view";
 
@@ -49,7 +49,7 @@ export default function Home() {
       case "finance":
         return <FinanceView />;
       case "learning":
-        return <LearningCsView />;
+        return <LearningScreen />;
       case "journal":
         return <EngineeringJournalView />;
       default:
