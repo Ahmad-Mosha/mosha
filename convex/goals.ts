@@ -43,9 +43,6 @@ export const create = mutation({
       }),
     ),
     order: v.number(),
-    phase: v.optional(v.string()),
-    meaning: v.optional(v.string()),
-    notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const id = await ctx.db.insert("major_life_goals", {
@@ -77,8 +74,6 @@ export const update = mutation({
       ),
     ),
     order: v.optional(v.number()),
-    phase: v.optional(v.string()),
-    notes: v.optional(v.string()),
     completedAt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {

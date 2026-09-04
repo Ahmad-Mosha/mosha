@@ -87,7 +87,6 @@ export function GoalDialog() {
       icon: icon || "🎯",
       milestones,
       progress: computedProgress,
-      phase: "Active",
       order: editingGoalId && existingGoal ? existingGoal.order : goals.length + 1,
     };
 
