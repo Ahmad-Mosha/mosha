@@ -5,14 +5,14 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import {
-  ArrowDownRight, ArrowUpRight, Pencil, PiggyBank, Plus, Repeat, Target, Trash2, Wallet,
+  ArrowDownRight, ArrowUpRight, Check, Pencil, PiggyBank, Plus, Repeat, Target, Trash2, Wallet,
 } from "lucide-react";
 import { Select } from "@/components/ui/select";
 import { TagInput } from "@/components/ui/tag-input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { today } from "../../../convex/recurrence";
 
-type Tab = "ledger" | "recurring" | "pots";
+type Tab = "ledger" | "recurring" | "pots" | "wishlist";
 
 const TYPE_OPTIONS = [
   { value: "expense", label: "Expense" },
@@ -29,6 +29,7 @@ export function FinanceScreen() {
   const records = useQuery(api.finance.listRecords) ?? [];
   const recurring = useQuery(api.finance.listRecurring) ?? [];
   const pots = useQuery(api.finance.listPots) ?? [];
+  const wishlist = useQuery(api.finance.listWishlist) ?? [];
   const goals = useQuery(api.goals.list) ?? [];
   const stats = useQuery(api.finance.summary);
   const config = useQuery(api.finance.getConfig);
@@ -158,7 +159,7 @@ export function FinanceScreen() {
       </section>
 
       <div className="flex gap-1 border-b border-line">
-        {(["ledger", "recurring", "pots"] as Tab[]).map((t) => (
+        {(["ledger", "recurring", "pots", "wishlist"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -182,6 +183,7 @@ export function FinanceScreen() {
       )}
       {tab === "recurring" && <Recurring items={recurring} knownCategories={knownCategories} money={money} />}
       {tab === "pots" && <Pots pots={pots} goals={goals} money={money} />}
+      {tab === "wishlist" && <Wishlist items={wishlist} balance={stats?.balance ?? 0} money={money} />}
     </div>
   );
 }
@@ -571,6 +573,128 @@ function Pots({ pots, goals, money }: { pots: any[]; goals: any[]; money: (n: nu
         onConfirm={async () => {
           await remove({ id: confirm._id });
           toast.success("Pot deleted");
+          setConfirm(null);
+        }}
+      />
+    </div>
+  );
+}
+
+function Wishlist({
+  items, balance, money,
+}: {
+  items: any[]; balance: number; money: (n: number) => string;
+}) {
+  const create = useMutation(api.finance.createWishlistItem);
+  const toggleBought = useMutation(api.finance.toggleWishlistBought);
+  const remove = useMutation(api.finance.removeWishlistItem);
+
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [confirm, setConfirm] = useState<any | null>(null);
+
+  const field =
+    "rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-label text-ink outline-none focus:border-accent";
+
+  // Cheapest wins first — closest to affordable. Bought sits below, most recent first.
+  const wanted = [...items].filter((i) => !i.bought).sort((a, b) => a.price - b.price);
+  const bought = [...items].filter((i) => i.bought).sort((a, b) => (b.boughtAt ?? "").localeCompare(a.boughtAt ?? ""));
+  const wantedTotal = wanted.reduce((n, i) => n + i.price, 0);
+  const affordableCount = wanted.filter((i) => i.price <= balance).length;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-label text-faint">
+          What you want to buy, priced out before it&apos;s a transaction.
+        </p>
+        {wanted.length > 0 && (
+          <span className="font-mono text-meta text-ghost">
+            {money(wantedTotal)} wanted
+            {affordableCount > 0 && ` · ${affordableCount} affordable now`}
+          </span>
+        )}
+      </div>
+
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!name.trim() || !price) return;
+          await create({ name: name.trim(), price: Number(price) });
+          setName(""); setPrice("");
+          toast.success("Added to wishlist");
+        }}
+        className="flex flex-wrap items-end gap-2 rounded-xl border border-line bg-surface p-3"
+      >
+        <label className="min-w-40 flex-1 space-y-1">
+          <span className="block font-mono text-meta uppercase text-faint">Item</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Standing desk" className={`w-full ${field}`} />
+        </label>
+        <label className="space-y-1">
+          <span className="block font-mono text-meta uppercase text-faint">Price</span>
+          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className={`w-28 ${field}`} />
+        </label>
+        <button type="submit" className="rounded-lg bg-accent px-3 py-1.5 text-label font-semibold text-accent-fg hover:bg-accent-hover cursor-pointer">
+          Add
+        </button>
+      </form>
+
+      {items.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-line-2 py-12 text-center text-label text-ghost">
+          Nothing on the list yet.
+        </p>
+      ) : (
+        <ul className="divide-y divide-line/60 rounded-xl border border-line bg-surface">
+          {[...wanted, ...bought].map((item) => {
+            const affordable = !item.bought && item.price <= balance;
+            return (
+              <li key={item._id} className="group flex items-center gap-3 px-4 py-2.5">
+                <button
+                  onClick={() => toggleBought({ id: item._id })}
+                  title={item.bought ? "Mark as not bought" : "Mark as bought"}
+                  className={`grid h-5 w-5 shrink-0 place-items-center rounded-md border transition-colors cursor-pointer ${
+                    item.bought ? "border-accent bg-accent text-accent-fg" : "border-line-2 bg-surface-2 hover:border-faint"
+                  }`}
+                >
+                  {item.bought && <Check className="h-3 w-3 stroke-[3]" />}
+                </button>
+
+                <span className={`min-w-0 flex-1 truncate text-label ${item.bought ? "text-ghost line-through" : "text-ink"}`}>
+                  {item.name}
+                </span>
+
+                {affordable && (
+                  <span className="shrink-0 rounded bg-success-tint px-1.5 py-0.5 font-mono text-meta text-success">
+                    can afford
+                  </span>
+                )}
+
+                <span className={`shrink-0 font-mono text-label ${item.bought ? "text-ghost" : "text-muted"}`}>
+                  {money(item.price)}
+                </span>
+
+                <button
+                  onClick={() => setConfirm(item)}
+                  title="Remove"
+                  className="shrink-0 text-ghost opacity-0 transition hover:text-danger group-hover:opacity-100 cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <ConfirmDialog
+        open={Boolean(confirm)}
+        title={`Remove "${confirm?.name}"?`}
+        body="It's just off the list — nothing else is affected."
+        confirmLabel="Remove"
+        onCancel={() => setConfirm(null)}
+        onConfirm={async () => {
+          await remove({ id: confirm._id });
+          toast.success("Removed");
           setConfirm(null);
         }}
       />

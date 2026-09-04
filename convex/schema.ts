@@ -297,6 +297,15 @@ export default defineSchema({
     createdAt: v.string(),
   }),
 
+  /** Things you want to buy, priced out before they're a transaction. */
+  finance_wishlist: defineTable({
+    name: v.string(),
+    price: v.number(),
+    bought: v.boolean(),
+    boughtAt: v.optional(v.string()),
+    createdAt: v.string(),
+  }),
+
   /** Single row: currency and the balance the runway counts down from. */
   finance_config: defineTable({
     currency: v.optional(v.string()),
