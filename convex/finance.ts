@@ -240,6 +240,55 @@ export const removePot = mutation({
   },
 });
 
+// --- Wishlist -----------------------------------------------------------
+// Not the ledger — a price tag on something you don't own yet. It stays out
+// of balance and runway until it's a real transaction.
+
+export const listWishlist = query({
+  args: {},
+  handler: async (ctx) => ctx.db.query("finance_wishlist").collect(),
+});
+
+export const createWishlistItem = mutation({
+  args: { name: v.string(), price: v.number() },
+  handler: async (ctx, args) =>
+    ctx.db.insert("finance_wishlist", {
+      name: args.name.trim(),
+      price: Math.abs(args.price),
+      bought: false,
+      createdAt: new Date().toISOString(),
+    }),
+});
+
+export const updateWishlistItem = mutation({
+  args: { id: v.id("finance_wishlist"), name: v.optional(v.string()), price: v.optional(v.number()) },
+  handler: async (ctx, { id, ...fields }) => {
+    await ctx.db.patch(id, {
+      ...fields,
+      ...(fields.price !== undefined ? { price: Math.abs(fields.price) } : {}),
+    });
+  },
+});
+
+export const toggleWishlistBought = mutation({
+  args: { id: v.id("finance_wishlist") },
+  handler: async (ctx, args) => {
+    const item = await ctx.db.get(args.id);
+    if (!item) throw new Error("Not found");
+    await ctx.db.patch(args.id, {
+      bought: !item.bought,
+      boughtAt: !item.bought ? today() : undefined,
+    });
+  },
+});
+
+export const removeWishlistItem = mutation({
+  args: { id: v.id("finance_wishlist") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});
+
 // --- Derived ----------------------------------------------------------------
 
 /** Everything the overview needs, computed from the ledger in one pass. */
